@@ -26,6 +26,7 @@
   "author": "hmmhmmhm <hmmhmmhm@naver.com>",
   "license": "MIT",
   "dependencies": {
-    "hangul-js": "^0.2.5"
+    "hangul-js": "^0.2.5",
+    "package.json": "^2.0.1"
   }
 }

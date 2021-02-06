@@ -1,4 +1,6 @@
-import Tetrapod from '../tetrapod'
+import Tetrapod from '../tetrapod';
+import Hangul from 'hangul-js';
+import Bias from '../bias/bias';
 
 // 명령어로 입력되는 메시지를 가져옵니다.
 /*
@@ -8,6 +10,18 @@ word = word.join(' ')
 */
 
 Tetrapod.defaultLoad()
+
+// console.log(Tetrapod.find('ㅅㅂ 왕이 나셨도다! 새끼줄!', true));
+// console.log(Tetrapod.recursiveList(Hangul.disassemble('존문가')));
+// console.log(Hangul.disassemble('지```존'));
+// console.log(Tetrapod.isBad('지는 신랄하게 공격'));
+// let message = '우리 나라 만세!'
+// let search = '나라';
+// let replace = '민족';
+let targetWord = '바보'
+Bias.buildHelper(`kr-badwords`, targetWord, false);
+// console.log(message.replace(new RegExp(search, 'gi'), replace))
+// console.log(Tetrapod.fix('바bo', 'x'));
 
 /**
  * @description

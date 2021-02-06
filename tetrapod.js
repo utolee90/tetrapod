@@ -1,4 +1,4 @@
-import Hangul from 'hangul-js'
+import Hangul from 'hangul-js';
 
 // 사전데이터들을 배열형태로 저장해서 보관합니다. (json)
 var badWords = []
@@ -16,6 +16,17 @@ var normalWordsMap = {}
 var softSearchWordsMap = {}
 
 const Utils = {
+
+    // 한영전환을 악용한 욕설 거를 때 사용.
+    en_ko_key_mapping : {
+        'q':'ㅂ', 'Q':'ㅃ', 'w':'ㅈ', 'W':'ㅉ', 'e': 'ㄷ', 'E':'ㄸ', 'r':'ㄱ', 'R':'ㄲ', 't':'ㅅ', 'T':'ㅆ',
+        'y':'ㅛ', 'Y':'ㅛ', 'u':'ㅕ', 'U':'ㅕ',  'i':'ㅑ', 'I': 'ㅑ', 'o': 'ㅐ', 'O': 'ㅒ', 'p':'ㅔ', 'P':'ㅖ',
+        'a':'ㅁ', 'A':'ㅁ', 's':'ㄴ', 'S':'ㄴ', 'd': 'ㅇ', 'D':'ㅇ', 'f':'ㄹ', 'F': 'ㄹ', 'g': 'ㅎ', 'G':'ㅎ',
+        'h':'ㅗ', 'H':'ㅗ', 'j':'ㅓ', 'J':'ㅓ', 'k':'ㅏ', 'K':'ㅏ', 'l':'ㅣ', 'L':'ㅣ',
+        'z':'ㅋ', 'Z':'ㅋ', 'x':'ㅌ', 'X':'ㅌ', 'c':'ㅊ', 'C':'ㅊ', 'v':'ㅍ', 'V':'ㅍ',
+        'b':'ㅠ', 'B':'ㅠ', 'n':'ㅜ', 'N':'ㅜ', 'm':'ㅡ', 'M':'ㅡ', '2':'ㅣ', '5':'ㅗ', '^':'ㅅ'
+    },
+
     escape: (text) => {
         return String(text).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
     },
@@ -97,6 +108,19 @@ const Utils = {
         })
 
         return sortedMap
+    },
+
+    // 영자조합 만들기
+    enToKo: (msg)=> {
+        const mapping = Utils.en_ko_key_mapping;
+
+        // 낱자 분리 후에 영어 -> 한글 전환
+        let msg_split_and_replace = msg.split('').map((letter) =>
+            (Object.keys(mapping).indexOf(letter)!==-1 ? mapping[letter] : letter));
+        // 분리된 낱자를 합치기.
+        let newmsg = msg_split_and_replace.join('');
+        // 결과 - 낱자를 조합하기.
+        return Hangul.assemble(newmsg);
     }
 }
 
@@ -172,9 +196,9 @@ class Tetrapod {
 
     static getDefaultData() {
         return {
-            badWords: Tetrapod.recursiveList(require('./dictionary/bad-words.json').badwords),
-            normalWords: require('./dictionary/normal-words.json').dictionary,
-            softSearchWords: require('./dictionary/soft-search-words.json').badwords
+            badWords: Tetrapod.recursiveList(require('./resource/dictionary/bad-words.json').badwords),
+            normalWords: require('./resource/dictionary/normal-words.json').dictionary,
+            softSearchWords: require('./resource/dictionary/soft-search-words.json').badwords
         }
     }
 
@@ -228,6 +252,10 @@ class Tetrapod {
         return Tetrapod.find(message, false).length != 0
     }
 
+    static countBad(message) {
+        return Tetrapod.find(message, true, 0).length;
+    }
+
     static find(message, needMultipleCheck, splitCheck) {
         var totalResult = []
 
@@ -238,18 +266,19 @@ class Tetrapod {
             let currentResult = Tetrapod.nativeFind(messages[index1], needMultipleCheck)
 
             if (needMultipleCheck) {
-                for (var index2 = 0; index2 <= currentResult.length - 1; index2++)
-                    if (currentResult !== null)
-                        totalResult.push(currentResult.founded[index2])
+                for (var index2 = 0; index2 <= currentResult.founded.length - 1; index2++) {
+                    if (currentResult.founded !== [] && totalResult.indexOf(currentResult.founded[index2])===-1)
+                        totalResult = [...totalResult, currentResult.founded[index2]];
+                }
             } else {
                 if (currentResult !== null)
-                    totalResult.push(currentResult.founded)
+                    totalResult = [...totalResult, currentResult.founded];
             }
         }
         return totalResult;
     }
 
-    static nativeFind(message, needMultipleCheck) {
+    static nativeFind(message, needMultipleCheck, needEnToKo) {
         //let unsafeMessage = message.toLowerCase()
         let normalWordPositions = {}
         let foundedBadWords = []
@@ -262,6 +291,14 @@ class Tetrapod {
             unsafeMessage = Utils.replaceAll(unsafeMessage, normalWords[index], '')
         }
         */
+
+        // 만약 한영전환이 필요하면 한영전환후 수행합니다.
+        if (needEnToKo === true) {
+            message = Utils.enToKo(message);
+        }
+        else if (needEnToKo === undefined) {
+            message= message;
+        }
 
         // 정상단어의 포지션을 찾습니다.
         for (let index in normalWords) {
