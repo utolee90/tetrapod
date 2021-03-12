@@ -2,9 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="104ff4eb-fd97-4171-9f6f-14d519183829" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bias/bias.js" beforeDir="false" afterPath="$PROJECT_DIR$/bias/bias.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/resource/dictionary/bad-words.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/bad-words.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resource/dictionary/normal-words.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/normal-words.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resource/dictionary/soft-search-words.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/soft-search-words.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/find.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/find.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tetrapod.js" beforeDir="false" afterPath="$PROJECT_DIR$/tetrapod.js" afterDir="false" />
     </list>
@@ -29,11 +33,17 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="javascript.nodejs.core.library.configured.version" value="14.2.0" />
-    <property name="javascript.nodejs.core.library.typings.version" value="14.14.22" />
+    <property name="javascript.nodejs.core.library.configured.version" value="14.15.2" />
+    <property name="javascript.nodejs.core.library.typings.version" value="14.14.31" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/resource/klleon" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="ts.external.directory.path" value="D:\PHPStorm\PhpStorm 2020.3\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
+    <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\PhpStorm 2020.3\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
     <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Klleon_Yohan\kamelo_team\tetrapod\resource\klleon" />
+    </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -44,6 +54,19 @@
       <option name="presentableId" value="Default" />
       <updated>1612011607088</updated>
       <workItem from="1612011644946" duration="16485000" />
+      <workItem from="1614084180253" duration="1922000" />
+      <workItem from="1614227989427" duration="2021000" />
+      <workItem from="1614314220790" duration="634000" />
+      <workItem from="1614421230239" duration="623000" />
+      <workItem from="1614658514655" duration="1249000" />
+      <workItem from="1614745889889" duration="2549000" />
+      <workItem from="1614831288078" duration="2694000" />
+      <workItem from="1614925378891" duration="1450000" />
+      <workItem from="1615178341392" duration="24835000" />
+      <workItem from="1615353474082" duration="2611000" />
+      <workItem from="1615434922025" duration="605000" />
+      <workItem from="1615443272954" duration="36372000" />
+      <workItem from="1615532432248" duration="22763000" />
     </task>
     <servers />
   </component>

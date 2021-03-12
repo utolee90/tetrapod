@@ -5,33 +5,33 @@ import chalk from 'chalk'
 
 /**
  * @author hmmhmmhm <hmmhmmhm@naver.com>
- * 
+ *
  * source.json 을 기반으로
  * build.json 에 비속어 사전을 생성합니다.
- * 
+ *
  * source.json 는 var와 code로 나뉘며
- * 
+ *
  * var 에는 반복적으로 쓰일 수 있는 음절을
  * 아예 따로 함수형태로 정의해놓을 수 있으며
- * 
+ *
  * code 에서 사전에 정의된 음절 함수를
  * <*함수명> 과 같이 표시함으로 엮을 수 있습니다.
- * 
+ *
  */
 
 /**
  * @todo
- * 
+ *
  * [v] 중첩 연결적 데이터 포멧
- * 
+ *
  * [v] 음절 변수 개념
  * [v] 응용 함수 개념
  * [v] 자모합성 함수 개념
- * 
+ *
  * [v] 분할된 사전 데이터 파일 체계
  * [v] 특정 단어만 테스트하는 명령어 개념
  * [v] 결과배제 함수 개념
- * 
+ *
  * [ ] 음절단위 최소화 표현 필터 개념 (UniqueFilter)
  * [ ] 이전 비속 단어 사전 데이터 해석
  * [ ] 이전 정상 단어 사전 데이터 해석
@@ -39,10 +39,10 @@ import chalk from 'chalk'
 
 /**
  * @description
- * 
+ *
  * bias 는 정밀한 비속어 단어사전을
  * 구성하기 위해서 구성된 데이터 포멧으로
- * 
+ *
  * 각 비속어의 음절별 변형되어 표기되는
  * 글자 발음을 최대한 표기합니다.
  */
@@ -51,31 +51,31 @@ export default class Bias {
      * 비속어는 음절별로 발음이 약간씩
      * 달라질 수 있기 때문에 각 음절별로
      * 모든 조합의 구성이 필요합니다.
-     * 
+     *
      * 그러나 이를 직접 적으면 데이터 용량이 늘뿐더러
      * 편집자도 힘드므로 각 음절별 변형음을 2차원구조로 표현합니다.
-     * 
-     * 
+     *
+     *
      * 이 함수는 필터에 사용될 비속어를 2차원 배열 형태로
      * 조합될 단어의 목록을 구성할 수 있게 돕습니다.
-     * 
+     *
      * 2차원 배열은 before+after 의 구조로
      * 각 차원 데이터가 합쳐져서 단어를 구성하게 되며
-     * 
+     *
      * 2차원 배열 내 다시 2차원 배열을 둘 수 있습니다.
-     * 
-     * @param {array} data 
+     *
+     * @param {array} data
      */
     static recursiveComponent (data, variable, nonParsedVariable = null) {
         console.log('recursiveComponent() start')
 
         // 데이터의 전항 후항을 순회합니다.
         for(let i=0;i<=1;i++){
-    
+
             // 데이터의 모든 항목을 순회합니다.
             for(let itemIndex in data[i]){
                 let item = data[i][itemIndex]
-    
+
                 // 데이터 항목이 배열인 경우
                 // 재귀 컴포넌트 해석을 진행합니다.
                 if(Array.isArray(item)){
@@ -139,12 +139,12 @@ export default class Bias {
     /**
      * 이 함수로 배열을 감싸면 비속어 단어 정의용
      * 데이터 표현 포멧을 바로 쓸 수 있게 해줍니다.
-     * 
-     * @param {array} list 
-     * @param {object} variable 
-     * @param {boolean} isVariableParse 
-     * @param {string} defaultType 
-     * 
+     *
+     * @param {array} list
+     * @param {object} variable
+     * @param {boolean} isVariableParse
+     * @param {string} defaultType
+     *
      * @returns {array} solvedList
      */
     static recursiveList (list, variable = null, isVariableParse = false, defaultType = 'string') {
@@ -208,9 +208,9 @@ export default class Bias {
     /**
      * 재귀를 통해 특정 폴더 경로내 존재하는
      * 모든 파일을 찾아내서 목록을 만든 후 이를 콜백에 넘겨줍니다.
-     * 
-     * @param {string} staticPath 
-     * @param {function} callback 
+     *
+     * @param {string} staticPath
+     * @param {function} callback
      */
     static recursiveFileSearch(staticPath, callback){
         let foundedDatas = []
@@ -252,15 +252,15 @@ export default class Bias {
 
                     // 찾은게 폴더면 검색해야할 폴더 목록에 추가합니다.
                     foundedFolders.push({
-                        subPath: opt.paths.subPath + fileName + '/', 
+                        subPath: opt.paths.subPath + fileName + '/',
                         staticPath: opt.paths.staticPath+ '/' + fileName
                     })
                 }else{
 
                     // 찾은게 파일이면 찾은 데이터 목록에 추가합니다.
                     foundedDatas.push({
-                        subPath: opt.paths.subPath, 
-                        staticPath: opt.paths.staticPath, 
+                        subPath: opt.paths.subPath,
+                        staticPath: opt.paths.staticPath,
                         fileName
                     })
                 }
@@ -282,10 +282,10 @@ export default class Bias {
      * 데이터를 가지고 있다가
      * 해당 데이터가 빌드될 때 어떻게 처리할지를
      * 함수를 통해 정의할 수 있습니다.
-     * 
+     *
      * 이 메소드 내 함수명을 정의함을 통해서
      * 빌드 과정에서 데이터에 간섭할 수 있습니다.
-     * 
+     *
      * @param {object} component
      * @param {object} parsedVaraible
      * @param {object} nonParsedVariable
@@ -326,7 +326,7 @@ export default class Bias {
 
     /**
      * 비속어 사전을 하나의 JSON파일로 변환합니다.
-     * 
+     *
      * @param {object} buildOption
      * @param {function} buildCallback
      */
@@ -345,11 +345,11 @@ export default class Bias {
                 // json 파일이 아니면 이를 넘깁니다.
                 let checkExt = file.fileName.split('.')
                 if(checkExt[1] != 'json' || checkExt.length != 2) continue
-        
+
                 // 파일데이터를 읽어옵니다.
                 let filePath = path.resolve(`${file.staticPath}/${file.fileName}`)
                 let fileData = JSON.parse(String(fs.readFileSync(filePath)))
-        
+
                 // 수집한 데이터를 하나의 객체에 합칩니다.
                 for(let topIndex of Object.keys(fileData)){
 
@@ -427,7 +427,7 @@ export default class Bias {
 
                         // 일치하는 단어를 저장합니다.
                         let matchedCount = []
-                        
+
                         // 대조할 단어를 한글자씩 순회합니다.
                         for(let checkWordCharIndex in checkWord){
                             let checkWordChar = checkWord[checkWordCharIndex]
@@ -511,7 +511,7 @@ export default class Bias {
         ]
         let chars = Hangul.disassemble(input, true)
         if(chars.length != 1) return null
-    
+
         let parsed = {
             initialConsonant: '',
             verticalVowel: '',
