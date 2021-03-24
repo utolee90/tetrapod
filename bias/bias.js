@@ -67,6 +67,8 @@ export default class Bias {
      * @param {array} data
      */
     static recursiveComponent (data, variable, nonParsedVariable = null) {
+        // data : array.
+
         console.log('recursiveComponent() start')
 
         // 데이터의 전항 후항을 순회합니다.

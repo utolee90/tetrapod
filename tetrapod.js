@@ -936,7 +936,7 @@ class Tetrapod {
                     // 해당 발견된 비속어를 무시합니다.
                     if(isNeedToPass) continue
 
-                    // 같은 포지션의 순서만 바꾼 비속어를 중복 비속어로 인식하지 않게 처리
+                    // 같은 포지션의 순서만 바꾼 저속한 표현을 중복으로 저속한 표현으로 인식하지 않게 처리
                     if(foundedSoftSearchWordPositions.length===0) {
                         console.log(`isShuffled: ${isShuffled}`)
                         console.log(`원문: ${message}`)
@@ -1026,7 +1026,7 @@ class Tetrapod {
         return (typeof(normalWordsMap[word]) != 'undefined')
     }
 
-    // 정상 단어를 목록에 추가.
+    // 정상 단어를 목록에 추가. - 배열
     static addNormalWords(words) {
         for (let wordsIndex in words) {
             let word = words[wordsIndex]

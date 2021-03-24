@@ -17,16 +17,17 @@ Tetrapod.defaultLoad()
 // console.log(Tetrapod.recursiveList(Hangul.disassemble('존문가')));
 // console.log(Hangul.disassemble('지```존'));
 let targetWord = '바보'
-Tetrapod.find('발씨', true)
-console.log(Tetrapod.fix('발씨', 'X'));
-console.log(Tetrapod.alphabetToKo('ㄱH^H77|'));
-console.log(Tetrapod.tooMuchDoubleEnd('정말 감삾핪닚닶'));
-console.log(Tetrapod.find('가젖 상같은 톲슶틊샚', true, 0, false, false));
+// Tetrapod.find('발씨', true)
+// console.log(Tetrapod.fix('발씨', 'X'));
+// console.log(Tetrapod.alphabetToKo('ㄱH^H77|'));
+// console.log(Tetrapod.tooMuchDoubleEnd('정말 감삾핪닚닶'));
+// console.log(Tetrapod.find('가젖 상같은 톲슶틊샚', true, 0, false, false));
 // console.log(Tetrapod.getDefaultData());
 // Tetrapod.find('wlfkfgkwlak', true, 15,true);
-// Bias.recursiveComponent('바보', ['바보', '우리'], null);
 // console.log(message.replace(new RegExp(search, 'gi'), replace))
 // console.log(Tetrapod.fix('바bo', 'x'));
+
+console.log(Bias.recursiveComponent([['바', 'ba', 'va'], ['보', 'bo', 'vo']]));
 
 /**
  * @description
