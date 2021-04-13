@@ -10,12 +10,19 @@ word = word.join(' ')
 */
 
 
-
-Tetrapod.defaultLoad()
-
-// console.log(Tetrapod.find('ㅅㅂ 왕이 나셨도다! 새끼줄!', true));
+// Tetrapod.defaultLoad()
+// console.log(Tetrapod.nativeFind("시발", true))
+// console.log(Tetrapod.alphabetToKo('ㄱH^ㅣ불 완전 쨩나', true))
+console.log("1", Tetrapod.find('시발', true));
 // console.log(Tetrapod.recursiveList(Hangul.disassemble('존문가')));
 // console.log(Hangul.disassemble('지```존'));
+console.log(Tetrapod.alphabetToKo("다 LH꺼야", true));
+console.log(Tetrapod.parseMap(Tetrapod.alphabetToKo("다 LH꺼야", true)));
+// console.log(Tetrapod.dropIung('씨브얼', false));
+// console.log(Hangul.assemble(Hangul.disassemble("ㄱㅜ라")));
+// console.log(Tetrapod.alphabetToKo("개^ㅗ리 ㄱ-마L해 이 멍개", true));
+// console.log(Tetrapod.joinMap(Tetrapod.alphabetToKo("LH똔LH쓰안", true), Tetrapod.dropiung(Tetrapod.alphabetToKo("LH똔LH쓰안"), true)));
+// console.log(Tetrapod.dropiung('고아테에마알라', true))
 let targetWord = '바보'
 // Tetrapod.find('발씨', true)
 // console.log(Tetrapod.fix('발씨', 'X'));
@@ -26,8 +33,8 @@ let targetWord = '바보'
 // Tetrapod.find('wlfkfgkwlak', true, 15,true);
 // console.log(message.replace(new RegExp(search, 'gi'), replace))
 // console.log(Tetrapod.fix('바bo', 'x'));
-
-console.log(Bias.recursiveComponent([['바', 'ba', 'va'], ['보', 'bo', 'vo']]));
+// console.log(Tetrapod.nativeFind('싀발', true))
+// console.log(Bias.recursiveComponent([['바', 'ba', 'va'], ['보', 'bo', 'vo']]));
 
 /**
  * @description

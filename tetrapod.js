@@ -17,20 +17,30 @@ var softSearchWordsMap = {}
 
 const Utils = {
 
+    // 한글 자음
     korConsonants: [
         'ㄱ', 'ㄲ','ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
     ],
+    // 한글 모음
     korVowels: [
         'ㅏ', 'ㅐ' , 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'
     ],
+
+    // 유사한 자모. 예를 들면 껴져 -> 꺼저로 축약할 때 사용.
     korSimParts: {'ㄱ':['ㄱ','ㅋ','ㄲ'], 'ㄲ':['ㄲ','ㅋ'], 'ㄴ':['ㄴ', 'ㄹ'], 'ㄷ':['ㄴ','ㄷ', 'ㄸ', 'ㅌ'], 'ㄹ':['ㄴ'], 'ㅁ':['ㅇ'], 'ㅂ':['ㅃ', 'ㅍ'], 'ㅅ':['ㅆ'], 'ㅇ':['ㅁ'],
         'ㅈ':['ㅉ','ㅊ'], 'ㅊ':['ㅉ', 'ㅌ'], 'ㅋ':['ㄲ'], 'ㅌ':['ㄸ', 'ㅊ'], 'ㅍ':['ㅃ'], 'ㅎ': ['ㅇ'],
         'ㅏ':['ㅑ', 'ㅘ'], 'ㅐ':['ㅒ', 'ㅖ', 'ㅔ'], 'ㅑ':['ㅏ', 'ㅛ'], 'ㅒ':['ㅐ', 'ㅔ', 'ㅖ'], 'ㅓ':['ㅕ', 'ㅗ', 'ㅝ'], 'ㅔ':['ㅐ', 'ㅒ', 'ㅖ'], 'ㅕ':['ㅓ', 'ㅛ', ''], 'ㅖ':['ㅔ', 'ㅐ', 'ㅒ'],
         'ㅗ':['ㅓ', 'ㅛ', 'ㅘ'], 'ㅘ':['ㅏ'], 'ㅙ':['ㅚ', 'ㅞ'], 'ㅚ':['ㅙ', 'ㅞ'], 'ㅜ':['ㅡ', 'ㅠ'], 'ㅝ':['ㅓ'], 'ㅞ':['ㅙ', 'ㅚ'], 'ㅟ':['ㅜ', 'ㅣ'], 'ㅠ':['ㅜ', 'ㅡ'], 'ㅡ':['ㅢ', 'ㅜ'] , 'ㅢ':['ㅡ', 'ㅣ'], 'ㅣ':['ㅡ', 'ㅢ', 'ㅟ']
     },
 
+    // 이중 받침 자음
+    doubleConsonant: [['ㄱ','ㅅ'], ['ㄴ','ㅈ'], ['ㄴ','ㅎ'], ['ㄹ','ㄱ'], ['ㄹ','ㅁ'], ['ㄹ','ㅂ'], ['ㄹ','ㅅ'],
+        ['ㄹ','ㅌ'], ['ㄹ','ㅍ'], ['ㄹ','ㅎ'], ['ㅂ','ㅅ']],
 
-    // 한영전환을 악용한 욕설 거를 때 사용.
+    // 이중 모음
+    doubleVowel: [['ㅗ','ㅏ'], ['ㅗ','ㅐ'], ['ㅗ','ㅣ'], ['ㅜ','ㅓ'], ['ㅜ','ㅔ'], ['ㅜ','ㅣ'], ['ㅡ','ㅣ']],
+
+    // 두벌식 <->QWERTY 자판 호환. 한/영 키를 이용해서 욕설을 우회하는 것을 방지함.
     enKoKeyMapping : {
         'q':'ㅂ', 'Q':'ㅃ', 'w':'ㅈ', 'W':'ㅉ', 'e': 'ㄷ', 'E':'ㄸ', 'r':'ㄱ', 'R':'ㄲ', 't':'ㅅ', 'T':'ㅆ',
         'y':'ㅛ', 'Y':'ㅛ', 'u':'ㅕ', 'U':'ㅕ',  'i':'ㅑ', 'I': 'ㅑ', 'o': 'ㅐ', 'O': 'ㅒ', 'p':'ㅔ', 'P':'ㅖ',
@@ -50,7 +60,7 @@ const Utils = {
         endConsonants:{ 'ㄱ':['g','k'], 'ㄴ':['n', 'l'], 'ㄷ':['t','d'], 'ㄹ':['l'], 'ㅁ':['m'], 'ㅂ':['p','b','n'], 'ㅅ':['t', 's'], 'ㅇ':['ng', 'nn']},
     },
 
-    //단일 발음에서 사용
+    //단일 발음에서 사용 - 추후 개선 예정
     singlePronounce: {
         'C':'씨', 'c':'씨','十':'십', '+':'십', 'D':'디', 'd':'디', 'g':'지', 'z':'지', "M":'엠', 'm':'엠',
         'jot':'좆', 'wha':'화', 'emi':'에미', 'ebi':'에비', 'sip':'씹', "奀":"좆",
@@ -59,28 +69,45 @@ const Utils = {
 
     // 자모와 자형이 유사한 경우 사용.
     similarConsonant: {
-        '2':'ㄹ', '3':'ㅌ', "5":'ㄹ', '7':'ㄱ', '0':'ㅇ', 'C':'ㄷ', 'c':'ㄷ', 'D':'ㅁ', 'E':'ㅌ', 'M':'ㅆ', 'm':'ㅆ', 'n':'ㅅ', 'S':'ㄹ', 's':'ㄹ',
+        '2':'ㄹ', '3':'ㅌ', "5":'ㄹ', '7':'ㄱ', '0':'ㅇ', 'C':'ㄷ', 'c':'ㄷ', 'D':'ㅁ', 'E':'ㅌ', "L":'ㄴ', 'M':'ㅆ', 'm':'ㅆ', 'n':'ㅅ', 'S':'ㄹ', 's':'ㄹ',
         'V':'ㅅ', 'v':'ㅅ', 'w':'ㅆ', 'W':'ㅆ', 'Z':'ㄹ', 'z':'ㄹ', '@':'ㅇ', '#':'ㅂ', '^':'ㅅ',
     },
 
+    // 모음과 자형이 유사한 경우에 대비함
     similarVowel: {
         '1':'ㅣ', 'H':'ㅐ', 'I':'ㅣ', 'l':'ㅣ', 'T':'ㅜ', 't':'ㅜ', 'y':'ㅓ', '!':'ㅣ',  '_':'ㅡ', '-':'ㅡ', '|':'ㅣ'
     },
 
-    //자형이 유사한 단어들 모음
+    //자형이 유사한 단어들 모음. 추후 반영 예정
     similarShape: [
         ['ㄹ','근'], ['4', '니'], ['대', '머'], ['댁','먹'], ['댄', '먼'], ['댈', '멀'], ['댐', '멈'], ['댕', '멍'], ['金', '숲']
         ['奀', '좃', '좆'], ['長', '튼'], ['%', '응'], ['q', '이']
     ],
 
+    // 배열/오브젝트 동일성 체크
+    objectEqual: (a,b) => {
+    let val = true;
+    if (Object.keys(a).length !== Object.keys(b).length ) {
+        val = false;
+    }
+    else {
+        for (var key in a) { // a의 키에 대해 조사
+            if (a[key]!==b[key]) {val = false; break;}
+        }
+    }
+    return val;
+    },
+
     escape: (text) => {
         return String(text).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
     },
 
+    // 메시지에서 특정 패턴을 찾아서 전부 바꿔주는 함수.
     replaceAll: (message, search, replace) => {
         return message.replace(new RegExp(search, 'gi'), replace)
     },
 
+    // 메시지에서 단어의 위치를 찾아주는 함수.
     getPositionAll: (message, search, isString = true) => {
         let i = message.indexOf(search),
             indexes = []
@@ -111,6 +138,7 @@ const Utils = {
         return couple
     },
 
+    // 단어 -> 낱자로 분리
     wordToArray: word => {
         let wordArray = []
         for (let i = 0; i <= word.length - 1; i++) {
@@ -119,6 +147,7 @@ const Utils = {
         return wordArray
     },
 
+    // 메시지를 특정 단어 숫자로 분리
     lengthSplit: (message, limit) => {
         if (message.length <= limit) return [message]
 
@@ -146,6 +175,7 @@ const Utils = {
         return fixedMessage
     },
 
+
     sortMap: (inputMap) => {
         let sortedMap = {}
 
@@ -156,21 +186,217 @@ const Utils = {
         return sortedMap
     },
 
-    // 영자조합 만들기
-    enToKo: (msg)=> {
-        const mapping = Utils.enKoKeyMapping;
+    // 리스트/함수 합성 등 여러 상황에서 합성할 때 사용함.
+    joinMap: (lix, func) => {
+        let res = {};
 
-        // 낱자 분리 후에 영어 -> 한글 전환
-        let msg_split_and_replace = msg.split('').map((letter) =>
-            (Object.keys(mapping).indexOf(letter)!==-1 ? mapping[letter] : letter));
-        // 분리된 낱자를 합치기.
-        let newmsg = msg_split_and_replace.join('');
-        // 결과 - 낱자를 조합하기.
-        return Hangul.assemble(newmsg);
+        // 문자 & 오브젝트 -> 단순 출력
+        if (typeof lix ==="string" && typeof func === "object") return func[lix];
+
+        // 문자 & 함수 -> 단순 함수값.
+        else if (typeof lix === "string" && typeof func === "function") return func(lix);
+
+        // 배열, 함수 형식 - 배열을 키로, 함수값을 값으로
+        else if (Array.isArray(lix) && typeof func === "function") {
+            lix.forEach(x=> {
+                res[x] = func(x);
+            });
+            return res;
+        }
+        // 배열 & 오브젝트 -> 배열을 키로, 오브젝트 대응값을 값으로
+        else if (Array.isArray(lix) && typeof func === "object" ) {
+            lix.forEach(x=> {
+                if (Object.keys(func).indexOf(x)!== -1) {
+                    res[x] = func[x];
+                }
+            });
+            return res;
+        }
+        // 오브젝트 둘 합성.
+        else if (typeof lix === "object" && typeof func === "object" ) {
+            Object.keys(lix).forEach(x=> {
+                if (Object.keys(func).indexOf(lix[x])!== -1) {
+                    res[x] = func[lix[x]];
+                }
+            });
+            return res;
+        }
+        // 함수 둘 합성
+        else if (typeof lix ==="function" && typeof func === "function") {
+            return ((x) => {
+                if (func(lix(x))) return func(lix(x));
+                else return null;
+            });
+        }
     },
 
-    //자모조합을 악용한 비속어 걸러내기 ㄱH^H77| 검출 가능.
-    alphabetToKo: (msg) => {
+    // 2차원 배열 형태로 정의된 것을 풀어쓰기.
+    recursiveComponent: (data) => {
+
+        // 데이터의 전항 후항을 순회합니다.
+        for (let i=0;i<=1;i++){
+
+            // 데이터의 모든 항목을 순회합니다.
+            for(let itemIndex in data[i]){
+                let item = data[i][itemIndex]
+
+                // 데이터 항목이 배열인 경우
+                // 재귀 컴포넌트 해석을 진행합니다.
+                if(Array.isArray(item)){
+                    let solvedData = Utils.recursiveComponent(item)
+                    data[i][itemIndex] = null
+                    data[i] = data[i].concat(solvedData)
+                }
+            }
+        }
+
+        // 데이터의 전항 후항을 순회합니다.
+        let solvedData = []
+        for(let before of data[0]){
+            if(before === null) continue
+            for(let after of data[1]){
+                if(after === null) continue
+                solvedData.push(before+after)
+            }
+        }
+        return solvedData
+    },
+
+
+    // 겹자모 판단하기. 순서 지켜주기
+    isDouble: (var1, var2, allowSim =false) => {
+        let res = false;
+        let compare_list;
+        // 각 원소가 길이가 2개인 배열로 구성되어야 한다.
+        if (typeof allowSim === 'object') compare_list = allowSim;
+        else compare_list = allowSim?
+            Utils.recursiveComponent(
+            [...Utils.doubleConsonant, ...Utils.doubleVowel, "ㄱ7", "77", [["ㄱ", '7'],["ㅅ", "^"]],"ㄹ^", "#ㅅ", "ㅂ^", "#ㅅ",
+                "ㅗH", "ㅜ, y", "t, y", "T, y", [["ㅗ","ㅜ", "t", "T", "ㅡ", "_"], ["ㅣ", "!", "I", "1","l", "|"]]]
+            ).map(x => x.split(""))
+        :[...Utils.doubleConsonant, ...Utils.doubleVowel];
+
+        for (var dbl of compare_list) {
+            if (Utils.objectEqual([var1, var2], dbl.slice(0,2) )) res = true;
+        }
+        return res;
+    },
+
+    // 파싱하기 {씨:{value:시, index:[1]}, 브얼:{value:벌, index:[2]}}
+    parseMap: (map) => {
+        let originalMessageList = [];
+        let originalMessageIndex = [];
+        let parsedMessage = [];
+        let search = 1;
+        let maxVal = Object.values(map).map(x=> (Math.max(...x.index)));
+
+        while(search <= Math.max(...maxVal)) {
+            for (let val in map) {
+                // index 값이 존재하면
+                if (map[val].index.indexOf(search)!==-1) {
+                    originalMessageIndex.push(search);
+                    originalMessageList.push(val);
+                    parsedMessage.push(map[val].value);
+                    search += val.length;
+                }
+            }
+        }
+        return {
+            messageList: originalMessageList,
+            messageIndex: originalMessageIndex,
+            parsedMessage: parsedMessage
+        }
+    }
+
+    ,
+
+    // 영자조합 만들기
+    enToKo: (msg, isMap = false)=> {
+        const mapping = Utils.enKoKeyMapping;
+
+        // 맵을 만들 필요 없을 때
+        if (!isMap) {
+            // 낱자 분리 후에 영어 -> 한글 전환
+            let msg_split_and_replace = msg.split('').map((letter) =>
+                (Object.keys(mapping).indexOf(letter)!==-1 ? mapping[letter] : letter));
+            // 분리된 낱자를 합치기.
+            let newmsg = msg_split_and_replace.join('');
+            // 결과 - 낱자를 조합하기.
+            return Hangul.assemble(newmsg);
+        }
+        // 맵을 만들어야 할 때
+        else {
+            let msg_split = msg.split("");
+            let msg_res = []
+            let res = {}
+            let temp = ""; // 글씨 추가용
+            // 자음이나 영어 자음에 대응되는 경우
+            msg_split.map( (letter, ind) => {
+                let consonant = [...Utils.korConsonants, "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x", "c", "v"];
+                let vowel = [...Utils.korVowels, "y", 'u', "i", "o", "p", "h", "j", "k", "l", "b", "n", "m"];
+
+                let resMacro = (letter, val=temp) => {
+                    if (val!=="") {
+                        msg_res.push(val);
+                        if (!res[val]) res[val] = {value: Utils.enToKo(val), index: [ind - val.length + 1]}
+                        else { res[val].index.push(ind - val.length + 1);}
+                        temp = letter;
+                        console.log('resMacro')
+                    }
+                }
+                // 첫 글자는 무조건 추가.
+                if (ind ===0) {
+                    temp +=letter;
+                    console.log('t0')
+                }
+                // 자음의 경우 -> 뒤에 모음이 아닌 문자가 올 때만 앞글자에 붙인다.
+                else if (ind>0 && consonant.indexOf(letter.toLowerCase()) !==-1 && (ind===msg.length-1 || vowel.indexOf(msg_split[ind+1].toLowerCase()) ===-1)) {
+                    // 앞에 모음이거나
+                    if (vowel.indexOf(msg_split[ind-1].toLowerCase())!==-1 ) {
+                        temp +=letter;
+                        console.log('t1')
+                    }
+                    // 앞앞이 모음& 앞자음이 쌍자음 형성할 수 있을 때
+                    else if (ind>1 && vowel.indexOf(msg_split[ind-2].toLowerCase())!==-1 && consonant.indexOf(msg_split[ind-1].toLowerCase())!==-1) {
+                        let tf = false;
+                        let mode = [
+                            Object.keys(mapping).indexOf(msg_split[ind-1])!==-1 ? mapping[msg_split[ind-1]] : msg_split[ind-1],
+                        Object.keys(mapping).indexOf(letter)!==-1 ? mapping[letter] : letter
+                    ];
+                        // 겹자음 실험
+                        Utils.doubleConsonant.forEach( x=> {
+                            if (Utils.objectEqual(mode, x)) {
+                                temp +=letter; tf = true;
+                                console.log('t2')
+                            }
+                        });
+                        if (!tf) resMacro(letter);
+                    }
+                    else resMacro(letter);
+                }
+                // 모음의 경우 앞에 자음이 오면 무조건 앞글자에 붙이기
+                else if (ind>0 && vowel.indexOf(letter.toLowerCase())!==-1 && consonant.indexOf(msg_split[ind-1].toLowerCase()) !==-1) {
+                    temp +=letter;
+                    console.log('t3')
+                }
+                else resMacro(letter);
+            });
+            // 마지막 글자 붙이기
+            if (temp!=="") {
+                msg_res.push(temp);
+                if (!res[temp]) res[temp]= {value:Utils.enToKo(temp), index: [msg.length-temp.length+1]}
+                else {res[temp].index.push(msg.length-temp.length+1);}
+                temp = "";
+                console.log('finish!!!')
+            }
+            return res;
+
+        }
+
+    },
+
+    //자모조합을 악용한 비속어 걸러내기 ㄱH^H77| 검출 가능. isMap 사용시 오브젝트 형태로 결과물 도출.
+    alphabetToKo: (msg, isMap = false) => {
 
         const kor_consonant = /[ㄱ-ㅎ]/;
         const kor_vowel = /[ㅏ-ㅣ]/;
@@ -188,179 +414,452 @@ const Utils = {
         */
         let letter_type ='';
         let new_letter_type='';
-        let msg_alphabet = []; // 알파벳 단위로 쪼개기
+        const msg_alphabet = Utils.wordToArray(msg);
         let msg_alphabet_type = []; //타입별로 나누기
-        let pre_res = []; // 조합 전 준비하기. 조작이 필요.
-        let res = ''
 
-        // 우선 한글자모, 한글음절, 기타 분리
-        for (var letter of msg) {
-            if (kor_consonant.test(letter)) { new_letter_type = 'jaeum'; }
-            else if (kor_vowel.test(letter)) {new_letter_type = 'moeum'; }
-            else if (kor_letter.test(letter)) { new_letter_type = 'hangul'; }
-            else if (sim_consonant.indexOf(letter)!==-1) {new_letter_type='yuja';}
-            else if (sim_vowel.indexOf(letter!==-1)) {new_letter_type = 'yumo';}
-            else {new_letter_type = 'etc';}
-
-            //타입이 같으면 묶어서 생각하기
-            if (new_letter_type===letter_type) {
-                msg_alphabet[msg_alphabet.length-1] +=letter;
-            }
-            else {
-                msg_alphabet.push(letter);
-                msg_alphabet_type.push(new_letter_type);
-            }
-            letter_type = new_letter_type;
+        for (var letter of msg_alphabet ) {
+            if (kor_consonant.test(letter)) { msg_alphabet_type.push('c'); } // 자음
+            else if (kor_vowel.test(letter)) { msg_alphabet_type.push('v'); } // 모음
+            else if (kor_letter.test(letter)) { msg_alphabet_type.push('h'); } // 한글
+            else if (sim_consonant.indexOf(letter)!==-1) {msg_alphabet_type.push('d');} // 유사자음
+            else if (sim_vowel.indexOf(letter)!==-1) {msg_alphabet_type.push('w');} // 유사모음
+            else if (letter===' ') {msg_alphabet_type.push('s');} // 공백
+            else {msg_alphabet_type.push('e');} // 나머지 문자
         }
 
-        console.log(msg_alphabet, '\n', msg_alphabet_type);
+        let pre_syllable = []; // 음절단위로 분리하기
+        let pre_syllable_origin = []; // isMap 사용시 원본 메시지.
+        let pre_index = []; // isMap 사용시 음절의 자릿값 저장하기
 
+        const msg_length = msg_alphabet.length;
 
-        msg_alphabet.map((val, ind) => {
-            switch(msg_alphabet_type[ind]) {
+        // 인덱스
+        let ind = 0;
+        // 캐릭터 타입별로 음절 분리하기.
+        for (var i =0; i<msg_length; i++) {
 
-                case 'hangul':
-                    pre_res.push(val);
-                    break;
-
-                case 'jaeum':
-                case 'moeum':
-                    if (ind===0 || (ind>0 && (msg_alphabet_type[ind-1]=== 'hangul' || msg_alphabet_type[ind-1]!=='etc'))) {
-                        pre_res.push(val);
-                    }
-                    else {
-                        pre_res[pre_res.length-1] +=val;
-                    }
-                    break;
-
-                case 'yuja':
-                    let tmp = '';
-                    const val_double = {'77':'ㄲ', 'cc':'ㄸ', '##':'ㅃ', '^^':'ㅆ', 'nn':'ㅆ', '#^':'ㅂㅅ', '^#':'ㅅㅂ'};
-
-
-                    // 쌍자음을 인식해서 처리하기
-                    if (Object.keys(val_double).indexOf(val.slice(-2))!==-1) {
-                        if (ind< msg_alphabet.length-1 && (msg_alphabet_type[ind+1]==='moeum' || msg_alphabet_type[ind+1]==='yumo' )) {
-                            for (letter of val.slice(0,-2)) {
-                                tmp += Utils.similarConsonant[letter];
-                            }
-                            tmp +=val_double[val.slice(-2)];
-                        }
-                        else {tmp =val;}
-
-                    }
-                    else if (Object.keys(val_double).indexOf(val.slice(0,2))!==-1) {
-                        if (ind>0 && (msg_alphabet_type[ind-1]==='moeum' || msg_alphabet_type[ind-1]==='yumo' )) {
-                            tmp = val_double[val.slice(0,2)];
-                            for (letter of val.slice(2)) {
-                                tmp += Utils.similarConsonant[letter];
-                            }
-                        }
-                        else {tmp=val;}
-                        if (ind===0 || (ind>0 && (msg_alphabet_type[ind-1]=== 'hangul' || msg_alphabet_type[ind-1]!=='etc'))) {
-                            pre_res.push(tmp);
-                        }
-                        else {
-                            pre_res[pre_res.length-1] +=tmp;
-                        }
-                    }
-                    else {
-                        if (ind< msg_alphabet.length-1 && (msg_alphabet_type[ind+1]==='moeum' || msg_alphabet_type[ind+1]==='yumo' )){
-                            for (letter of val) {
-                                tmp +=Utils.similarConsonant[letter];
-                            }
-                        }
-                        else if (ind>0 && (msg_alphabet_type[ind-1]==='moeum' || msg_alphabet_type[ind-1]==='yumo' )){
-                            for (letter of val) {
-                                tmp +=Utils.similarConsonant[letter];
-                            }
-                        }
-                        else {
-                            tmp = val;
-                        }
-                    }
-                    // 데이터 더하기
-                    if (ind===0 || (ind>0 && (msg_alphabet_type[ind-1]=== 'hangul' || msg_alphabet_type[ind-1]!=='etc'))) {
-                        pre_res.push(tmp);
-                    }
-                    else {
-                        pre_res[pre_res.length-1] +=tmp;
-                    }
-                    break;
-
-                case 'yumo':
-                    tmp ='';
-                    if (ind>0 && (msg_alphabet_type[ind-1]==='jaeum' || msg_alphabet_type[ind-1]==='yuja' )){
-                        for (letter of val) {
-                            tmp +=Utils.similarVowel[letter];
-                        }
-                    }
-                    else { val = tmp; }
-                    // 데이터 더하기
-                    if (ind===0 || (ind>0 && (msg_alphabet_type[ind-1]=== 'hangul' || msg_alphabet_type[ind-1]!=='etc'))) {
-                        pre_res.push(tmp);
-                    }
-                    else {
-                        pre_res[pre_res.length-1] +=tmp;
-                    }
-                    break;
-                case 'etc':
-                    pre_res.push(val);
-                    break;
-            }
-        });
-        console.log(pre_res);
-
-        let tmp_list = [];
-
-        for (var letters of pre_res) {
-            if (/[ㄱ-ㅎ|ㅏ-ㅣ]+/.test(letters)) { //한글 자모로 이루어진 구간
-                for (letter of letters) {
-                    tmp_list.push(letter);
+            // 첫글자 push하기. msg는 혹시 변경될 때 대비해서...
+            let pushSyllable = (msg = msg_alphabet[i]) => {
+                pre_syllable.push( msg );
+                if ( isMap ) {
+                    pre_syllable_origin.push (msg_alphabet[i]);
+                    ind += msg_alphabet[i].length;
+                    pre_index.push(ind);
                 }
             }
-            else { //한글이나 나머지 구간
-                res += Hangul.assemble(tmp_list);
-                tmp_list = [];
-                res +=letters;
+
+            // 앞음절에 그대로 붙이기
+            let joinFrontSyllable = (isSim = false) => {
+                let newItem;
+                if (isSim) {
+                    const simAlphabet = {...Utils.similarConsonant, ...Utils.similarVowel };
+                    newItem = simAlphabet[msg_alphabet[i]];
+                }
+                else newItem = msg_alphabet[i];
+                // 치환하기
+                pre_syllable.splice(-1, 1, pre_syllable.slice(-1)[0] + newItem);
+                if ( isMap ) {
+                    pre_syllable_origin.splice(-1, 1, pre_syllable_origin.slice(-1)[0] + msg_alphabet[i] );
+                    ind += msg_alphabet[i].length;
+
+                }
+            }
+
+            switch(msg_alphabet_type[i]) {
+
+                // 한글이나 공백, 기타문자 -> 그대로 삽입. 한 음절에 하나의 글자만 사용가능하며, 다른 문자 뒤에 붙을 수 없음.
+                case 'h':
+                case 's':
+                case 'e':
+                    pushSyllable();
+                    break;
+
+                // 자음 -> 모음/유사모음 뒤에 오거나 받침 없는 한글 뒤에 오면서 뒤에 모음/유사모음이 따라오지 않을 때 앞 음절에 붙임.
+                // 특수한 겹받침일 때에도 케이스 추가
+                case 'c':
+                    // 첫자일 때는 무조건 삽입.
+                    if (i === 0 ) { pushSyllable();}
+                    else {
+                        // 자음이 앞글자에 붙는 경우 - 앞에 모음/유사모음, 뒤에 모음/유사모음 없음, ㄸ, ㅃ, ㅉ도 아님.
+                        if (
+                            msg_alphabet[i] !== "ㄸ" && msg_alphabet[i] !== "ㅃ" && msg_alphabet[i] !== "ㅉ" && (msg_alphabet_type[i-1] ==='v' || msg_alphabet_type[i-1] === 'w') &&
+                            (i < msg_length-1 &&  msg_alphabet_type[i+1] !=='v' && msg_alphabet_type[i+1] !== 'w'  )
+                        )
+                            joinFrontSyllable();
+                        // 앞자음과 합성해서 겹자음을 만드는 케이스 분리하기
+                        else if (
+                            i>1 && (msg_alphabet_type[i-2] ==='v' || msg_alphabet_type[i-2] === 'w') &&
+                            Utils.isDouble(msg_alphabet[i-1], msg_alphabet[i]) && (i < msg_length-1 &&  msg_alphabet_type[i+1] !=='v' && msg_alphabet_type[i+1] !== 'w'  )
+                        )
+                            joinFrontSyllable();
+                        // 받침 없는 한글 + 뒤에 모음이 오지 않는 케이스 분리
+                        else if (
+                            msg_alphabet[i] !== "ㄸ" && msg_alphabet[i] !== "ㅃ" && msg_alphabet[i] !== "ㅉ" && (msg_alphabet_type[i-1] === 'h') &&
+                            Utils.korVowels.indexOf(Hangul.disassemble(msg_alphabet[i-1]).slice(-1)[0])!==-1  && (i < msg_length-1 &&  msg_alphabet_type[i+1] !=='v' && msg_alphabet_type[i+1] !== 'w'  )
+                        )
+                            joinFrontSyllable();
+
+                        // 나머지 경우 - 그냥 뒤 음절에 배치
+                        else pushSyllable();
+                    }
+                    break;
+
+                //모음인 경우
+                case 'v':
+                    // 첫자일 때는 무조건 삽입.
+                    if (i === 0 ) { pushSyllable();}
+                    else {
+                        // 자음이 앞에 있을 때는 앞에 붙는다.
+                        if (msg_alphabet_type[i-1] ==='c' || msg_alphabet_type[i-1] === 'd') joinFrontSyllable();
+                        // 앞의 모음과 함께 복모음 형성할 수 있는 경우 앞에 붙인다.
+                        else if (
+                            i>1 && (msg_alphabet_type[i-2] ==='c' || msg_alphabet_type[i-2] === 'd') && Utils.isDouble(msg_alphabet[i-1], msg_alphabet[i])
+                        )
+                            joinFrontSyllable();
+                        // 나머지는 그대로 뒤 움절에 붙이기
+                        else pushSyllable();
+
+                    }
+                    break;
+
+                //유사 자음인 경우
+                case "d":
+
+                    // 첫자음 잡아내는 함수 작성
+                    const isFirstDouble = (var1, var2) => {
+                        let res = false;
+                        const val_first_double = [['7', '7'], ['c', 'c'], ['#', '#'], ['^','^'], ['^', 'n'], ['n', '^'], ['n','n'], ['#', '^'], ['^', '#']]
+
+                        for (var dbl of val_first_double) {
+                           if (Utils.objectEqual([var1, var2], dbl)) res = true;
+                        }
+                        return res;
+                    }
+
+                    // 처음에는 그냥 삽입. 그러나 모음/유사모음 앞에서만큼은 자음으로 변형되서 들어간다.
+                    if (i === 0 ) {
+                        pushSyllable(
+                            (msg_length>1 && (msg_alphabet_type[i+1] ==='v' || msg_alphabet_type[i+1] === 'w' || isFirstDouble(msg_alphabet[i], msg_alphabet[i+1]) ))?
+                                Utils.similarConsonant[msg_alphabet[i]] : msg_alphabet[i]
+                        );
+                    }
+                    else {
+                        // 자음이 앞글자에 붙는 경우 - 앞에 모음/유사모음, 뒤에 모음/유사모음 없음
+                        if (
+                             (msg_alphabet_type[i-1] ==='v' || msg_alphabet_type[i-1] === 'w') &&
+                            (i < msg_length-1 &&  msg_alphabet_type[i+1] !=='v' && msg_alphabet_type[i+1] !== 'w'  )
+                        )
+                            joinFrontSyllable(true);
+                        // 앞자음과 합성해서 겹받침을 만드는 케이스 분리하기
+                        else if (
+                            i>1 && (msg_alphabet_type[i-2] ==='v' || msg_alphabet_type[i-2] === 'w') &&
+                            Utils.isDouble(msg_alphabet[i-1], msg_alphabet[i], true) && (i < msg_length-1 &&  msg_alphabet_type[i+1] !=='v' && msg_alphabet_type[i+1] !== 'w'  )
+                        )
+                            joinFrontSyllable(true);
+                        // 받침 없는 한글 + 뒤에 모음이 오지 않는 케이스 분리
+                        else if (
+                            (msg_alphabet_type[i-1] === 'h') &&
+                            Utils.korVowels.indexOf(Hangul.disassemble(msg_alphabet[i-1]).slice(-1)[0])!==-1  && (i < msg_length-1 &&  msg_alphabet_type[i+1] !=='v' && msg_alphabet_type[i+1] !== 'w'  )
+                        )
+                            joinFrontSyllable(true);
+
+                        // 나머지 경우 - 그냥 뒤 음절에 배치
+                        else
+                            pushSyllable(
+                                (msg_length>1 && (msg_alphabet_type[i+1] ==='v' || msg_alphabet_type[i+1] === 'w' || isFirstDouble(msg_alphabet[i], msg_alphabet[i+1]) ))?
+                                    Utils.similarConsonant[msg_alphabet[i]] : msg_alphabet[i]
+                            );
+                    }
+                    break;
+
+                // 유사 모음인 경우
+                case 'w':
+                    // 첫자일 때는 무조건 삽입. 유사모음은 단어 변형하지 않고 삽입.
+                    if (i === 0 ) { pushSyllable();}
+                    else {
+                        // 자음이 앞에 있을 때는 앞에 붙는다.
+                        if (msg_alphabet_type[i-1] ==='c' || msg_alphabet_type[i-1] === 'd') joinFrontSyllable(true);
+                        // 앞의 모음과 함께 복모음 형성할 수 있는 경우 앞에 붙인다.
+                        else if (
+                            i>1 && (msg_alphabet_type[i-2] ==='c' || msg_alphabet_type[i-2] === 'd') && Utils.isDouble(msg_alphabet[i-1], msg_alphabet[i], true)
+                        )
+                            joinFrontSyllable(true);
+                        // 나머지는 그대로 뒤 움절에 붙이기
+                        else pushSyllable();
+
+                    }
+                    break;
+
+
             }
         }
-        if (tmp_list.length>0) {
-            res +=Hangul.assemble(tmp_list);
+
+        console.log('음절단위분리', pre_syllable);
+        console.log('음절단위 분리 원래 메시지', pre_syllable_origin);
+
+        // 결과값
+        let res = "";
+        let res_obj = {};
+
+        for (i=0; i<pre_syllable.length; i++) {
+            if (isMap) {
+                // 키값이 있으면 인덱스만 추가
+                if (Object.keys(res_obj).indexOf(pre_syllable_origin[i])!== -1) {
+                    res_obj[pre_syllable_origin[i]]["index"].push(pre_index[i]);
+                }
+                else {
+                    res_obj[pre_syllable_origin[i]] = {value: Hangul.assemble(Hangul.disassemble(pre_syllable[i])), index:[pre_index[i]] };
+                }
+            }
+            else {
+                res += Hangul.assemble(Hangul.disassemble(pre_syllable[i]));
+            }
         }
-        return res;
+
+        return isMap ? res_obj : res;
     },
 
-    // ㅇ, ㅡ 제거, 된소리/거센소리 예사음화 후 비속어 찾기
-    dropiung: (msg) => {
+    // ㅇ, ㅡ 제거, 된소리/거센소리 예사음화 후 비속어 찾기. isMap을 사용하면 제거한 모음, 자음 대응 맵 찾기.
+    // 예시 : 브압오 -> {'브아':'바', 'ㅂ오':'보'}
+    // 비
+    // 메시지는 반드시 한글자모로만 조합.
+    dropIung: (msg, isMap=false, simplify = true) => {
 
-        const newmsg = Hangul.disassemble(msg, false);
-        const dbl_cons = {"ㄲ":'ㄱ', 'ㄸ':'ㄷ', 'ㅃ':'ㅂ','ㅆ':'ㅅ', 'ㅉ':'ㅈ', 'ㅋ':'ㄱ', 'ㅌ':'ㄷ', 'ㅍ':'ㅂ', 'ㅒ':'ㅐ','ㅖ':'ㅔ'}
-        var i =0;
-        while(i < newmsg.length) {
-            //자음+ㅡ+ㅇ+모음 구조면 ㅡ와 ㅇ 모두 제거
-            if (i>0 && i <newmsg.length-2 && newmsg[i]=='ㅡ' && newmsg[i+1]==='ㅇ' &&
-                Utils.korVowels.indexOf(newmsg[i+2])!==-1 && Utils.korConsonants.indexOf(newmsg[i-1])!==-1) {
-                newmsg.splice(i, 2);
-            }
-            // 자음 뒤, 모음 앞에 오는 ㅇ 제거.
-            if (i>0 && i< newmsg.length-1 && newmsg[i]==='ㅇ' &&
-                Utils.korVowels.indexOf(newmsg[i+1])!==-1 && Utils.korConsonants.indexOf(newmsg[i-1])!==-1 ) {
-                newmsg.splice(i,1);
-            }
-            // ㅣ 앞에 오는 ㅡ 제거
-            else if (i>0 && i< newmsg.length-1 && newmsg[i]==='ㅡ' && newmsg[i+1]==='ㅣ' ) {
-                newmsg.splice(i,1);
-            }
+        let msg_alphabet = Hangul.disassemble(msg, false);
+        const var_alphabet = {"ㄲ":'ㄱ', 'ㄸ':'ㄷ', 'ㅃ':'ㅂ','ㅆ':'ㅅ', 'ㅉ':'ㅈ', 'ㅋ':'ㄱ', 'ㅌ':'ㄷ', 'ㅍ':'ㅂ',
+            'ㅒ':'ㅐ','ㅖ':'ㅔ'};
+        const y_vowel = {"ㅏ":"ㅑ", "ㅐ":'ㅒ', 'ㅑ':'ㅑ', 'ㅒ':'ㅒ', 'ㅓ':'ㅕ', 'ㅔ':'ㅖ', 'ㅕ':'ㅕ', 'ㅖ':'ㅖ', 'ㅗ':'ㅛ', 'ㅛ':'ㅛ', 'ㅜ':'ㅠ', 'ㅠ':'ㅠ', 'ㅡ':'ㅠ', 'ㅣ':'ㅣ' }
+        // 유사모음 축약형으로 잡아내기 위한 조건 갸앙 ->걍
+        const vowel_last = {'ㅏ':['ㅏ'], 'ㅐ':['ㅐ', 'ㅔ'], 'ㅑ': ['ㅏ', 'ㅑ'], 'ㅒ':['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'], 'ㅓ' : ['ㅓ'], 'ㅔ': ['ㅔ', 'ㅐ'], 'ㅕ': ['ㅓ', 'ㅕ'], 'ㅖ':['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'],
+        'ㅗ':['ㅗ'], 'ㅛ':['ㅛ', 'ㅗ'], 'ㅜ':['ㅜ', 'ㅡ'], 'ㅠ':['ㅠ', 'ㅜ', 'ㅡ'], 'ㅡ':['ㅡ'], 'ㅣ':['ㅣ']}
+        // 유사모음 축약형. 그러나 이 경우는 뒷모음을 따를 때 -> 구아 -> 과, 구에 -> 궤 고언세 -> 권세
+        const vowel_pair = [['ㅗ', 'ㅏ'], ['ㅗ', 'ㅐ'], ['ㅗ', 'ㅓ'], ['ㅗ', 'ㅔ'], ['ㅜ', 'ㅏ'], ['ㅜ', 'ㅐ'], ['ㅜ', 'ㅓ'], ['ㅜ', 'ㅔ'], ['ㅜ', 'ㅣ'], ['ㅡ', 'ㅣ']]
+        // map일 때 최종결과용
+        let single_syllable = []; // 음절 단위
+        let divide_syllable = []; // 음절단위 나누기
+        let res = {};
 
-            // 된소리/거센소리 예사음화
-            else if (Object.keys(dbl_cons).indexOf(newmsg[i])!==-1) {
-                newmsg[i] = dbl_cons[newmsg[i]];
-                i++;
+        // 상쇄모음 조합 -
+
+        if (!isMap) {
+            var i=0;
+            while ( i <msg_alphabet.length) {
+                if (1<i<msg_alphabet.length-1 && msg_alphabet[i] === 'ㅇ') {
+                    // 자음+모음+ㅇ+모음
+                    if (Utils.korConsonants.indexOf(msg_alphabet[i-2])!== -1 && Utils.korVowels.indexOf(msg_alphabet[i-1])!== -1 && Utils.korVowels.indexOf(msg_alphabet[i+1])!== -1
+                    ) {
+                        // 자음+ㅡ+ㅇ+모음 (ㅣ 제외)
+                        if (msg_alphabet[i-1] === 'ㅡ' && msg_alphabet[i+1]!== 'ㅣ') msg_alphabet.splice(i-1, 2);
+                        // 자음+ㅣ+ㅇ+모음
+                        else if (msg_alphabet[i-1] === 'ㅣ' && Object.keys(y_vowel).indexOf(msg_alphabet[i+1])!==-1) {
+                            msg_alphabet.splice(i-1, 3, y_vowel[msg_alphabet[i+1]]);
+                        }
+                        // 자음+모음+ㅇ+중복모음
+                        else if( Object.keys(vowel_last).indexOf(msg_alphabet[i-1])!== -1 && vowel_last[msg_alphabet[i-1]].indexOf(msg_alphabet[i+1])!==-1 ) {
+                            msg_alphabet.splice(i, 2);
+                        }
+                        // 자음+모음+ㅇ+모음, 복모음 형성 가능한 조합
+                        else if (Utils.isDouble(msg_alphabet[i-1], msg_alphabet[i+1], vowel_pair) ) {
+                            // 일부 복모음과 일치하지 않는 부분은 복모음 조합에 맞게 변형하기
+                            if (msg_alphabet[i-1] === 'ㅗ' && msg_alphabet[i+1] === 'ㅓ') msg_alphabet[i-1] = 'ㅜ';
+                            else if (msg_alphabet[i-1] === 'ㅗ' && msg_alphabet[i+1] === 'ㅔ') msg_alphabet[i+1] = 'ㅣ';
+                            else if (msg_alphabet[i-1] === 'ㅜ' && msg_alphabet[i+1] === 'ㅏ') msg_alphabet[i-1] = 'ㅗ';
+                            else if (msg_alphabet[i-1] === 'ㅜ' && msg_alphabet[i+1] === 'ㅐ') msg_alphabet[i-1] = 'ㅔ';
+
+                            msg_alphabet.splice(i, 1);
+                        }
+
+                        else i++; // 다음으로 넘기기
+
+                    }
+                    // 자음+복모음+ㅇ+뒤모음과 동일함. -> 죄이
+                        else if (i>2 && Utils.korConsonants.indexOf(msg_alphabet[i-3])!== -1 && Utils.korVowels.indexOf(msg_alphabet[i-1])!== -1 &&
+                        (Utils.isDouble(msg_alphabet[i-2], msg_alphabet[i-1]) === true && !(msg_alphabet[i-2]==='ㅗ' && msg_alphabet[i-1]==='ㅣ') ) && msg_alphabet[i-1] == msg_alphabet[i+1]
+                    ) {
+                            msg_alphabet.splice(i,2);
+                    }
+                    // 자음+ㅇ+모음 -> ㅇ만 지우기. 복자음일 때도 해결 가능. 단 ㅇ일 때는 예외로
+                    else if (Utils.korConsonants.indexOf(msg_alphabet[i-1])!== -1 && msg_alphabet[i-1] !=='ㅇ' && Utils.korVowels.indexOf(msg_alphabet[i+1])!== -1
+                    ) msg_alphabet.splice(i, 1);
+
+                    else i++; // 다음으로 넘기기
+                }
+                // 다른 자음일 때는
+                else if (1<i<msg_alphabet.length-1 && Utils.korConsonants.indexOf(msg_alphabet[i]) !== -1) {
+                    // 중복자음시 앞 자음 제거. 그 앞에 모음 오는지, 자음 오는지는 상관 없음.
+                    if (Utils.korConsonants.indexOf(msg_alphabet[i-1])!== -1 && msg_alphabet[i-1] === msg_alphabet[i] && Utils.korVowels.indexOf(msg_alphabet[i+1])!== -1
+                    ) msg_alphabet.splice(i-1, 1);
+                    // 단순화 작업 추가.
+                    else if (simplify && Object.keys(var_alphabet).indexOf(msg_alphabet[i])!== -1) {
+                        msg_alphabet[i] = var_alphabet[msg_alphabet[i]];
+                        i++;
+                    }
+                    else i++;
+                }
+
+                // 모음일 때는 앞의 모음과 복모음을 형성하지 못하는 경우 모음들만 제거하기  - 일단 dropIung은 완전한 한글에서만 실험할 것.
+                else if (Utils.korVowels.indexOf(msg_alphabet[i])!== -1) {
+                    if (simplify && Object.keys(var_alphabet).indexOf(msg_alphabet[i])!== -1) {
+                        msg_alphabet[i] = var_alphabet[msg_alphabet[i]];
+                        i++;
+                    }
+                //     if ( !Utils.isDouble(msg_alphabet[i-1], msg_alphabet[i]) ) {
+                //         msg_alphabet.splice(i,1);
+                //     }
+                    else i++;
+                }
+                else i++;
             }
-            else{ i++;}
+            return Hangul.assemble(msg_alphabet);
+
         }
-        return Hangul.assemble(newmsg);
+        // isMap으로 정의할 경우 음절 단위로 우선 쪼갠 뒤 dropIung 수행
+        else {
+            for (var i = 0; i < msg_alphabet.length; i++) {
+                if (i === 0) {
+                    single_syllable.push(msg_alphabet[i]);
+                } else {
+                    // 자음 ㅇ
+                    if (msg_alphabet[i] === 'ㅇ') {
+                        // 앞에 모음이 오면서 (맨 마지막이거나 뒤에 자음이 오면) 앞 글자에 붙여쓰기
+                        if (Utils.korVowels.indexOf(msg_alphabet[i - 1]) !== -1
+                            && (i === msg_alphabet.length - 1 || Utils.korConsonants.indexOf(msg_alphabet[i + 1]) !== -1)) {
+                            single_syllable.push(msg_alphabet[i]);
+                            // console.log('case 10');
+                        }
+                            // 나머지 - 앞 자음 or 뒷 모음.
+                        // 자음+ㅡ 뒤에 오면 앞 글자에 붙임. 모음이 와도 무관. 브아 -> 바
+                        else if (i > 1 && Utils.korConsonants.indexOf(msg_alphabet[i - 2]) !== -1 && msg_alphabet[i - 1] === 'ㅡ') {
+                            single_syllable.push(msg_alphabet[i]);
+                            // console.log('case 11');
+                        }
+                        // 자음+모음+ㅇ+동모음 일시 ㅇ을 앞글자에 붙임. 보오 -> 보
+                        else if (1 < i < msg_alphabet.length - 1 && Utils.korConsonants.indexOf(msg_alphabet[i - 2]) !== -1 &&
+                            Object.keys(vowel_last).indexOf(msg_alphabet[i - 1]) !== -1 && vowel_last[msg_alphabet[i - 1]].indexOf(msg_alphabet[i + 1]) !== -1) {
+                            single_syllable.push(msg_alphabet[i]);
+                            // console.log('case 12');
+                        }
+                        // 자음+ㅣ+ㅇ+단모음 -> 자음+복모음 처리를 위해 ㅇ을 앞에 붙임.
+                        else if (1 < i < msg_alphabet.length - 1 && Utils.korConsonants.indexOf(msg_alphabet[i - 2]) !== -1 && msg_alphabet[i - 1] === 'ㅣ' && Object.keys(y_vowel).indexOf(msg_alphabet[i + 1]) !== -1) {
+                            single_syllable.push(msg_alphabet[i]);
+                            // console.log('case 13');
+                        }
+                        // 자음 + 모음 + ㅇ + 모음에서 앞모음+뒷모음이 복모음을 형성할 수 있는 경우 ㅇ을 앞에 붙임
+                        else if (1 < i < msg_alphabet.length - 1 && Utils.korVowels.indexOf(msg_alphabet[i - 1]) !== -1 && Utils.korVowels.indexOf(msg_alphabet[i + 1]) !== -1 &&
+                            Utils.korConsonants.indexOf(msg_alphabet[i - 2]) !== -1 ) {
+                            vowel_pair.forEach(x => {
+                                if (Utils.objectEqual([msg_alphabet[i - 1], msg_alphabet[i + 1]], x)) {
+                                    single_syllable.push(msg_alphabet[i]);
+                                    // console.log('case 14')
+                                }
+                            })
+                        }
+                        // 복모음+ㅇ+모음에서 뒷모음이 복모음과 겹침. 궈어 -> 궈
+                        else if (2 < i < msg_alphabet.length - 1 && Utils.korVowels.indexOf(msg_alphabet[i - 1]) !== -1 && msg_alphabet[i + 1] === msg_alphabet[i -1] &&
+                            Utils.korConsonants.indexOf(msg_alphabet[i - 3]) !== -1 &&  Utils.isDouble(msg_alphabet[i-2], msg_alphabet[i-1]) === true && !(msg_alphabet[i-2]==='ㅗ' && msg_alphabet[i-1]==='ㅣ') ) {
+                            single_syllable.push(msg_alphabet[i]);
+                        }
+                        // 앞에 ㅇ 아닌 자음이 오는 경우 -> 앞자음에 붙인다.
+                        else if (1 < i < msg_alphabet.length - 1 && Utils.korConsonants.indexOf(msg_alphabet[i - 1]) !== -1 && msg_alphabet[i - 1] !== 'ㅇ' &&
+                            Utils.korVowels.indexOf(msg_alphabet[i + 1]) !== -1) {
+                            single_syllable.push(msg_alphabet[i]);
+                        }
+
+                        // 나머지 케이스는 ㅇ으로 시작하는 글자 분리
+                        else {
+                            // console.log('single_origin:::1', single_origin)
+                            divide_syllable.push(single_syllable);
+                            single_syllable = [msg_alphabet[i]];
+                            // console.log('case 18');
+                        }
+                    }
+
+                    // ㅇ 아닌 자음일 때
+                    else if (Utils.korConsonants.indexOf(msg_alphabet[i]) !== -1 && msg_alphabet[i] !== 'ㅇ') {
+                        // 앞에 모음이면서 (마지막 글자 or 뒤에 ㅇ 아닌 자음 옴 or 뒤 ㅇ이지만 또 자음이 온다)
+                        if (Utils.korVowels.indexOf(msg_alphabet[i - 1]) !== -1
+                            && (i === msg_alphabet.length - 1 || (Utils.korConsonants.indexOf(msg_alphabet[i + 1]) !== -1 && msg_alphabet[i + 1] !== 'ㅇ') || (msg_alphabet[i + 1] === 'ㅇ' && Utils.korConsonants.indexOf(msg_alphabet[i + 2]) !== -1))) {
+                            single_syllable.push(msg_alphabet[i]);
+                            // console.log('case 20');
+                        }
+                        // 겹받침 케이스 분별. 이 때 ㅇ 아닌 자음이 바로 뒤에 와야 함.
+                        else if (Utils.korVowels.indexOf(msg_alphabet[i - 2]) !== -1
+                            && (i === msg_alphabet.length - 1 || (Utils.korConsonants.indexOf(msg_alphabet[i + 1]) !== -1 && msg_alphabet[i + 1] !== 'ㅇ') || ((msg_alphabet[i + 1] === 'ㅇ' || msg_alphabet[i + 1] === msg_alphabet[i]) && Utils.korConsonants.indexOf(msg_alphabet[i + 2]) !== -1))
+                            && Utils.doubleConsonant.indexOf(msg_alphabet.slice(i - 1, i + 1)) !== -1) {
+                            single_syllable.push(msg_alphabet[i]);
+                            // console.log('case 21');
+                        }
+                        // 나머지 - 뒷글자로 넘기기
+                        else {
+                            // console.log('single_origin:::2', single_origin)
+                            divide_syllable.push(single_syllable);
+                            single_syllable = [msg_alphabet[i]];
+                            // console.log('case 28');
+                        }
+
+                    }
+
+                    // 자음 바로 뒤 모음 - 앞글자에 붙인다.
+                    else if (Utils.korVowels.indexOf(msg_alphabet[i]) !== -1 && Utils.korConsonants.indexOf(msg_alphabet[i - 1]) !== -1) {
+                        single_syllable.push(msg_alphabet[i]);
+                        // console.log('case 30');
+                    }
+                    // 겹모음 - 앞글자에 붙인다.
+                    else if (i > 1 && Utils.korConsonants.indexOf(msg_alphabet[i - 2]) !== -1 && Utils.korVowels.indexOf(msg_alphabet[i - 1]) !== -1) {
+                        var tmp = true;
+                        for (var lix of Utils.doubleVowel) {
+                            if (Utils.objectEqual(lix, msg_alphabet.slice(i - 1, i + 1))) {
+                                single_syllable.push(msg_alphabet[i]);
+                                // console.log('case 40');
+                                tmp = false;
+                                break;
+                            }
+                        }
+                        if (tmp) {
+                            // console.log('single_origin:::3', single_origin)
+                            divide_syllable.push(single_syllable);
+                            single_syllable = [msg_alphabet[i]];
+                            // console.log('case 41');
+                        }
+                    }
+                    // 나머지 케이스
+                    else {
+                        // console.log('single_origin:::4', single_origin)
+                        divide_syllable.push(single_syllable);
+                        single_syllable = [msg_alphabet[i]];
+                        // console.log('case 50');
+                    }
+
+                }
+
+            }
+            //마지막 문자 밀어넣기
+            // console.log('single_origin:::', single_origin);
+            divide_syllable.push(single_syllable);
+
+            let ind =1;
+            for (i =0; i<divide_syllable.length; i++) {
+                let cnt = 0;
+                for (var letter of Hangul.assemble(divide_syllable[i])) { // 한글 숫자 조합. Hangul.assemble로 조합.
+                    if (/[가-힣]/.test(letter)) cnt++;
+                }
+                if (res[Hangul.assemble(divide_syllable[i])]) {
+                    res[Hangul.assemble(divide_syllable[i])]["index"].push(ind);
+                }
+                else {
+                    res[Hangul.assemble(divide_syllable[i])] = {
+                        value: Utils.dropIung(Hangul.assemble(divide_syllable[i]), false, simplify),
+                        index: [ind]
+                    }
+                }
+                ind += cnt;
+
+            }
+
+            // if (isMap) console.log(origin);
+            return res;
+        }
+
 
     },
 
@@ -400,6 +899,24 @@ const Utils = {
 
 class Tetrapod {
 
+    // 배열 동일성 체크
+    static objectEqual(a,b) {
+        let val =true;
+        if (Object.keys(a).length !== Object.keys(b).length ) {
+            val = false;
+        }
+        else {
+            for (var key in a) { // a의 키에 대해 조사
+                if (a[key]!==b[key]) {val = false; break;}
+            }
+        }
+        return val;
+    }
+
+    static joinMap (lix, func) {
+        return Utils.joinMap(lix, func);
+    }
+
     // badWord, 정상단어, softSearchWord 불러오기
     static load(inputBadwords, inputDictionary, inputSoftSearchWords, disableAutoParse) {
         badWords = inputBadwords
@@ -412,15 +929,20 @@ class Tetrapod {
         }
     }
 
+    // enToKo test
+    static enToKo (msg, isMap) {
+        return Utils.enToKo(msg, isMap);
+    }
+
     // alphabetToKotest
-    static alphabetToKo(msg) {
-        return Utils.alphabetToKo(msg);
+    static alphabetToKo(msg, isMap) {
+        return Utils.alphabetToKo(msg, isMap);
     }
 
     // dropiung Test
-    static dropiung(msg) {
+    static dropIung(msg, isMap) {
         if (/[가-힣|ㅏ-ㅣ|ㄱ-ㅎ \s]/.test(msg)) {
-            return Utils.dropiung(msg);
+            return Utils.dropIung(msg, isMap);
         }
     }
 
@@ -429,6 +951,10 @@ class Tetrapod {
         if (/[가-힣\s]/.test(msg)) {
             return Utils.tooMuchDoubleEnd(msg);
         }
+    }
+
+    static parseMap(map) {
+        return Utils.parseMap(map);
     }
 
     // 비속어 사전 파일 로딩함.
@@ -578,23 +1104,34 @@ class Tetrapod {
         let tooMuchEnd = {val:false, pos:[], txt:[]};
 
         //보조 메시지
+        let message2Map = {};
         let message2 = ''
+        let message3Map = {}
         let message3 = ''
+        let message4Map = {}
         let message4 = ''
+        let message5Map = {}
+        let message5 = ''
 
         if (needEnToKo === true) { // 만약 한영 검사도 필요하면...
-            message2 = Utils.enToKo(message); // 2차 점검용
+            message2Map = Utils.enToKo(message, true);
+            message2 = Utils.enToKo(message, false); // 2차 점검용
         }
         if (isStrong === true) { // 문자열을 악용한 것까지 잡아보자.
-            message3 = Utils.alphabetToKo(message);
-            message4 = Utils.dropiung(message3);
+            message3Map = Utils.alphabetToKo(message, true);
+            message3 = Utils.alphabetToKo(message, false);
+            message4Map = Utils.dropIung(message3, true, false);
+            message4 = Utils.dropIung(message3, false, false);
+            message5Map = Utils.dropIung(message3, true, true);
+            message5 = Utils.dropIung(message3, false, true);
         }
 
         if (splitCheck === undefined) splitCheck = 15
         var messages = (splitCheck != 0) ? Utils.lengthSplit(message, splitCheck) : [message]
-        if (message2.length>0) var messages2 = (splitCheck != 0) ? Utils.lengthSplit(message2, splitCheck) : [message2]
-        if (message3.length>0) var messages3 = (splitCheck != 0) ? Utils.lengthSplit(message3, splitCheck) : [message3]
-        if (message4.length>0) var messages4 = (splitCheck != 0) ? Utils.lengthSplit(message4, splitCheck) : [message4]
+        if (message2.length>0) var messages2 =  [message2]
+        if (message3.length>0) var messages3 =  [message3]
+        if (message4.length>0) var messages4 =  [message4]
+        if (message5.length>0) var messages5 =  [message4]
 
         for (var index1 = 0; index1 <= messages.length - 1; index1++) {
             let currentResult = Tetrapod.nativeFind(messages[index1], needMultipleCheck)
@@ -702,16 +1239,18 @@ class Tetrapod {
     }
 
     // 메시지의 비속어를 콘솔창으로 띄워서 찾기.
-    static nativeFind(message, needMultipleCheck, needEnToKo) {
+    static nativeFind(message, needMultipleCheck, isMap = false) {
 
         // let unsafeMessage = message.toLowerCase()
         let normalWordPositions = {}
         let foundedBadWords = []
         let foundedBadWordPositions = []
+        let foundedBadWordOriginalPositions = []; // isMap일 때
         let foundedSoftSearchWords = []
         let foundedSoftSearchWordPositions = []
-
+        let foundedSoftSearchWordOriginalPositions = []; // isMap일 때
         let parsedSoftSearchWords = [];
+        let originalValue = {}
         for (let word of softSearchWords) {
             parsedSoftSearchWords.push(Utils.wordToArray(word));
         }
@@ -724,37 +1263,130 @@ class Tetrapod {
         }
         */
 
-        // 만약 한영전환이 필요하면 한영전환후 수행합니다.
-
-        if (needEnToKo === true) {
-            message = Utils.enToKo(message);
+        // Map으로 주어지면 newMessage에 대해 찾는다.
+        let newMessage ="";
+        if (isMap) {
+            let originalMessageList = message.messageList;
+            newMessage = message.parsedMessage.join("");
         }
-        else if (needEnToKo === undefined || needEnToKo === false) {
-            message= message;
+        else {
+            newMessage = message;
         }
-
 
         // 정상단어의 포지션을 찾습니다.
         for (let index in normalWords) {
-            if (message.length == 0) break
-            let searchedPositions = Utils.getPositionAll(message, normalWords[index])
+            if (newMessage.length == 0) break
+            let searchedPositions = Utils.getPositionAll(newMessage, normalWords[index])
             for(let searchedPosition of searchedPositions)
                 if(searchedPosition !== -1)
                     normalWordPositions[searchedPosition] = true
         }
 
-        // 타국의 비속어를 삭제합니다.
-        /*
-        for (var otherLangBadWordsIndex in softSearchWords) {
-            let otherLangBadWord = softSearchWords[otherLangBadWordsIndex]
-            if (unsafeMessage.search(otherLangBadWord) != -1) {
-                foundedBadWords.push(otherLangBadWord)
-                if (!needMultipleCheck) return foundedBadWords
-            }
-        }
-        */
+
+
+
 
         // KR BAD WORDS FIND ALGORITHM
+
+        // 저속한 단어들을 한 단어식 순회합니다.
+        for (let index4 in parsedSoftSearchWords) {
+            let softSearchWord = parsedSoftSearchWords[index4];
+            let findCount = {}
+            let softSearchWordPositions = []
+            // 저속한 단어들을 한 단어씩
+            // 순회하며 존재여부를 검사합니다.
+            for (let index5 in softSearchWord) {
+                let softSearchOneCharacter = String(softSearchWord[index5]).toLowerCase()
+
+                // 저속한 단어의 글자위치를 수집합니다.
+
+                // 메시지 글자를 모두 반복합니다.
+                for (let index6 in newMessage) {
+
+                    // 정상적인 단어의 글자일 경우 검사하지 않습니다.
+                    if(typeof normalWordPositions[Number(index6)] != 'undefined') continue
+
+                    // 단어 한글자라도 들어가 있으면
+                    // 찾은 글자를 기록합니다.
+                    let nearlyUnsafeOneCharacter = String(newMessage[index6]).toLowerCase()
+                    if (softSearchOneCharacter == nearlyUnsafeOneCharacter) {
+                        findCount[softSearchOneCharacter] = true
+                        softSearchWordPositions.push(Number(index6))
+                    }
+                }
+
+                // 저속한 단어를 구성하는 글자가
+                // 전부 존재하는 경우 이를 발견처리합니다.
+                if (softSearchWord.length == Object.keys(findCount).length) {
+
+                    // 포지션을 순서대로 정렬했는데
+                    // 순서가 달라진다면 글자가 섞여있는 것으로 간주합니다.
+                    let isShuffled = false
+                    let sortedPosition = softSearchWordPositions.slice().sort((a, b) => a - b)
+                    if(sortedPosition != softSearchWordPositions){
+                        isShuffled = true
+                        softSearchWordPositions = sortedPosition
+                    }
+
+                    // TODO
+                    // 발견된 각 문자 사이의 거리 및
+                    // 사람이 인식할 가능성 거리의 계산
+
+                    // (3글자가 각각 떨어져 있을 수도 있음)
+
+
+                    // 글자간 사이들을 순회하여서
+                    // 해당 비속어가 사람이 인식하지 못할 정도로
+                    // 퍼져있다거나 섞여있는지를 확인합니다.
+                    let isNeedToPass = false
+                    for(let diffRanges of Utils.grabCouple(softSearchWordPositions)){
+
+                        // 글자간 사이에 있는 모든 글자를 순회합니다.
+                        let diff = ''
+                        for(let diffi = diffRanges[0]+1; diffi <= (diffRanges[1]-1); diffi++){
+                            diff += newMessage[diffi]
+                        }
+
+                        if(isShuffled){
+                            // 뒤집힌 단어의 경우엔 자음과 모음이
+                            // 한글글자가 글자사이에 쓰인 경우 비속어에서 배제합니다.
+                            if(!Tetrapod.shuffledMessageFilter(diff))
+                                isNeedToPass = true
+                        }
+
+                    }
+
+                    // 사람이 인지하지 못할 것으로 간주되는 경우
+                    // 해당 발견된 저속한 표현을 무시합니다.
+                    if(isNeedToPass) continue
+
+                    // 같은 포지션의 순서만 바꾼 저속한 표현을 중복으로 저속한 표현으로 인식하지 않게 처리
+
+                    let tmp_tf = true;
+                    for (let posix of foundedSoftSearchWordPositions) {
+                        //포지션이 같을 때 강제 종료
+                        if (this.objectEqual(posix, softSearchWordPositions)) {
+                            tmp_tf =false; break;
+                        }
+                    }
+                    if(tmp_tf) {
+                        console.log(`isShuffled: ${isShuffled}`)
+                        console.log(`원문: ${newMessage}`)
+                        console.log(`발견된 저속한 표현: [${softSearchWord.join()}]`)
+                        console.log(`발견된 저속한 표현 위치: [${softSearchWordPositions}]`)
+                        foundedSoftSearchWords.push(softSearchWord.join(''))
+                        foundedSoftSearchWordPositions.push(softSearchWordPositions)
+                    }
+
+                }
+                // 반복 줄이기 위해 강제 탈출.
+                if (needMultipleCheck === false && foundedSoftSearchWords.length>0) break;
+            }
+            // 반복 줄이기 위해 강제 탈출.
+            if (needMultipleCheck === false && foundedSoftSearchWords.length>0) break;
+
+        }
+
 
         // 비속어 단어를 한 단어씩 순회합니다.
         for (let index1 in parsedBadWords) {
@@ -771,14 +1403,14 @@ class Tetrapod {
                 // 비속어 단어의 글자위치를 수집합니다.
 
                 // 메시지 글자를 모두 반복합니다.
-                for (let index3 in message) {
+                for (let index3 in newMessage) {
 
                     // 정상적인 단어의 글자일경우 검사하지 않습니다.
                     if(typeof normalWordPositions[Number(index3)] != 'undefined') continue
 
                     // 단어 한글자라도 들어가 있으면
                     // 찾은 글자를 기록합니다.
-                    let unsafeOneCharacter = String(message[index3]).toLowerCase()
+                    let unsafeOneCharacter = String(newMessage[index3]).toLowerCase()
                     if (badOneCharacter == unsafeOneCharacter) {
                         findCount[badOneCharacter] = true
                         badWordPositions.push(Number(index3))
@@ -815,7 +1447,7 @@ class Tetrapod {
                         // 글자간 사이에 있는 모든 글자를 순회합니다.
                         let diff = ''
                         for(let diffi = diffRanges[0]+1; diffi <= (diffRanges[1]-1); diffi++){
-                            diff += message[diffi]
+                            diff += newMessage[diffi]
                         }
 
                         if(isShuffled){
@@ -832,141 +1464,68 @@ class Tetrapod {
                     // 해당 발견된 비속어를 무시합니다.
                     if(isNeedToPass) continue
 
-
                     // 같은 포지션의 순서만 바꾼 비속어를 중복 비속어로 인식하지 않게 처리
-                    if(foundedBadWordPositions.length===0) {
+
+                    var tmp_tf = true;
+                    for (let posix of foundedBadWordPositions) {
+                        // 다른 비속어와 포지션이 일치할 때 강제 종료
+                        if (this.objectEqual(posix, badWordPositions)) {
+                            tmp_tf =false; break;
+                        }
+                    }
+                    for (let posix of foundedSoftSearchWordPositions) {
+                        // 우선 저속한 표현과 포지션이 일치할 때는 거짓으로
+                        if (this.objectEqual(posix, badWordPositions)) {
+                            tmp_tf =false;
+                        }
+                        // posix 최댓값이나 최솟값이 비속어 표현 사이에 끼어버린 경우 - 아예 비속어로 합치기
+                        if (Math.min(...badWordPositions) <= Math.min(...posix) <= Math.max(...badWordPositions) ) {
+                            tmp_tf = true;
+                            badWord = [...badWord, ...foundedSoftSearchWords[foundedSoftSearchWordPositions.indexOf(posix)]]
+                            badWordPositions = [...badWordPositions, ...posix]
+                        }
+                        else if (Math.min(...badWordPositions) <= Math.max(...posix) <= Math.max(...badWordPositions) ) {
+                            tmp_tf = true;
+                            badWord = [...foundedSoftSearchWords[foundedSoftSearchWordPositions.indexOf(posix)], ...badWord];
+                            badWordPositions = [...posix, ...badWordPositions ];
+                        }
+                        // 만약 비속어와 저속한 표현 사이에 숫자, 알파벳, 공백밖에 없으면 비속어로 합치기
+                        else if  ( Math.max(...badWordPositions) < Math.min(...posix) ) {
+                            let inter0 = Math.max(...badWordPositions);
+                            let inter1 = Math.min(...posix);
+                            if (newMessage.slice(inter0+1, inter1).match(/[0-9A-Za-z\s~!@#$%^&*()_\-+\\|\[\]{};:'"<,>.?/]*/) ) {
+                                tmp_tf = true;
+                                badWord = [...badWord, ...foundedSoftSearchWords[foundedSoftSearchWordPositions.indexOf(posix)]];
+                                badWordPositions = [...badWordPositions, ...posix];
+
+                            }
+                        }
+                        else if  ( Math.max(...posix) < Math.min(...badWordPositions) ) {
+                            let inter0 = Math.max(...posix);
+                            let inter1 = Math.min(...badWordPositions);
+                            if (newMessage.slice(inter0+1, inter1).match(/[0-9A-Za-z\s~!@#$%^&*()_\-+\\|\[\]{};:'"<,>.?/]*/) ) {
+                                tmp_tf = true;
+                                badWord = [...foundedSoftSearchWords[foundedSoftSearchWordPositions.indexOf(posix)], ...badWord];
+                                badWordPositions = [...posix, ...badWordPositions];
+                            }
+                        }
+
+                    }
+                    if(tmp_tf) {
                         console.log(`isShuffled: ${isShuffled}`)
-                        console.log(`원문: ${message}`)
+                        console.log(`원문: ${newMessage}`)
                         console.log(`발견된 비속어: [${badWord.join()}]`)
                         console.log(`발견된 비속어 위치: [${badWordPositions}]`)
                         foundedBadWords.push(badWord.join(''))
                         foundedBadWordPositions.push(badWordPositions)
                     }
-                    else {
-                        var tmp_tf = true;
-                        for (let posix of foundedBadWordPositions) {
-                            //포지션이 같을 때 강제 종료
-                            if (posix[0]=== badWordPositions[0] && posix[1]=== badWordPositions[1]) {
-                                tmp_tf =false; break;
-                            }
-                        }
-                        if(tmp_tf) {
-                            console.log(`isShuffled: ${isShuffled}`)
-                            console.log(`원문: ${message}`)
-                            console.log(`발견된 비속어: [${badWord.join()}]`)
-                            console.log(`발견된 비속어 위치: [${badWordPositions}]`)
-                            foundedBadWords.push(badWord.join(''))
-                            foundedBadWordPositions.push(badWordPositions)
-                        }
-                    }
 
                 }
+                // 반복 줄이기 위해 강제 탈출.
+                if (needMultipleCheck === false && foundedBadWords.length>0) break;
             }
-        }
-
-        // 저속한 단어들을 한 단어식 순회합니다.
-        for (let index4 in parsedSoftSearchWords) {
-            let softSearchWord = parsedSoftSearchWords[index4];
-            let findCount = {}
-            let softSearchWordPositions = []
-            // 저속한 단어들을 한 단어씩
-            // 순회하며 존재여부를 검사합니다.
-            for (let index5 in softSearchWord) {
-                let softSearchOneCharacter = String(softSearchWord[index5]).toLowerCase()
-
-                // 저속한 단어의 글자위치를 수집합니다.
-
-                // 메시지 글자를 모두 반복합니다.
-                for (let index6 in message) {
-
-                    // 정상적인 단어의 글자일 경우 검사하지 않습니다.
-                    if(typeof normalWordPositions[Number(index6)] != 'undefined') continue
-
-                    // 단어 한글자라도 들어가 있으면
-                    // 찾은 글자를 기록합니다.
-                    let nearlyUnsafeOneCharacter = String(message[index6]).toLowerCase()
-                    if (softSearchOneCharacter == nearlyUnsafeOneCharacter) {
-                        findCount[softSearchOneCharacter] = true
-                        softSearchWordPositions.push(Number(index6))
-                    }
-                }
-
-                // 저속한 단어를 구성하는 글자가
-                // 전부 존재하는 경우 이를 발견처리합니다.
-                if (softSearchWord.length == Object.keys(findCount).length) {
-
-                    // 포지션을 순서대로 정렬했는데
-                    // 순서가 달라진다면 글자가 섞여있는 것으로 간주합니다.
-                    let isShuffled = false
-                    let sortedPosition = softSearchWordPositions.slice().sort((a, b) => a - b)
-                    if(sortedPosition != softSearchWordPositions){
-                        isShuffled = true
-                        softSearchWordPositions = sortedPosition
-                    }
-
-                    // TODO
-                    // 발견된 각 문자 사이의 거리 및
-                    // 사람이 인식할 가능성 거리의 계산
-
-                    // (3글자가 각각 떨어져 있을 수도 있음)
-
-
-                    // 글자간 사이들을 순회하여서
-                    // 해당 비속어가 사람이 인식하지 못할 정도로
-                    // 퍼져있다거나 섞여있는지를 확인합니다.
-                    let isNeedToPass = false
-                    for(let diffRanges of Utils.grabCouple(softSearchWordPositions)){
-
-                        // 글자간 사이에 있는 모든 글자를 순회합니다.
-                        let diff = ''
-                        for(let diffi = diffRanges[0]+1; diffi <= (diffRanges[1]-1); diffi++){
-                            diff += message[diffi]
-                        }
-
-                        if(isShuffled){
-                            // 뒤집힌 단어의 경우엔 자음과 모음이
-                            // 한글글자가 글자사이에 쓰인 경우 비속어에서 배제합니다.
-                            if(!Tetrapod.shuffledMessageFilter(diff))
-                                isNeedToPass = true
-                        }
-
-                    }
-
-                    // 사람이 인지하지 못할 것으로 간주되는 경우
-                    // 해당 발견된 비속어를 무시합니다.
-                    if(isNeedToPass) continue
-
-                    // 같은 포지션의 순서만 바꾼 저속한 표현을 중복으로 저속한 표현으로 인식하지 않게 처리
-                    if(foundedSoftSearchWordPositions.length===0) {
-                        console.log(`isShuffled: ${isShuffled}`)
-                        console.log(`원문: ${message}`)
-                        console.log(`발견된 저속한 표현: [${softSearchWord.join()}]`)
-                        console.log(`발견된 저속한 표현 위치: [${softSearchWordPositions}]`)
-                        foundedSoftSearchWords.push(softSearchWord.join(''))
-                        foundedSoftSearchWordPositions.push(softSearchWordPositions)
-                    }
-                    else {
-                        let tmp_tf = true;
-                        for (let posix of foundedSoftSearchWordPositions) {
-                            //포지션이 같을 때 강제 종료
-                            if (posix[0]=== softSearchWordPositions[0] && posix[1]=== softSearchWordPositions[1]) {
-                                tmp_tf =false; break;
-                            }
-                        }
-                        if(tmp_tf) {
-                            console.log(`isShuffled: ${isShuffled}`)
-                            console.log(`원문: ${message}`)
-                            console.log(`발견된 저속한 표현: [${softSearchWord.join()}]`)
-                            console.log(`발견된 저속한 표현 위치: [${softSearchWordPositions}]`)
-                            foundedSoftSearchWords.push(softSearchWord.join(''))
-                            foundedSoftSearchWordPositions.push(softSearchWordPositions)
-                        }
-                    }
-
-
-                }
-            }
-
+            // 반복 줄이기 위해 강제 탈출.
+            if (needMultipleCheck === false && foundedBadWords.length>0) break;
         }
 
         //부적절하게 겹받침 많이 사용했는지 여부 확인하기
@@ -974,33 +1533,28 @@ class Tetrapod {
         let tooMuchDouble ={val:false, pos:[], txt:[]};
 
         tooMuchDouble = {
-                val: tooMuchDouble.val || Utils.tooMuchDoubleEnd(message).val,
-                pos: [...tooMuchDouble.pos, ...Utils.tooMuchDoubleEnd(message).pos],
-                txt: [...tooMuchDouble.txt, ...Utils.tooMuchDoubleEnd(message).txt]
+                val: tooMuchDouble.val || Utils.tooMuchDoubleEnd(newMessage).val,
+                pos: [...tooMuchDouble.pos, ...Utils.tooMuchDoubleEnd(newMessage).pos],
+                txt: [...tooMuchDouble.txt, ...Utils.tooMuchDoubleEnd(newMessage).txt]
             }
-
 
 
         // 결과 출력
-        if (needMultipleCheck === true) {
-                return {
-                    founded: foundedBadWords,
-                    positions: foundedBadWordPositions,
-                    softSearchFounded: foundedSoftSearchWords,
-                    softSearchPositions: foundedSoftSearchWordPositions,
-                    //부적절하게 겹자음 받침을 많이 사용한 단어 적발.
-                    tooMuchDoubleEnd: tooMuchDouble
-                }
-        }
-        else {
-            return {
-                founded: foundedBadWords.slice(0),
-                positions: foundedBadWordPositions.slice(0),
-                softSearchFounded: foundedSoftSearchWords.slice(0),
-                softSearchPositions: foundedSoftSearchWordPositions.slice(0),
-                //부적절하게 겹자음 받침을 많이 사용한 단어 적발.
-                tooMuchDoubleEnd: tooMuchDouble
-            }
+        return needMultipleCheck===true?{
+            founded: foundedBadWords,
+            positions: foundedBadWordPositions,
+            softSearchFounded: foundedSoftSearchWords,
+            softSearchPositions: foundedSoftSearchWordPositions,
+            //부적절하게 겹자음 받침을 많이 사용한 단어 적발.
+            tooMuchDoubleEnd: tooMuchDouble,
+
+        }:{
+            founded: foundedBadWords.slice(0),
+            positions: foundedBadWordPositions.slice(0),
+            softSearchFounded: foundedSoftSearchWords.slice(0),
+            softSearchPositions: foundedSoftSearchWordPositions.slice(0),
+            //부적절하게 겹자음 받침을 많이 사용한 단어 적발.
+            tooMuchDoubleEnd: tooMuchDouble,
         }
     }
 
@@ -1154,34 +1708,8 @@ class Tetrapod {
 
     // 2차원 배열 형태로 정의된 것을 풀어쓰기
     static recursiveComponent (data) {
-
-        // 데이터의 전항 후항을 순회합니다.
-        for(let i=0;i<=1;i++){
-
-            // 데이터의 모든 항목을 순회합니다.
-            for(let itemIndex in data[i]){
-                let item = data[i][itemIndex]
-
-                // 데이터 항목이 배열인 경우
-                // 재귀 컴포넌트 해석을 진행합니다.
-                if(Array.isArray(item)){
-                    let solvedData = Tetrapod.recursiveComponent(item)
-                    data[i][itemIndex] = null
-                    data[i] = data[i].concat(solvedData)
-                }
-            }
-        }
-
-        // 데이터의 전항 후항을 순회합니다.
-        let solvedData = []
-        for(let before of data[0]){
-            if(before === null) continue
-            for(let after of data[1]){
-                if(after === null) continue
-                solvedData.push(before+after)
-            }
-        }
-        return solvedData
+        // Utils로 정의 이동하기
+        return Utils.recursiveComponent(data);
     }
 
     // 2차원 배열을 모두 풀어써서 스트링 목록으로 나타내는 함수.

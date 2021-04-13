@@ -3,7 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="104ff4eb-fd97-4171-9f6f-14d519183829" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bias/bias.js" beforeDir="false" afterPath="$PROJECT_DIR$/bias/bias.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resource/dictionary/bad-words.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/bad-words.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resource/dictionary/normal-words.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/normal-words.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resource/dictionary/soft-search-words.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/soft-search-words.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/find.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/find.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tetrapod.js" beforeDir="false" afterPath="$PROJECT_DIR$/tetrapod.js" afterDir="false" />
     </list>
@@ -30,7 +32,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="javascript.nodejs.core.library.configured.version" value="14.15.2" />
     <property name="javascript.nodejs.core.library.typings.version" value="14.14.31" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../gisang_03" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\PhpStorm 2020.3\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
     <property name="vue.rearranger.settings.migration" value="true" />
@@ -65,10 +67,31 @@
       <workItem from="1615783190910" duration="605000" />
       <workItem from="1615870035626" duration="886000" />
       <workItem from="1615964436838" duration="4500000" />
+      <workItem from="1616592127081" duration="4632000" />
+      <workItem from="1616735293548" duration="2139000" />
+      <workItem from="1616991736653" duration="199000" />
+      <workItem from="1616996592127" duration="18791000" />
+      <workItem from="1617078691980" duration="600000" />
+      <workItem from="1617170961189" duration="9035000" />
+      <workItem from="1617238551880" duration="13138000" />
+      <workItem from="1617938363025" duration="6678000" />
+      <workItem from="1618202355361" duration="58077000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/tetrapod.js</url>
+          <line>1709</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
