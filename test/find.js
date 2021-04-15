@@ -1,4 +1,5 @@
 import Tetrapod from '../tetrapod';
+import Utils from '../tetrapod';
 import Hangul from 'hangul-js';
 import Bias from '../bias/bias';
 
@@ -10,14 +11,18 @@ word = word.join(' ')
 */
 
 
-// Tetrapod.defaultLoad()
+Tetrapod.defaultLoad()
 // console.log(Tetrapod.nativeFind("시발", true))
 // console.log(Tetrapod.alphabetToKo('ㄱH^ㅣ불 완전 쨩나', true))
-console.log("1", Tetrapod.find('시발', true));
+console.log('\n\n\n\n==========================')
+// console.log(Tetrapod.objectInclude([1,2], [2,1]))
+console.log(Tetrapod.find("시발시발시발", true))
+console.log(Tetrapod.find("^ㅣ바2", true,0,false,true))
+// console.log(Tetrapod.nativeFind(Tetrapod.parseMap(Tetrapod.alphabetToKo('시발시발^ㅣ발', true)), true, true));
+// console.log("1", Tetrapod.nativeFind(Tetrapod.alphabetToKo('시발 왕이 나셨도다 새끼줄', true), true, true));
 // console.log(Tetrapod.recursiveList(Hangul.disassemble('존문가')));
 // console.log(Hangul.disassemble('지```존'));
-console.log(Tetrapod.alphabetToKo("다 LH꺼야", true));
-console.log(Tetrapod.parseMap(Tetrapod.alphabetToKo("다 LH꺼야", true)));
+// console.log(Tetrapod.alphabetToKo("다 LH꺼야", true));
 // console.log(Tetrapod.dropIung('씨브얼', false));
 // console.log(Hangul.assemble(Hangul.disassemble("ㄱㅜ라")));
 // console.log(Tetrapod.alphabetToKo("개^ㅗ리 ㄱ-마L해 이 멍개", true));
@@ -34,7 +39,7 @@ let targetWord = '바보'
 // console.log(message.replace(new RegExp(search, 'gi'), replace))
 // console.log(Tetrapod.fix('바bo', 'x'));
 // console.log(Tetrapod.nativeFind('싀발', true))
-// console.log(Bias.recursiveComponent([['바', 'ba', 'va'], ['보', 'bo', 'vo']]));
+console.log(Bias.recursiveComponent([['바', 'ba', 'va'], ['보', 'bo', 'vo']]));
 
 /**
  * @description
