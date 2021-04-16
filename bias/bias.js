@@ -93,18 +93,20 @@ export default class Bias {
 
                 } else if(typeof item === 'string' && item[0] === '*'){
 
-                    // 만약 변수를 사용했다면 해당 부분을
+                    // 만약 변수를 사용했다면 (단어 앞에 *로 시작) 해당 부분을
                     // 변수의 리스트로 대치합니다.
-                    let varName = item.split('')
-                    varName.shift()
-                    varName = varName.join('')
-                    console.log(`함수호출됨: ${varName}`)
+                    let varName = item.slice(1);
+                    console.log(item, `함수호출됨: ${varName}`)
+
+                    // 엘레멘트 이름이 "*사랑"일 때, 여기서 variable의 변수는 {"사랑":(리스트)} 형식으로 정의할 수 있다.
 
                     if(typeof variable[varName] !== 'undefined'){
                         console.log(`1함수호출됨: ${varName}`)
 
                         data[i] = data[i].concat(variable[varName])
-                    }else{
+                    }
+                    // 아니면 nonParsedVariable에서 변수가 있는지 확인해보기.
+                    else {
                         console.log(`2함수호출됨: ${varName}`)
                         // 만약 변수 안에서 변수를 참조한 경우
                         // 필요한 부분의 변수만 파싱하여 해당 리스트를 구성합니다.
@@ -143,39 +145,44 @@ export default class Bias {
      * 데이터 표현 포멧을 바로 쓸 수 있게 해줍니다.
      *
      * @param {array} list
-     * @param {object} variable
-     * @param {boolean} isVariableParse
+     * @param {object} variable { 키값: [list] } 형식으로 정의
+     * @param {boolean} isVariableParse variable에서 list가 완전히 파싱됐는지 여부 확인
      * @param {string} defaultType
      *
      * @returns {array} solvedList
      */
+
     static recursiveList (list, variable = null, isVariableParse = false, defaultType = 'string') {
         console.log('recursiveList() start')
 
         // 변수단을 해석처리합니다.
         let parsedVaraible = {}
+
+        // variable의 리스트가 완전히 파싱된 상태가 아니면 variable 리스트를 파싱해서 처리함.
         if(variable !== null && !isVariableParse){
             for(let varItemIndex in variable)
                 parsedVaraible[varItemIndex] = Bias.recursiveList(variable[varItemIndex], variable, true)
         }
 
         // 코드단을 해석처리합니다.
+        // 결과 리스트
         let rebuild = []
+        // 리스트의 엘리먼트에 대해서
         for(let itemIndex in list){
             let item = list[itemIndex]
 
             if(typeof item === defaultType){
 
                 // 그냥 문자열이면 바로 리스트에 반영합니다.
+                // *로 시작하지 않는 경우
                 if(item[0] !== '*'){
                     rebuild.push(item)
-                }else{
+                }
+                else {
 
                     // 만약 변수를 사용했다면 해당 부분을
                     // 변수의 리스트를 반영합니다.
-                    let varName = item.split('')
-                    varName.shift()
-                    varName = varName.join('')
+                    let varName = item.slice(1);
                     if(typeof parsedVaraible[varName] !== 'undefined' && !isVariableParse){
                         rebuild = rebuild.concat(parsedVaraible[varName])
                     }else{
@@ -470,7 +477,10 @@ export default class Bias {
                 code = uniquedCode
             }
             console.log('write process start')
-            fs.writeFileSync(buildOption.buildPath, JSON.stringify(code, null, 4))
+            !fs.existsSync('./bias/build') && fs.mkdirSync('./bias/build');
+            fs.writeFileSync(buildOption.buildPath, JSON.stringify(code, null, 4), )
+
+
 
             if(typeof buildCallback === 'function') buildCallback()
         })
@@ -479,7 +489,7 @@ export default class Bias {
     static buildHelper(packName, testWord, applyUniqueFilter = true){
         let buildName = packName
         if(testWord !== undefined)
-            buildName = 'test-' + buildName
+            buildName = 'test-' + buildName + "-" + testWord;
 
         let timerKey = `${chalk.magenta(`<${packName}>`)} 빌드 소요된 시간:`
         console.time(timerKey)
