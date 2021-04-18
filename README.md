@@ -268,12 +268,20 @@ find.js 파일에 `import Tetrapod from '../tetrapod';`라고 입력하신 뒤�
 - 비속어 갯수 세기 : `Tetrapod.countBad(message, isStrong=false)`
   1. message 항에는 문자열을 입력해서 사용 가능합니다. 
   1. 결과값은 `{bad:(비속어 갯수),soft:(저속한 표현 갯수),end:(부적절한 받침 갯수)} ` 형식으로 출력됩니다.
-  1. `isStrong`값을 참으로 지정하면 다른 문자를 한글자모처럼 이용해서 우회적 표현이나 (예: `ㄱH새77|`) 첫 자음 ㅇ, 무의미한 모음 ㅡ삽입 및 된소리를 이용한 우회표현(`브아보 썌끼`)처럼 도 잡아낼 수 있습니다.   
+  1. `isStrong`값을 참으로 지정하면 다른 문자를 한글자모처럼 이용해서 우회적 표현이나 (예: `ㄱH새77|`) 첫 자음 ㅇ, 무의미한 모음 ㅡ삽입 및 된소리를 이용한 우회표현(`브아보 썌끼`)도 잡아낼 수 있습니다.   
 
 - 비속어 표현 직접 찾기 : `Tetrapod.find(message, needMultipleCheck=false, splitCheck=15, needEnToKo=false, stronger=false)`
   1. message 항에는 문자열을 직접 입력해서 사용가능ㅎ바니다.
   1. 결과값은 `{totalResult:[(비속어 단어 목록)], softResult:[(저속한 표현 단어 목록)], endResult:[(받침 악용한 표현 목록)]}` 형식의 오브젝트로 출력됩니다.
   1. `needMultiplecheck`를 true로 지정하면 필터에 걸리는 모든 표현을 잡아낼 수 있습니다. 
-  1. `splitCheck`를 임의의 숫자(예 20)로 지정하면 지정한 숫자만큼 문자열을 나눈 뒤 나눈 조각들만 조사합니다. 기본값은 15이며, 0을 지정하면 문자열을 나누지 않고 전체 문자열을 검사합니다.
+  1. `splitCheck`를 임의의 숫자(예 20)로 지정하면 지정한 숫자만큼 문자열을 나눈 뒤 나눈 조각들만 조사합니다. 기본값은 15이며, 0을 지정하면 문자열을 나누지 않고 전체 문자열을 검사합니다. isStrong을 지정하면 활성화되지 않습니다.
   1. `needEnToKo`를 true로 지정하면 한/영전환된 표현을 잡아낼 수 있습니다. 예를 들면 `시발`의 QWERTY에 대응되는 표현인 `tlqkf`을 잡아낼 수 있습니다.
   1. `isStrong`을 true로 지정하면 다른 문자를 한글자모처럼 이용하는 우회적 표현이나 첫자음 ㅇ, 무의미한 모음 ㅡ삽입 및 된소리를 이용한 우회 표현도 잡아낼 수 있습니다. 특성상 위의 needEnToKo와 같이 사용할 수 없습니다.
+
+### Bias.js
+find.js 파일에 `import Bias from '../bias/bias';`를 입력하신 뒤에 
+`Bias.buildHelper('(패키지명)', '(원본 단어명)', false)`를 입력하시면 사용가능합니다. JSON 파일은 bias/build에 저장됩니다.
+
+#### 패키지 제작 및 사용 방법
+Tetrapod 프로젝트는 기본적으로 `kr-badword` 패키지를 지원하고 있습니다. 그러나 
+Bias.js 파일은 타겟 단어와 

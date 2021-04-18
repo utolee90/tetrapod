@@ -64,3 +64,5 @@ typings/
 # 클레온 자체 dictionary 정보
 resource/klleon
 
+# build 내용
+bias/build
