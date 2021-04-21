@@ -110,6 +110,7 @@ const Utils = {
         return stringPoses
     },
 
+    // manyArray => [[manyArray[0], manyArray[1]], [manyArray[1], manyArray[2]], ...]
     grabCouple: (manyArray) => {
         let i = 0
         let couple = []
@@ -121,29 +122,51 @@ const Utils = {
         return couple
     },
 
-    // 단어 -> 낱자로 분리
+    // 단어 -> 낱자로 분리.
+    // 수정 - !, ?을 이용한 매크로 옵션 추가.
+    // 바! -> [바, 박, 밖 ... ].
+    // 바? -> 한글 ? 개수까지 완전 무시...
+    // wordToarray -
     wordToArray: word => {
     let wordArray = []
+    let macroChar = ["?", "!"]
     for (let i = 0; i <= word.length - 1; i++) {
-        wordArray[i] = word[i]
+        if (word[i] === "!" || word[i] === "?" ) {
+            wordArray.splice(-1, 1, wordArray.slice(-1)[0]+word[i])
+        }
+        else {
+            wordArray.push(word[i])
+        }
     }
     return wordArray
     },
 
-    // 메시지를 특정 단어 숫자로 분리
+    // 메시지를 특정 길이로 분리. 옵션 추가 -> full node 이외에 half node 옵션 추가.
     lengthSplit: (message, limit) => {
         if (message.length <= limit) return [message]
 
         let fixedMessage = []
         let fullMessageLength = message.length
         let currentLength = 0
+        const halfLimit = Math.floor(limit/2)
 
         let splitList = []
+        let splitList2 = []
         while (true) {
             if (currentLength == fullMessageLength) {
-                if (currentLength != 0 && splitList.length != 0) {
-                    fixedMessage.push(splitList.join(''))
-                    splitList = []
+                if (currentLength != 0) {
+                    if (splitList.length > splitList2.length) {
+                        fixedMessage.push(splitList.join(''))
+                        if (splitList2.length>0 ) fixedMessage.push(splitList2.join(""))
+                        splitList = []
+                        splitList2 = []
+                    }
+                    else {
+                        fixedMessage.push(splitList2.join(""))
+                        if ( splitList.length>0 ) fixedMessage.push(splitList.join(""))
+                        splitList =[]
+                        splitList2 =[]
+                    }
                 }
                 break
             }
@@ -151,7 +174,14 @@ const Utils = {
                 fixedMessage.push(splitList.join(''))
                 splitList = []
             }
+            if (currentLength !==0 && currentLength % limit == halfLimit && splitList2.length !==0) {
+                fixedMessage.push(splitList2.join(""))
+                splitList2 = []
+            }
             splitList.push(message[currentLength])
+            if (currentLength >= halfLimit) {
+                splitList2.push(message[currentLength])
+            }
             currentLength++
         }
 
@@ -159,12 +189,15 @@ const Utils = {
     },
 
 
+    // 단어 정렬 기준을 가나다순이 아닌 단어 길이 역순으로 정렬해보자. 긴 단어부터 검사하면 짧은 단어를 중복으로 검사할 이유가 줄어든다.
     sortMap: (inputMap) => {
         let sortedMap = {}
 
-        Object.keys(inputMap).sort().forEach((key) => {
-            sortedMap[key] = inputMap[key]
-        })
+        if (typeof inputMap === 'object' && Object.keys(inputMap).length>0) {
+            Object.keys(inputMap).sort((a,b) => a.length-b.length).reverse().forEach((key) => {
+                sortedMap[key] = inputMap[key]
+            })
+        }
 
         return sortedMap
     },
@@ -183,6 +216,40 @@ const Utils = {
 
     // 리스트 교집합 구하기
     listIntersection: ObjectOperation.listIntersection,
+
+    // 리스트에서 특정 타입만 필터링
+    filterList: (list, type) => {
+        let res = [];
+        if (Array.isArray(list)) {
+            if (typeof type === "string") {
+                res = list.filter(item => (typeof item === type))
+            }
+            else if (Array.isArray(list)) {
+                res = list.filter(item => (Utils.objectIn(typeof item, type)))
+            }
+        }
+        return res;
+    },
+
+
+    // 각 원소를 맵으로 바꿔주는 함수.  여기서 callback은 문자열 단변수를 입력값으로 하는 함수여야 합니다.
+    listMap: (elem, callback) => {
+        if (typeof elem === "string" || typeof elem === "number" || typeof elem === "boolean") {
+            return callback(elem);
+        }
+        // elem이 리스트일 때
+        else if (typeof elem === "object" && Array.isArray(elem)) {
+            let res = elem.map(comp => (Utils.listMap(comp, callback)))
+            return res;
+        }
+        else if (typeof elem === "object") {
+            let res = {}
+            for (let key in elem) {
+                res[key] = Utils.listMap(elem[key], callback)
+            }
+            return res;
+        }
+    },
 
 
     // 2차원 배열 형태로 정의된 것을 풀어쓰기.
@@ -238,6 +305,7 @@ const Utils = {
     },
 
     // 파싱하기 {씨:{value:시, index:[1]}, 브얼:{value:벌, index:[2]}}
+    // 맵 형식 - enToKo map, alphabetToKo map, dropIung map을 입력으로 한다.
     parseMap: (map) => {
         let originalMessageList = [];
         let originalMessageIndex = [];
@@ -584,13 +652,14 @@ const Utils = {
 
     // ㅇ, ㅡ 제거, 된소리/거센소리 예사음화 후 비속어 찾기. isMap을 사용하면 제거한 모음, 자음 대응 맵 찾기.
     // 예시 : 브압오 -> {'브아':'바', 'ㅂ오':'보'}
-    // 비
+    // simplify 옵션을 true로 지정하면 거센소리 된소리를 예사소리화하기, 복모음, 이중모음 단모음화하는 작업도 추가.
     // 메시지는 반드시 한글자모로만 조합.
     dropIung: (msg, isMap=false, simplify = false) => {
 
         let msgAlphabet = Hangul.disassemble(msg, false);
         const varAlphabet = {"ㄲ":'ㄱ', 'ㄸ':'ㄷ', 'ㅃ':'ㅂ','ㅆ':'ㅅ', 'ㅉ':'ㅈ', 'ㅋ':'ㄱ', 'ㅌ':'ㄷ', 'ㅍ':'ㅂ',
-            'ㅒ':'ㅐ','ㅖ':'ㅔ'};
+            'ㅒ':'ㅐ','ㅖ':'ㅔ'}; // 된소리 단순화
+        const aspiritedSound ={"ㄱ": "ㅋ", "ㄷ":"ㅌ", "ㅂ":"ㅍ", "ㅅ":"ㅌ", "ㅈ":"ㅌ", "ㅊ":"ㅌ", "ㅋ":"ㅋ", "ㅌ":"ㅌ","ㅍ":"ㅍ", "ㅎ":"ㅎ"} // ㅎ앞 거센소리 연음화
         const yVowel = {"ㅏ":"ㅑ", "ㅐ":'ㅒ', 'ㅑ':'ㅑ', 'ㅒ':'ㅒ', 'ㅓ':'ㅕ', 'ㅔ':'ㅖ', 'ㅕ':'ㅕ', 'ㅖ':'ㅖ', 'ㅗ':'ㅛ', 'ㅛ':'ㅛ', 'ㅜ':'ㅠ', 'ㅠ':'ㅠ', 'ㅡ':'ㅠ', 'ㅣ':'ㅣ' }
         // 유사모음 축약형으로 잡아내기 위한 조건 갸앙 ->걍
         const vowelLast = {'ㅏ':['ㅏ'], 'ㅐ':['ㅐ', 'ㅔ'], 'ㅑ': ['ㅏ', 'ㅑ'], 'ㅒ':['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'], 'ㅓ' : ['ㅓ'], 'ㅔ': ['ㅔ', 'ㅐ'], 'ㅕ': ['ㅓ', 'ㅕ'], 'ㅖ':['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'],
@@ -611,8 +680,11 @@ const Utils = {
                     // 자음+모음+ㅇ+모음
                     if (Utils.korConsonants.indexOf(msgAlphabet[i-2])!== -1 && Utils.korVowels.indexOf(msgAlphabet[i-1])!== -1 && Utils.korVowels.indexOf(msgAlphabet[i+1])!== -1
                     ) {
-                        // 자음+ㅡ+ㅇ+모음 (ㅣ 제외)
-                        if (msgAlphabet[i-1] === 'ㅡ' && msgAlphabet[i+1]!== 'ㅣ') msgAlphabet.splice(i-1, 2);
+                        // 자음+ㅡ+ㅇ+모음,  simplify일 때 한해서는 즈이 -> 지로 바꿔도 상관없음.
+                        if (msgAlphabet[i-1] === 'ㅡ') {
+                            if (!simplify && msgAlphabet[i] === "ㅣ") {msgAlphabet.splice(i-1, 1); i++;}
+                            else  { msgAlphabet.splice(i-1, 2); }
+                        }
                         // 자음+ㅣ+ㅇ+모음
                         else if (msgAlphabet[i-1] === 'ㅣ' && Object.keys(yVowel).indexOf(msgAlphabet[i+1])!==-1) {
                             msgAlphabet.splice(i-1, 3, yVowel[msgAlphabet[i+1]]);
@@ -657,6 +729,11 @@ const Utils = {
                         msgAlphabet[i] = varAlphabet[msgAlphabet[i]];
                         i++;
                     }
+                    // ㅎ과 결합했을 때 거센소리화. 색히 -> 새키
+                    else if (simplify && msgAlphabet[i] === 'ㅎ' && Object.keys(aspiritedSound).indexOf(msgAlphabet[i-1])!==-1) {
+                        msgAlphabet[i-1] = aspiritedSound[msgAlphabet[i-1]];
+                        msgAlphabet.splice(i, 1);
+                    }
                     else i++;
                 }
 
@@ -665,6 +742,16 @@ const Utils = {
                     if (simplify && Object.keys(varAlphabet).indexOf(msgAlphabet[i])!== -1) {
                         msgAlphabet[i] = varAlphabet[msgAlphabet[i]];
                         i++;
+                    }
+                    else if (simplify && ObjectOperation.objectIn([msgAlphabet[i-1], msgAlphabet[i]],Utils.doubleVowel )) {
+                        if (msgAlphabet[i-1] !== "ㅗ" || msgAlphabet[i] !=="ㅣ") {
+                            msgAlphabet.splice(i-1, 1);
+                            i++;
+                        }
+                        else {
+                            i++;
+                        }
+
                     }
                         //     if ( !Utils.isDouble(msgAlphabet[i-1], msgAlphabet[i]) ) {
                         //         msgAlphabet.splice(i,1);
@@ -754,8 +841,18 @@ const Utils = {
 
                             // 특수 케이스 - 자음 중복시에는 뒤로 넘긴다.
                             if (msgAlphabet[i] !== msgAlphabet[i+1]) {
-                                singleSyllable.push(msgAlphabet[i]);
+                                // simplify 한정 특수 케이스 - 앞에 모음, 뒤에 ㅎ+모음이 올 때
+                                if (simplify && Object.keys(aspiritedSound).indexOf(msgAlphabet[i])!== -1 && msgAlphabet[i+1]=== "ㅎ") {
+                                    divideSyllable.push(singleSyllable);
+                                    singleSyllable = [msgAlphabet[i]];
+                                }
+                                else {
+                                    singleSyllable.push(msgAlphabet[i]);
+                                }
+
                             }
+
+
                             else {
                                 divideSyllable.push(singleSyllable);
                                 singleSyllable = [msgAlphabet[i]];
@@ -765,7 +862,7 @@ const Utils = {
                         // 겹받침 케이스 분별. 이 때 ㅇ 아닌 자음이 바로 뒤에 와야 함.
                         else if (Utils.korVowels.indexOf(msgAlphabet[i - 2]) !== -1
                             && (i === msgAlphabet.length - 1 || (Utils.korConsonants.indexOf(msgAlphabet[i + 1]) !== -1 && msgAlphabet[i + 1] !== 'ㅇ') || ((msgAlphabet[i + 1] === 'ㅇ' || msgAlphabet[i + 1] === msgAlphabet[i]) && Utils.korConsonants.indexOf(msgAlphabet[i + 2]) !== -1))
-                            && Utils.doubleConsonant.indexOf(msgAlphabet.slice(i - 1, i + 1)) !== -1) {
+                            && ObjectOperation.objectIn(msgAlphabet.slice(i - 1, i + 1), Utils.doubleConsonant) ) {
                             singleSyllable.push(msgAlphabet[i]);
 
                         }
@@ -815,8 +912,8 @@ const Utils = {
             for (i =0; i<divideSyllable.length; i++) {
                 let cnt = 0;
                 for (var letter of Hangul.assemble(divideSyllable[i])) { // 한글 숫자 조합. Hangul.assemble로 조합.
-                    // 한글 자음 낱자가 아닐 때 cnt 늘리기...
-                    if (!/[ㄱ-ㅎ]/.test(letter)) cnt++;
+                    // 한글 자음 낱자 아니면 cnt 늘리기...
+                    if (!/[ㄱ-ㅎ]/.test(letter) ) cnt++;
                 }
                 if (res[Hangul.assemble(divideSyllable[i])]) {
                     res[Hangul.assemble(divideSyllable[i])]["index"].push(ind);

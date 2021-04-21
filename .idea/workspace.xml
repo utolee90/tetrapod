@@ -2,9 +2,42 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="104ff4eb-fd97-4171-9f6f-14d519183829" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-badwords/음운(최소)/모음/ㅓ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/어절/ㅗ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/어절/지랄.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/모음.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/모음/ㅏ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/모음/ㅗ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/모음/ㅜ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/모음/ㅣ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/모음_복합.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/모음_복합수직.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/모음_복합수평.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/모음_수직.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/모음_수평.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/받침.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㄱ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㄲ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㄴ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㄷ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㄹ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㅁ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㅂ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㅅ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㅇ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㅈ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㅊ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㅋ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㅌ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㅍ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음운/자음/ㅎ.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음절/랄.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음절/발.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음절/시.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bias/source/kr-fword/음절/지.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bias/source/kr-badwords/음절(글자)/시.json" beforeDir="false" afterPath="$PROJECT_DIR$/bias/source/kr-badwords/음절(글자)/시.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Utils.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Utils.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/resource/dictionary/bad-words.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/bad-words.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/resource/dictionary/normal-words.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/normal-words.json" afterDir="false" />
@@ -29,6 +62,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="ProblemsViewState">
+    <option name="selectedIndex" value="1" />
+  </component>
   <component name="ProjectId" id="1nn2ZoLwdLRCeQQaa9rtLu8lOXn" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -41,13 +77,16 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="javascript.nodejs.core.library.configured.version" value="14.15.2" />
     <property name="javascript.nodejs.core.library.typings.version" value="14.14.31" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../gisang_03" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/bias/source/kr-fword/음절" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\PhpStorm 2020.3\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Klleon_Yohan\kamelo_team\tetrapod\bias\source\kr-fword\음절" />
+      <recent name="C:\Users\Klleon_Yohan\kamelo_team\tetrapod\bias\source\kr-fword\음운" />
+      <recent name="C:\Users\Klleon_Yohan\kamelo_team\tetrapod\bias\source\kr-fword\어절" />
       <recent name="C:\Users\Klleon_Yohan\kamelo_team\tetrapod\resource\klleon" />
     </key>
   </component>
@@ -86,8 +125,16 @@
       <workItem from="1617938363025" duration="6678000" />
       <workItem from="1618202355361" duration="58727000" />
       <workItem from="1618374271637" duration="24289000" />
-      <workItem from="1618463777571" duration="57529000" />
+      <workItem from="1618463777571" duration="143421000" />
     </task>
+    <task id="LOCAL-00001" summary="modify source">
+      <created>1618747573738</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1618747573739</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -104,19 +151,24 @@
       </map>
     </option>
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="modify source" />
+    <option name="LAST_COMMIT_MESSAGE" value="modify source" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/tetrapod.js</url>
-          <line>1126</line>
-          <option name="timeStamp" value="2" />
+          <line>644</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/tetrapod.js</url>
-          <line>650</line>
+          <line>414</line>
           <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="4" />
+          <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

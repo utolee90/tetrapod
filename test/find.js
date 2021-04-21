@@ -12,15 +12,23 @@ word = word.join(' ')
 
 
 Tetrapod.defaultLoad()
+
+// console.log("1", require("../resource/dictionary/bad-words.json").badwords)
+// console.log(Tetrapod.getDefaultData().badWords)
+console.log("\n\n======================")
+console.log(Tetrapod.isExistBadWord('지랄'))
 // console.log(Tetrapod.nativeFind("시발", true))
 // console.log(Tetrapod.alphabetToKo('ㄱH^ㅣ불 완전 쨩나', true))
 
 let targetWord = '시발'
 // Bias.buildHelper(`kr-badwords`, targetWord, false)
+console.log(Utils.lengthSplit("아니 정말 긴 메시지가 짜증나게 기네. 에휴...", 10))
 console.log(Utils.dropIung("시발 한남충 씨발", true, false))
 console.log('\n\n\n\n==========================')
 console.log(Utils.alphabetToKo("^|발 한남충 씨발", false))
 console.log(Tetrapod.find("^|발 한남충 씨발", true, 0, false, true));
+Tetrapod.defaultSaveAllData()
+
 // console.log(Utils.dropIung("시발 저 한남충 시발", true));
 // console.log(Utils.parseMap(Utils.dropIung("시발 저 한남충 시발", true)));
 // console.log(Tetrapod.countBad("시발 저 한남충 시발", true));
@@ -67,8 +75,12 @@ const test = (word)=>{
     console.timeEnd('탐색시간: ')
 }
 
+*받침 -> 받침: ["*받침"]
 */
 
+console.log("text", Tetrapod.fix("즤랄 왕이 나셨도다 ㄱHㅅH끼", '$', {alphabetToKo:true, isOriginal:true}))
+
+console.log(Tetrapod.nativeFind(Utils.dropIung("십발 정말 값삾핪닚닶", true), true, true))
 console.log("\n\n================")
 // console.log(Bias.recursiveComponent([["*별"], ["사랑", "사귐"]],
 //     {}, {"별":["벌", "별", "뻘", "뼐", "펄", [["펼"], ["", "써"]]]}
@@ -77,3 +89,22 @@ console.log("\n\n================")
 //     {"별":["벌", "별", "뻘", "뼐", "펄", "펼"]} ))
 console.log(Tetrapod.fix("tlqkf dhkddl sktuTehek", "X", {enToKo:true}))
 
+console.log("지?랄?염병 테스트", Tetrapod.isExistBadWord("지!랄!염병"))
+// console.log(Utils.dropIung("밥옵", true, true))
+// Bias.buildHelper('kr-fword', "지랄")
+// console.log(Tetrapod.recursiveComponent([["바"], ["*보"]], {"보":["*보", "*봉"]}))
+// console.log(Utils.filterList(["1", 2, "사기"], "string"))
+// console.log(Tetrapod.isKindChar("즤", "지"))
+
+console.log(Utils.objectEqual([Hangul.disassemble("즤")[0], Hangul.disassemble("즤")[2]], Hangul.disassemble("지")))
+
+console.log(Tetrapod.nativeFind("지뢀염병", true))
+console.log(Tetrapod.isKindChar("뢀", "랄"))
+
+// console.log(Utils.objectInclude(['지', '병'], ["지", "염", "병", "룡"], true))
+// console.log(Utils.objectInclude(["지","병"], ["병","지"], true))
+// console.log(Utils.objectInclude(["지","병"], ["병","지"], false))
+console.log(Tetrapod.wordInclude("지뢀염병", "지!랄!염병"))
+console.log(Tetrapod.isKindChar("즤", "지"))
+console.log(Tetrapod.assembleHangul(["가ㅈㅣ", "구라", "개굴ㅣ"]))
+console.log(Tetrapod.find("^l바2롬", true, 0, false, true))
