@@ -19,6 +19,10 @@ var parsedInsultWords = []
 var parsedSexualityWords = []
 var parsedViolenceWords = []
 
+// 정상단어/예외처리된 단어들도 파싱해서 처리해보자.
+// var parsedNormalWords = []
+// var parsedExceptWords = []
+
 // 유동적인 비속어 목록 관리를 위해 이미 배열에
 // 특정 단어가 존재하는지를 확인하기위해 해시맵을 사용합니다.
 var badWordsMap = {}
@@ -39,6 +43,8 @@ class Tetrapod {
         typeofBadWords = inputTypeofBadWords
         badWordMacros = inputBadWordMacros
 
+        console.log("LOADING...", new Date().getTime())
+
         if (disableAutoParse != false) {
             this.parse()
             this.mapping()
@@ -46,20 +52,20 @@ class Tetrapod {
         }
     }
 
-    // enToKo test
-    static enToKo (msg, isMap) {
-        return Utils.enToKo(msg, isMap);
+    // qwertyToDubeol test
+    static qwertyToDubeol (msg, isMap) {
+        return Utils.qwertyToDubeol(msg, isMap);
     }
 
-    // alphabetToKotest
-    static alphabetToKo(msg, isMap) {
-        return Utils.alphabetToKo(msg, isMap);
+    // antispooftest
+    static antispoof(msg, isMap) {
+        return Utils.antispoof(msg, isMap);
     }
 
-    // dropiung Test
-    static dropIung(msg, isMap) {
+    // dropDouble Test
+    static dropDouble(msg, isMap) {
         if (/[가-힣|ㅏ-ㅣ|ㄱ-ㅎ \s]/.test(msg)) {
-            return Utils.dropIung(msg, isMap);
+            return Utils.dropDouble(msg, isMap);
         }
     }
 
@@ -71,7 +77,7 @@ class Tetrapod {
     }
 
     // 비속어 사전 파일 로딩함.
-    static loadFile(badWordsPath, normalWordsPath, softSearchWordsPath) {
+    static loadFile(badWordsPath, normalWordsPath, softSearchWordsPath, macrosPath, disableAutoParse) {
         let data = {
             badWords: require(badWordsPath).badwords,
             normalWords: require(normalWordsPath).dictionary,
@@ -83,15 +89,16 @@ class Tetrapod {
                 sexuality: require(badWordsPath).sexuality,
                 violence: require(badWordsPath).violence
             },
-            badWordMacros: require(badWordsPath).macros,
+            badWordMacros: require(macrosPath),
         }
-        this.load(data.badWords, data.normalWords, data.softSearchWords, data.exceptWords, data.typeofBadWords, data.badWordMacros)
+        this.load(data.badWords, data.normalWords, data.softSearchWords, data.exceptWords, data.typeofBadWords, data.badWordMacros, disableAutoParse)
     }
 
     // 기본 비속어 사전의 목록 로드
     static defaultLoad() {
         let data = this.getDefaultData()
         // console.log(Object.keys(data))
+        console.log("defaultLoad", new Date().getTime())
         this.load(data.badWords, data.normalWords, data.softSearchWords, data.exceptWords, data.typeofBadWords, data.badWordMacros)
     }
 
@@ -107,36 +114,53 @@ class Tetrapod {
         parsedInsultWords = []
         parsedSexualityWords = []
         parsedViolenceWords =[]
+        // parsedNormalWords = []
+        // parsedExceptWords = []
+
+        console.log("Parsing Start", new Date().getTime())
+        // exceptWords 파싱
+        // for (let index in exceptWords) {
+        //     if (!Utils.objectIn(Utils.wordToArray(exceptWords[index]), parsedExceptWords)) {
+        //         parsedExceptWords.push(Utils.wordToArray(exceptWords[index]))
+        //     }
+        // }
+        // NormalWords 파싱
+        // for (let index in normalWords) {
+        //     if ( !Utils.objectIn(Utils.wordToArray(normalWords[index]), parsedNormalWords)) {
+        //         parsedNormalWords.push(Utils.wordToArray(normalWords[index]))
+        //     }
+        // }
+        // softSearchWord 파싱
         for (let index in softSearchWords) {
-            if (!Utils.objectIn(Utils.wordToArray(softSearchWords[index]), parsedSoftSearchWords))
+            if (!this.testInList( Utils.wordToArray(softSearchWords[index]), parsedSoftSearchWords ) )
                 parsedSoftSearchWords.push(Utils.wordToArray(softSearchWords[index]))
         }
         // softSearchWords에 들어가지 않는 단어들만 집어넣기
         for (let index in typeofBadWords.drug) {
             if (
-                !Utils.objectIn(Utils.wordToArray(typeofBadWords.drug[index]), parsedDrugWords)
-                && !Utils.objectIn(Utils.wordToArray(typeofBadWords.drug[index]), parsedSoftSearchWords)
+                !this.testInList( Utils.wordToArray(typeofBadWords.drug[index]), parsedDrugWords )
+                // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.drug[index]), parsedSoftSearchWords)
             )
                 parsedDrugWords.push(Utils.wordToArray(typeofBadWords.drug[index]))
         }
         for (let index in typeofBadWords.insult) {
             if (
-                !Utils.objectIn(Utils.wordToArray(typeofBadWords.insult[index]), parsedInsultWords)
-                && !Utils.objectIn(Utils.wordToArray(typeofBadWords.insult[index]), parsedSoftSearchWords)
+                !this.testInList( Utils.wordToArray(typeofBadWords.insult[index]), parsedInsultWords )
+                // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.insult[index]), parsedSoftSearchWords)
             )
                 parsedInsultWords.push(Utils.wordToArray(typeofBadWords.insult[index]))
         }
         for (let index in typeofBadWords.sexuality) {
             if (
-                !Utils.objectIn(Utils.wordToArray(typeofBadWords.sexuality[index]), parsedSexualityWords)
-                && !Utils.objectIn(Utils.wordToArray(typeofBadWords.sexuality[index]), parsedSoftSearchWords)
+                !this.testInList( Utils.wordToArray(typeofBadWords.sexuality[index]), parsedSexualityWords )
+                // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.sexuality[index]), parsedSoftSearchWords)
             )
                 parsedSexualityWords.push(Utils.wordToArray(typeofBadWords.drug[index]))
         }
         for (let index in typeofBadWords.violence) {
             if (
-                !Utils.objectIn(Utils.wordToArray(typeofBadWords.violence[index]), parsedViolenceWords)
-                && !Utils.objectIn(Utils.wordToArray(typeofBadWords.violence[index]), parsedViolenceWords)
+                !this.testInList( Utils.wordToArray(typeofBadWords.violence[index]), parsedViolenceWords )
+                // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.violence[index]), parsedViolenceWords)
             )
                 parsedViolenceWords.push(Utils.wordToArray(typeofBadWords.violence[index]))
         }
@@ -145,17 +169,17 @@ class Tetrapod {
         // softSearchWords나 위의 분류에 들어가지 않은 단어들만 집어넣게 변경.
         for (let index in badWords) {
             if (
-                !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedBadWords)
-                && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedSoftSearchWords)
-                && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedDrugWords)
-                && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedInsultWords)
-                && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedSexualityWords)
-                && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedViolenceWords)
+                !this.testInList( Utils.wordToArray(badWords[index]), parsedBadWords )
+                // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedSoftSearchWords)
+                // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedDrugWords)
+                // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedInsultWords)
+                // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedSexualityWords)
+                // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedViolenceWords)
             )
                 parsedBadWords.push(Utils.wordToArray(badWords[index]))
         }
 
-
+        console.log("befor Sorting Words", new Date().getTime())
         // 단어의 길이 역순으로 정렬
         parsedBadWords.sort((a,b)=> a.length-b.length).reverse();
         parsedSoftSearchWords.sort((a,b)=> a.length-b.length).reverse();
@@ -164,10 +188,23 @@ class Tetrapod {
         parsedSexualityWords.sort((a,b)=> a.length-b.length).reverse();
         parsedViolenceWords.sort((a,b)=> a.length-b.length).reverse();
 
+        console.log("parseWords", new Date().getTime())
+
     }
 
-    static showParsedSoftSearchWords() {
-        console.log(parsedSoftSearchWords);
+    // 비교시간 단축을 위한 테크닉.
+    // 리스트들의 목록 List에 대해 리스트 elem이 List 안에 있는지 판별하기.
+    static testInList(elem, List) {
+        // 우선 길이가 같은 tempList만 추출하기
+        let sameLengthList = List.filter(x=>(x.length=== elem.length))
+
+        // 각 원소에 대해 objectEqual을 이용해서 체크하기
+        for (let i in List) {
+            sameLengthList = sameLengthList.filter(x=> (Utils.objectEqual(List[i], x[i])))
+        }
+        // 리스트 안에 있으면 true, 없으면 false
+        if (sameLengthList.length>0) return true;
+        else return false;
     }
 
     // 목록을 맵으로 지정.
@@ -231,12 +268,16 @@ class Tetrapod {
         this.sortBadWordsMap()
         this.sortNormalWordsMap()
         this.sortSoftSearchWordsMap()
+        console.log("sortAll", new Date().getTime())
     }
 
     // 기본 데이터 불러오기
     static getDefaultData() {
-        let badWordMacros = require('./resource/dictionary/bad-words.json').macros
-
+        let badWordMacros = require('./resource/dictionary/macros.json')
+        for (var x in badWordMacros) {
+            if (typeof badWordMacros[x] === "object") badWordMacros[x] = this.recursiveList(badWordMacros[x])
+        }
+        console.log("getDefaultData", new Date().getTime())
         return {
             badWords: this.recursiveList(require('./resource/dictionary/bad-words.json').badwords, badWordMacros),
             normalWords: this.recursiveList(require('./resource/dictionary/normal-words.json').dictionary, badWordMacros),
@@ -267,13 +308,22 @@ class Tetrapod {
     // 데이터 저장
     static defaultSaveAllData() {
         !fs.existsSync('./resource/klleon/') && fs.mkdirSync('./resource/klleon');
-        this.saveAllData('./resource/klleon/bad-words.json', './resource/klleon/normal-words.json', './resource/klleon/soft-search-words.json', false)
+        this.saveAllData('./resource/klleon/bad-words.json', './resource/klleon/normal-words.json', './resource/klleon/soft-search-words.json', './resource/klleon/macros.json', false)
     }
 
-    static saveAllData(badWordsPath, normalWordsPath, softSearchWordsPath, isAsync) {
+    static saveAllData(badWordsPath, normalWordsPath, softSearchWordsPath, badWordMacrosPath, isAsync) {
         this.saveBadWordsData(badWordsPath, isAsync)
         this.saveNormalWordsData(normalWordsPath, isAsync)
         this.saveSoftSearchWordsData(softSearchWordsPath, isAsync)
+        this.saveBadWordMacros(badWordMacrosPath, isAsync)
+    }
+
+    static saveBadWordMacros(path, isAsync) {
+        let data = JSON.stringify(
+            badWordMacros, null, 4
+        );
+        if(isAsync) fs.writeFile(path, data)
+        else fs.writeFileSync(path, data)
     }
 
     static saveBadWordsData(path, isAsync) {
@@ -285,7 +335,6 @@ class Tetrapod {
             insult: typeofBadWords.insult,
             sexuality: typeofBadWords.sexuality,
             violence: typeofBadWords.violence,
-            macros: badWordMacros
         }, null, 4)
 
         if(isAsync) fs.writeFile(path, data)
@@ -365,7 +414,7 @@ class Tetrapod {
     }
 
     // 메시지에 비속어 찾기 - 배열로 처리함.
-    static find(message, needMultipleCheck=false, splitCheck=15, needEnToKo=false, isStrong=false) {
+    static find(message, needMultipleCheck=false, splitCheck=15, qwertyToDubeol=false, isStrong=false) {
         // 욕설 결과 집합
         let totalResult = []
         let softResult = []
@@ -383,16 +432,16 @@ class Tetrapod {
         let message5Map = {}
         let message5 = ''
 
-        if (needEnToKo === true && isStrong === false) { // 만약 한영 검사가 필요하면...
-            message2Map = Utils.enToKo(message, true);
-            message2 = Utils.enToKo(message, false); // 2차 점검용
+        if (qwertyToDubeol === true && isStrong === false) { // 만약 한영 검사가 필요하면...
+            message2Map = Utils.qwertyToDubeol(message, true);
+            message2 = Utils.qwertyToDubeol(message, false); // 2차 점검용
         }
         if (isStrong === true) { // 문자열을 악용한 것까지 잡아보자.
-            message3Map = Utils.alphabetToKo(message, true);
-            message3 = Utils.alphabetToKo(message, false);
-            message4Map = Utils.dropIung(message3, true, true);
-            message5Map = Utils.dropIung(message3, true, true);
-            message5 = Utils.dropIung(message3, false, true);
+            message3Map = Utils.antispoof(message, true);
+            message3 = Utils.antispoof(message, false);
+            message4Map = Utils.dropDouble(message3, true, true);
+            message5Map = Utils.dropDouble(message3, true, true);
+            message5 = Utils.dropDouble(message3, false, true);
         }
 
         if (splitCheck === undefined) splitCheck = 15
@@ -463,8 +512,8 @@ class Tetrapod {
                     }
                 }
             }
-            // enToKo를 잡을 때
-            if (totalResult.length ===0 && needEnToKo === true) {
+            // qwertyToDubeol를 잡을 때
+            if (totalResult.length ===0 && qwertyToDubeol === true) {
                 let currentResult = this.nativeFind(message2Map, needMultipleCheck, true);
                 let currentResultDrug = this.nativeFind(message2Map,needMultipleCheck, true, false, "drug")
                 let currentResultInsult = this.nativeFind(message2Map, needMultipleCheck,true, false, "insult")
@@ -636,7 +685,7 @@ class Tetrapod {
     static nativeFind(message, needMultipleCheck, isMap = false, isReassemble = false, type="") {
 
         // let unsafeMessage = message.toLowerCase()
-        let normalWordPositions = {}
+        // let normalWordPositions = {}
         let foundedBadWords = [];
         let foundedBadOriginalWords = []; // isMap에서 original 단어
         let foundedBadWordPositions = []
@@ -657,7 +706,7 @@ class Tetrapod {
             originalMessageList = Utils.parseMap(message).messageList;
             // console.log(message);
             originalMessage = originalMessageList.join("");
-            // dropIung일 때에는 바ㅂ오 ->밥오로 환원하기 위해 originalMessage를 한글 조합으로
+            // dropDouble일 때에는 바ㅂ오 ->밥오로 환원하기 위해 originalMessage를 한글 조합으로
             originalMessage = isReassemble ? Hangul.assemble(Hangul.disassemble(originalMessage)): originalMessage;
             originalMessageSyllablePositions =  Utils.parseMap(message).messageIndex;
             newMessage = Utils.parseMap(message).parsedMessage.join("");
@@ -668,22 +717,26 @@ class Tetrapod {
 
 
         // 정상단어의 포지션을 찾습니다.
-        for (let index in normalWords) {
-            if (newMessage.length == 0) break
-            let searchedPositions = Utils.getPositionAll(newMessage, normalWords[index])
-            for(let searchedPosition of searchedPositions) {
-                if(searchedPosition !== -1) {
-                    // 정상단어 예외 포지션을 찾습니다.
-                    for (let index2 in exceptWords) {
-                        let exceptionPositions = Utils.getPositionAll(newMessage, exceptWords[index2])
-                        if (!Utils.objectIn(searchedPosition, exceptionPositions))
-                            normalWordPositions[searchedPosition] = true
-                    }
-                }
-            }
-        }
-        // normalWordPositions 형식
-        // {정상단어 포지션 번호:true} 형식.
+        // 형식 : [1,2,3,...]
+        let normalWordPositions = this.findNormalWordPositions(newMessage, false)
+        // console.log(normalWordPositions);
+
+
+
+        // for (let index in normalWords) {
+        //     if (newMessage.length == 0) break
+        //     let searchedPositions = Utils.getPositionAll(newMessage, normalWords[index])
+        //     for(let searchedPosition of searchedPositions) {
+        //         if(searchedPosition !== -1) {
+        //             // 정상단어 예외 포지션을 찾습니다.
+        //             for (let index2 in exceptWords) {
+        //                 let exceptionPositions = Utils.getPositionAll(newMessage, exceptWords[index2])
+        //                 if (!Utils.objectIn(searchedPosition, exceptionPositions))
+        //                     normalWordPositions[searchedPosition] = true
+        //             }
+        //         }
+        //     }
+        // }
 
 
         // 저속한 단어들을 한 단어식 순회합니다.
@@ -714,8 +767,11 @@ class Tetrapod {
             for (let character of softSearchWord) {
 
                 let mainCharacter = character[0]
+
                 let parserCharacter = character[1] // ! 또는 ?
                 parserLength = parserCharacter === "!" ? character.length -2 : character.length-1; // ? 개수 추정.
+                let nextCharacter = (parserLength===0 && softSearchWord.indexOf(character)<softSearchWord.length-1)
+                    ? softSearchWord[ softSearchWord.indexOf(character)+1 ][0]: "" // 뒤의 낱자 수집.
 
                 let softSearchOneCharacter = String(mainCharacter).toLowerCase();
 
@@ -730,15 +786,15 @@ class Tetrapod {
 
                     // 정상적인 단어의 글자일경우 검사하지 않습니다.
                     // 적발된 단어가 모두 정상포지션에 자리잡힌 경우 잡지 않는다.
-                    if (typeof normalWordPositions[Number(index)] != 'undefined') continue
+                    if (Utils.objectIn(index, normalWordPositions)) continue
 
                     // 단어 한글자라도 들어가 있으면
                     // 찾은 글자를 기록합니다.
                     let unsafeOneCharacter = String(newMessage[index]).toLowerCase()
-                    // parserCharacter가 ?이면 동일 낱자뿐 아니라 유사 낱자에 해당하는 경우도 모두 수집한다.
-                    if (parserCharacter==="?") {
+                    // parserCharacter가 !이면 동일 낱자뿐 아니라 유사 낱자에 해당하는 경우도 모두 수집한다.
+                    if (parserCharacter==="!") {
                         // isKindChar 함수 활용
-                        if (this.isKindChar(unsafeOneCharacter, softSearchOneCharacter)) {
+                        if (this.isKindChar(unsafeOneCharacter, softSearchOneCharacter, nextCharacter)) {
                             findCount[softSearchOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
                         }
 
@@ -752,10 +808,9 @@ class Tetrapod {
                 }
             }
 
-
             // 단어 포지션 리스트
             let positionsList = Utils.filterList(Object.values(findCount), "object")
-            let astList = Utils.filterList(Object.values(findCount), "number")
+            let numberOfQs = Utils.filterList(Object.values(findCount), "number")
             // 낱자 포지션 맵
             let possibleWordPositions = Utils.productList(positionsList);
 
@@ -807,7 +862,7 @@ class Tetrapod {
 
                     // 글자간 사이에 있는 모든 글자를 순회합니다.
                     let diff = ''
-                    let tempCnt = astList[diffRangeIndex]
+                    let tempCnt = numberOfQs[diffRangeIndex]
                     for(let diffi = positionInterval[diffRangeIndex][0]+1; diffi <= (positionInterval[diffRangeIndex][1]-1); diffi++){
 
                         if (tempCnt>0) {
@@ -876,7 +931,13 @@ class Tetrapod {
                     if (isMap) {
 
                         for (var pos of tempSoftSearchWordPositions) {
-                            for (var k =0; k <originalMessageList[Number(pos)].length; k++) {
+
+                            // 갯수 세기. isReassemble일 때에는 한글 낱자의 갯수만 센다.
+                            let originalCount = originalMessageList[Number(pos)].length;
+                            if (isReassemble) {
+                                originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
+                            }
+                            for (var k =0; k <originalCount; k++) {
 
                                     tempSoftSearchWordOriginalPositions.push(originalMessageSyllablePositions[pos] + k);
                             }
@@ -901,7 +962,7 @@ class Tetrapod {
             if (softSearchWordPositions.length>0) {
 
                 if (isMap) {
-                    // isReassemble 옵션은 dropIung에서 받침을 뒷 글자에 강제로 붙이는 경우에 대비해서 조합해준다.
+                    // isReassemble 옵션은 dropDouble에서 받침을 뒷 글자에 강제로 붙이는 경우에 대비해서 조합해준다.
                     console.log(`원문: ${originalMessage}`);
                     console.log(`변환된 문장: ${newMessage}`);
                     console.log(`발견된 저속한 표현: [${softSearchWord.join()}]`)
@@ -983,6 +1044,10 @@ class Tetrapod {
 
                 parserLength = parserCharacter === "!" ? character.length -2 : character.length-1; // ? 개수 추정.
 
+                // 뒤의 낱자 수집
+                let nextCharacter = (parserLength===0 && badWord.indexOf(character)<badWord.length-1)
+                    ? badWord[ badWord.indexOf(character)+1 ][0].toLowerCase(): "" // 뒤의 낱자 수집.
+
                 let badOneCharacter = String(mainCharacter).toLowerCase();
 
                 // 일단 비속어 단어의 리스트를 정의해서 수집한다.
@@ -995,7 +1060,7 @@ class Tetrapod {
                 for (let index in newMessage) {
 
                     // 정상적인 단어의 글자일경우 검사하지 않습니다.
-                    if (typeof normalWordPositions[Number(index)] != 'undefined') continue
+                    if (Utils.objectIn(index, normalWordPositions)) continue
 
                     // 단어 한글자라도 들어가 있으면
                     // 찾은 글자를 기록합니다.
@@ -1004,7 +1069,7 @@ class Tetrapod {
                     if (parserCharacter==="!") {
                         // isKindChar 함수 활용
 
-                        if (this.isKindChar(unsafeOneCharacter, badOneCharacter)) {
+                        if (this.isKindChar(unsafeOneCharacter, badOneCharacter, nextCharacter)) {
                             findCount[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
                         }
 
@@ -1031,7 +1096,7 @@ class Tetrapod {
             // 단어 포지션 리스트
             let positionsList = Utils.filterList(Object.values(findCount), "object");
             // 단어 뒤의 ? 갯수
-            let astList = Utils.filterList(Object.values(findCount), "number")
+            let numberOfQs = Utils.filterList(Object.values(findCount), "number")
             // 낱자 포지션 맵
             let possibleWordPositions = Utils.productList(positionsList);
 
@@ -1087,7 +1152,7 @@ class Tetrapod {
 
                 for(let diffRangeIndex in positionInterval){
 
-                    let tempCnt = astList[diffRangeIndex];
+                    let tempCnt = numberOfQs[diffRangeIndex];
 
                     // 글자간 사이에 있는 모든 글자를 순회합니다.
                     let diff = ''
@@ -1202,8 +1267,14 @@ class Tetrapod {
                     // map일 때는 메시지 더 찾기
                     if (isMap) {
 
+                        // 갯수 세기. isReassemble일 때에는 한글 낱자의 갯수만 센다.
+                        let originalCount = originalMessageList[Number(pos)].length;
+                        if (isReassemble) {
+                            originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
+                        }
+
                         for (var pos of tempBadWordPositions) {
-                            for (var k =0; k <originalMessageList[Number(pos)].length; k++) {
+                            for (var k =0; k <originalCount; k++) {
 
                                 tempBadWordOriginalPositions.push( originalMessageSyllablePositions[pos] + k);
                             }
@@ -1286,7 +1357,7 @@ class Tetrapod {
 
     // 비속어 리스트가 주어졌을 때 비속어 리스트 안에서 검사하기.
     static nativeFindFromList(message, parsedWordsList, needMultipleCheck=false, isMap=false, isReassemble=false) {
-        let normalWordPositions = {}
+        // let normalWordPositions = {}
         let foundedBadWords = []
         let foundedBadOriginalWords = []
         let foundedBadWordPositions = []
@@ -1302,7 +1373,7 @@ class Tetrapod {
             originalMessageList = Utils.parseMap(message).messageList;
             // console.log(message);
             originalMessage = originalMessageList.join("");
-            // dropIung일 때에는 바ㅂ오 ->밥오로 환원하기 위해 originalMessage를 한글 조합으로
+            // dropDouble일 때에는 바ㅂ오 ->밥오로 환원하기 위해 originalMessage를 한글 조합으로
             originalMessage = isReassemble ? Hangul.assemble(Hangul.disassemble(originalMessage)): originalMessage;
             originalMessageSyllablePositions =  Utils.parseMap(message).messageIndex;
             newMessage = Utils.parseMap(message).parsedMessage.join("");
@@ -1312,13 +1383,17 @@ class Tetrapod {
         }
 
         // 정상단어의 포지션을 찾습니다.
-        for (let index in normalWords) {
-            if (newMessage.length == 0) break
-            let searchedPositions = Utils.getPositionAll(newMessage, normalWords[index])
-            for(let searchedPosition of searchedPositions)
-                if(searchedPosition !== -1)
-                    normalWordPositions[searchedPosition] = true
-        }
+        // 형식 : [1,2,3,...]
+        let normalWordPositions = this.findNormalWordPositions(newMessage, false)
+
+        // 정상단어의 포지션을 찾습니다.
+        // for (let index in normalWords) {
+        //     if (newMessage.length == 0) break
+        //     let searchedPositions = Utils.getPositionAll(newMessage, normalWords[index])
+        //     for(let searchedPosition of searchedPositions)
+        //         if(searchedPosition !== -1)
+        //             normalWordPositions[searchedPosition] = true
+        // }
         // normalWordPositions 형식
         // {정상단어 포지션 번호:true} 형식.
 
@@ -1352,6 +1427,9 @@ class Tetrapod {
                 let parserCharacter = character[1] // !, ? 또는 undefined
                 parserLength = parserCharacter==="!"? character.length-2 : character.length-1
                 let badOneCharacter = String(mainCharacter).toLowerCase();
+                // 뒤의 낱자 수집
+                let nextCharacter = (parserLength===0 && badWord.indexOf(character)<badWord.length-1)
+                    ? badWord[ badWord.indexOf(character)+1 ][0].toLowerCase(): "" // 뒤의 낱자 수집.
 
                 // 일단 저속한 단어의 리스트를 정의해서 수집한다.
                 findCount[badOneCharacter] = []
@@ -1364,14 +1442,14 @@ class Tetrapod {
 
                     // 정상적인 단어의 글자일경우 검사하지 않습니다.
                     // 적발된 단어가 모두 정상포지션에 자리잡힌 경우 잡지 않는다.
-                    if (typeof normalWordPositions[Number(index)] != 'undefined') continue
+                    if (Utils.objectIn(index, normalWordPositions)) continue
 
                     // 단어 한글자라도 들어가 있으면
                     // 찾은 글자를 기록합니다.
                     let unsafeOneCharacter = String(newMessage[index]).toLowerCase()
                     if (parserCharacter==="!") {
                         // isKindChar 함수 활용
-                        if (this.isKindChar(unsafeOneCharacter, badOneCharacter)) {
+                        if (this.isKindChar(unsafeOneCharacter, badOneCharacter, nextCharacter)) {
                             findCount[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
                         }
 
@@ -1389,7 +1467,7 @@ class Tetrapod {
             // 단어 포지션 리스트
             let positionsList = Utils.filterList(Object.values(findCount), "object");
             // 단어 뒤의 ? 갯수
-            let astList = Utils.filterList(Object.values(findCount), "number")
+            let numberOfQs = Utils.filterList(Object.values(findCount), "number")
             // 낱자 포지션 맵
             let possibleWordPositions = Utils.productList(positionsList);
 
@@ -1437,7 +1515,7 @@ class Tetrapod {
 
                 for(let diffRangeIndex in positionInterval){
 
-                    let tempCnt = astList[diffRangeIndex]
+                    let tempCnt = numberOfQs[diffRangeIndex]
 
                     // 글자간 사이에 있는 모든 글자를 순회합니다.
                     let diff = ''
@@ -1499,8 +1577,14 @@ class Tetrapod {
 
                     if (isMap) {
 
+                        // 갯수 세기. isReassemble일 때에는 한글 낱자의 갯수만 센다.
+                        let originalCount = originalMessageList[Number(pos)].length;
+                        if (isReassemble) {
+                            originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
+                        }
+
                         for (var pos of tempBadWordPositions) {
-                            for (var k =0; k <originalMessageList[Number(pos)].length; k++) {
+                            for (var k =0; k <originalCount; k++) {
 
                                 tempBadWordOriginalPositions.push(originalMessageSyllablePositions[pos] + k);
                             }
@@ -1525,7 +1609,7 @@ class Tetrapod {
             if (badWordPositions.length>0) {
 
                 if (isMap) {
-                    // isReassemble 옵션은 dropIung에서 받침을 뒷 글자에 강제로 붙이는 경우에 대비해서 조합해준다.
+                    // isReassemble 옵션은 dropDouble에서 받침을 뒷 글자에 강제로 붙이는 경우에 대비해서 조합해준다.
                     console.log(`원문: ${originalMessage}`);
                     console.log(`변환된 문장: ${newMessage}`);
                     console.log(`발견된 비속어: [${badWord.join()}]`)
@@ -1573,34 +1657,34 @@ class Tetrapod {
     }
 
     // 비속어를 결자처리하는 함수
-    static fix(message, replaceCharacter, condition= {enToKo:false, alphabetToKo:false, dropIung:false, fixSoft:false, isOriginal:false}) {
+    static fix(message, replaceCharacter, condition= {qwertyToDubeol:false, antispoof:false, dropDouble:false, fixSoft:false, isOriginal:false}) {
 
         let fixedMessage = "";
         let fixedMessageList = [];
         let fixedMessageIndex = []
         let fixedMessageObject = {}
         // condition
-        if (condition.enToKo) {
-            fixedMessageObject = this.nativeFind(Utils.enToKo(message, true), true, true)
-            fixedMessageList = condition.isOriginal ? Utils.parseMap(Utils.enToKo(message, true)).messageList : Utils.parseMap(Utils.enToKo(message, true)).parsedMessage
-            fixedMessageIndex = Utils.parseMap(Utils.enToKo(message, true)).messageIndex;
+        if (condition.qwertyToDubeol) {
+            fixedMessageObject = this.nativeFind(Utils.qwertyToDubeol(message, true), true, true)
+            fixedMessageList = condition.isOriginal ? Utils.parseMap(Utils.qwertyToDubeol(message, true)).messageList : Utils.parseMap(Utils.qwertyToDubeol(message, true)).parsedMessage
+            fixedMessageIndex = Utils.parseMap(Utils.qwertyToDubeol(message, true)).messageIndex;
             // fixedMessage = fixedMessageList.join("")
         }
-        else if (condition.dropIung) {
-            fixedMessageObject = this.nativeFind(Utils.dropIung(message, true), true, true, true)
-            fixedMessageList = condition.isOriginal? Utils.parseMap(Utils.dropIung(message, true)).messageList:Utils.parseMap(Utils.dropIung(message, true)).parsedMessage
-            fixedMessageIndex = Utils.parseMap(Utils.dropIung(message, true)).messageIndex;
+        else if (condition.dropDouble) {
+            fixedMessageObject = this.nativeFind(Utils.dropDouble(message, true), true, true, true)
+            fixedMessageList = condition.isOriginal? Utils.parseMap(Utils.dropDouble(message, true)).messageList:Utils.parseMap(Utils.dropDouble(message, true)).parsedMessage
+            fixedMessageIndex = Utils.parseMap(Utils.dropDouble(message, true)).messageIndex;
             // fixedMessage = fixedMessageList.join("")
         }
-        else if (condition.alphabetToKo) {
-            fixedMessageObject = this.nativeFind(Utils.alphabetToKo(message, true), true, true)
-            fixedMessageList = condition.isOriginal? Utils.parseMap(Utils.alphabetToKo(message, true)).messageList: Utils.parseMap(Utils.alphabetToKo(message, true)).parsedMessage
-            fixedMessageIndex = Utils.parseMap(Utils.alphabetToKo(message, true)).messageIndex;
+        else if (condition.antispoof) {
+            fixedMessageObject = this.nativeFind(Utils.antispoof(message, true), true, true)
+            fixedMessageList = condition.isOriginal? Utils.parseMap(Utils.antispoof(message, true)).messageList: Utils.parseMap(Utils.antispoof(message, true)).parsedMessage
+            fixedMessageIndex = Utils.parseMap(Utils.antispoof(message, true)).messageIndex;
             // fixedMessage = fixedMessageList.join("")
         }
         else {``
-            fixedMessageObject = this.nativeFind(Utils.alphabetToKo(message, true), true, true)
-            fixedMessageList = Utils.parseMap(Utils.alphabetToKo(message, true)).parsedMessage
+            fixedMessageObject = this.nativeFind(Utils.antispoof(message, true), true, true)
+            fixedMessageList = Utils.parseMap(Utils.antispoof(message, true)).parsedMessage
             fixedMessage = fixedMessageList.join("")
         }
 
@@ -1664,6 +1748,58 @@ class Tetrapod {
         return fixedMessage
     }
 
+    // 메시지에서 정상단어 위치 찾는 맵
+    // isMap 형식일 경우 {정상단어: [[정상단어포지션1], [정상단어포지션2],...],... } 형식으로 출력
+    // isMap 형식이 아니면 message에서 정상단어의 낱자의 위치 리스트 형식으로 출력.
+    // 선택자 ?, !는 일단 무시하는 것으로.
+    static findNormalWordPositions (message, isMap = true) {
+        let exceptNormalPosition = []
+
+        // 우선 exceptNormalPosition 찾기
+        for (let exceptWord of exceptWords) {
+            exceptNormalPosition = Utils.listUnion(exceptNormalPosition, Utils.getPositionAll(message, exceptWord))
+        }
+        // 숫자 정렬하기
+        exceptNormalPosition.sort((a,b)=>(a-b))
+
+        let wordPositionMap = {}
+
+        // 정상단어 포지션 찾기
+        for (let normalWord of normalWords) {
+            let newNormalWord = normalWord.replace("!", "").replace("?", "")
+            // console.log("NORMALWORD", newNormalWord)
+            let i = message.indexOf(newNormalWord), indexes = []
+            let tempList = [] // 저장용.
+            while(i !==-1) {
+                // 우선 단어 찾기
+                indexes.push(i)
+                for (var j =1; j<newNormalWord.length; j++) {
+                    indexes.push(i+j)
+                }
+                // 포함되지 않을 때 tempList에 저장
+                if (!Utils.objectInclude(indexes, exceptNormalPosition)) {
+                    tempList.push(indexes)
+                }
+                // 인덱스값 초기화후 다시 찾기
+                i = message.indexOf(newNormalWord, ++i)
+                indexes = []
+            }
+            // 단어가 들어갔을 때 저장.
+            if (tempList.length>0) wordPositionMap[normalWord] = tempList
+        }
+
+        // isMap일 때에는 {단어:[[위치1], [위치2],....], ...} 형식으로 출력
+        if (isMap) return wordPositionMap;
+        else {
+            let  resList = []
+            for (let lis of Object.values(wordPositionMap) ) {
+                resList = Utils.listUnion(resList, Utils.listUnion(lis))
+            }
+            return resList.sort((a,b)=> (a-b))
+        }
+
+    }
+
     // 어떤 단어가 비속어 목록에 포함된지 체크
     static isExistNormalWord(word) {
         return (typeof(normalWordsMap[word]) != 'undefined')
@@ -1699,17 +1835,63 @@ class Tetrapod {
         }
     }
 
+    // 리스트 안에 있는지 판단하눈 함수
+    // 예시 : (봡보 => 바!보! True)
+    static wordIncludeType(word, comp) {
+        let wordDisassemble = Utils.wordToArray(word), compDisassemble = Utils.wordToArray(comp);
+
+        let res = true;
+        if (wordDisassemble.length !== compDisassemble.length ) return false;
+        else {
+            // console.log(compDisassemble)
+            for (let ind in compDisassemble) {
+                // let wordType = wordDisassemble[ind][1]
+                let compType = compDisassemble[ind][1]
+                let nextChar = ""
+                // console.log(compDisassemble.length, ind)
+                if (ind < compDisassemble.length-1) nextChar = compDisassemble[Number(ind)+1].slice(0)[0]
+                if (compType!=="!") {
+                    if (wordDisassemble[Number(ind)][0] !== compDisassemble[Number(ind)][0]) res =false;
+                }
+                else {
+                    if (! this.isKindChar(wordDisassemble[Number(ind)][0], compDisassemble[Number(ind)][0], nextChar)) res = false;
+                }
+                if (res === false) {return res;}
+            }
+            return true;
+        }
+
+    }
+
 
     // 비속어 여부 파악하기
     static isExistBadWord(word, type="") {
         switch(type) {
             case 'drug':
+                for (let inWord of typeofBadWords.drug) {
+                    if (this.wordIncludeType(word, inWord)) return true;
+                }
+                return false;
             case 'insult':
+                for (let inWord of typeofBadWords.insult) {
+                    if (this.wordIncludeType(word, inWord)) return true;
+                }
+                return false;
             case 'sexuality':
+                for (let inWord of typeofBadWords.sexuality) {
+                    if (this.wordIncludeType(word, inWord)) return true;
+                }
+                return false;
             case 'violence':
-                return (typeofBadWords[type][word] !== "undefined")
+                for (let inWord of typeofBadWords.violence) {
+                    if (this.wordIncludeType(word, inWord)) return true;
+                }
+                return false;
             default:
-                return (typeof badWordsMap[word] != 'undefined')
+                for (let inWord of Utils.listUnion(typeofBadWords.drug, typeofBadWords.insult, typeofBadWords.sexuality, typeofBadWords.violence, badWords)) {
+                    if (this.wordIncludeType(word, inWord)) return true;
+                }
+                return false;
         }
     }
 
@@ -1815,43 +1997,116 @@ class Tetrapod {
         return isCount?cnt:(cnt === 0);
     }
 
-    // 유사 낱자 검사. 낱자에 가? 형태로 표현되었을 경우 가뿐 아니라 각, 간 등 다 포함.
-    // char : 낱자
-    // comp : 낱자. comp?에 char가 포함되는 경우 true, 아닌 경우 false를 반환한다.
-    static isKindChar(char, comp) {
-        let charDisassemble = Hangul.disassemble(char)
-        let compDisassemble = Hangul.disassemble(comp)
-        let res = false;
-        let simEnd = {"ㄱ": ["ㄱ", "ㅋ", "ㄲ"], "ㄷ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅂ":["ㅂ", "ㅍ"], "ㅅ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"],
-            "ㅈ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅊ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"]}
-
-        //우선 앞글자가 비교대상의 모든 낱자를 포함하는 경우. 즉 가? -> 각 등 모두 포함.
-        if (Utils.objectInclude(compDisassemble, charDisassemble, true)) {
-            res = true;
-        }
-        // 닥 -> 닭도 포함.
-        else if (compDisassemble.length ===3 && charDisassemble.length ===4 &&
-        Utils.objectEqual(compDisassemble, [charDisassemble[0], charDisassemble[1], charDisassemble[3]])) {
-            res = true;
-        }
-        // 받침 발음이 유사한 경우
-        else if (compDisassemble.slice(0,2) === charDisassemble.slice(0,2) && Object.keys(simEnd).indexOf(compDisassemble[2])!==-1 &&
-        simEnd[compDisassemble[2]].indexOf(charDisassemble[2])!== -1) {
-            res = true;
-        }
-        else if (compDisassemble.slice(0,3) === charDisassemble.slice(0,3) && Object.keys(simEnd).indexOf(compDisassemble[3])!==-1 &&
-            simEnd[compDisassemble[3]].indexOf(charDisassemble[3])!== -1) {
-            res = true;
-        }
-        // 지 ->즤처럼 단모음을 늘린 이중모음을 잡아낼 때 사용
-        else if (Utils.objectEqual(compDisassemble.slice(0,2), [charDisassemble[0], charDisassemble[2]])) {
-            // ㅚ는 예외처리하기.
-            if (charDisassemble[1]!== "ㅗ" || charDisassemble[2]!=="ㅣ") {
-                res = true;
+    // 한글 낱자를 초성중성종성으로 분리하기
+    static choJungJong(char) {
+        const consonant = Utils.korConsonants;
+        const vowel = Utils.korVowels;
+        const charDisassemble = Hangul.disassemble(char);
+        let res = {cho:[], jung:[], jong:[]}
+        // 오류 방지를 위해 한글 낱자일 때에만 함수 수행.
+        if (/[가-힣]/.test(char)) {
+            for (var letter of charDisassemble) {
+                // 초성
+                if (consonant.indexOf(letter)!==-1 && res.jung.length ===0) {
+                    res.cho.push(letter)
+                }
+                else if (vowel.indexOf(letter)!==-1 ) res.jung.push(letter)
+                else res.jong.push(letter)
             }
         }
-
         return res;
+    }
+
+    // 유사 낱자 검사. 낱자에 가? 형태로 표현되었을 경우 가뿐 아니라 각, 간 등 다 포함.
+    // char : 낱자
+    // comp : 낱자. comp!에 char가 포함되는 경우 true, 아닌 경우 false를 반환한다.
+    // following : !뒤에 오는 낱자. 받침이
+    static isKindChar(char, comp, following="") {
+        // 초성중성종성 분리 데이터 이용하기
+        let charDisassemble = this.choJungJong(char)
+        let compDisassemble = this.choJungJong(comp)
+        let followDisassemble = following===""?{cho:[], jung:[], jong:[]}:this.choJungJong(following)
+        let resi = false; // 초성 유사음
+        let resm = false; // 중성 유사음
+        let rese = false; // 종성 유사음
+
+        // console.log(charDisassemble, compDisassemble, followDisassemble)
+
+        const toothConsonant = ["ㄷ", "ㄸ", "ㅅ", "ㅆ", "ㅈ", "ㅉ", "ㅊ"]
+
+        // 유사초성. 가 -> 까, 카
+        const simInit = {
+            "ㄱ":["ㄲ", "ㅋ"], "ㄲ":['ㅋ'], "ㄷ":["ㄸ", "ㅌ", "ㅆ", "ㅉ"], "ㄸ":["ㅌ", "ㅉ"], "ㄹ":["ㄴ"], "ㅂ":["ㅃ", "ㅍ"], "ㅃ":["ㅍ"],
+            "ㅅ":[ "ㄸ", "ㅆ", "ㅉ"], "ㅆ": ["ㅉ"], "ㅈ":["ㅆ", "ㅉ", "ㅊ"], "ㅉ":["ㅊ", "ㅆ"], "ㅊ":["ㅉ"], "ㅋ":["ㄲ"], "ㅌ":["ㄸ"], "ㅍ":["ㅃ"], "ㅎ":["ㅍ"]
+        }
+        // 유사중성.  고 -> 거, 교
+        const simMiddle = {
+            "ㅏ":[["ㅑ"], ["ㅗ", "ㅏ"]], "ㅐ":[["ㅒ"], ["ㅔ"], ["ㅖ"], ["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]], "ㅒ":[["ㅖ"]],
+            "ㅓ":[["ㅕ"], ["ㅜ", "ㅓ"], ["ㅗ"]], "ㅔ":[["ㅒ"], ["ㅔ"], ["ㅖ"], ["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]], "ㅕ":[["ㅛ"]], "ㅖ":[["ㅖ"]],
+            "ㅗ":[["ㅓ"], ["ㅛ"]], "ㅙ":[["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]], "ㅚ":[["ㅗ", "ㅐ"], ["ㅜ","ㅔ"]], "ㅛ":[["ㅕ"]],
+            "ㅜ":[["ㅠ"],["ㅡ"]], "ㅞ":[["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"]], "ㅡ":[["ㅜ"]], "ㅣ":[["ㅜ","ㅣ"], ["ㅡ", "ㅣ"]]
+        }
+        // 초성이 치음일 때 유사중성 for ㄷ,ㄸ,ㅅ,ㅆ,ㅈ,ㅊ,ㅉ,ㅌ 이 경우는 y복모음 구별불가인 특수 케이스
+        const toothSimMiddle = { ...simMiddle,
+            "ㅑ":[["ㅏ"], ["ㅗ", "ㅏ"]], "ㅒ": [["ㅐ"], ["ㅔ"], ["ㅖ"], ["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]],
+            "ㅕ":[["ㅓ"], ["ㅜ","ㅓ"], ["ㅗ"], ["ㅛ"]], "ㅖ":[["ㅐ"], ["ㅔ"], ["ㅒ"], ["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]],
+            "ㅛ":[["ㅓ"], ["ㅕ"], ["ㅜ","ㅓ"], ["ㅗ"]], "ㅠ":[["ㅜ"], ["ㅡ"]]
+        }
+        // 유사종성
+        const simEnd = {
+            "ㄱ": ["ㅋ", "ㄲ"], "ㄲ":["ㄱ", "ㅋ"], "ㄷ":["ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅂ":["ㅂ", "ㅍ"], "ㅅ":["ㄷ", "ㅌ", "ㅆ", "ㅈ", "ㅊ"], "ㅆ":["ㄷ", "ㅌ", "ㅅ", "ㅈ", "ㅊ"],
+            "ㅈ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅊ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅋ":["ㄱ", "ㄲ"], "ㅌ":["ㄷ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅍ":["ㅂ", "ㅍ"], "ㅎ":["ㅅ"]
+        }
+
+        // 뒷글자에 의한 자음동화. 뒷글자가
+        const jointConsonant = {
+            "ㄱ":["ㄲ", "ㅋ"], "ㄲ":["ㄱ", "ㅋ"], "ㄴ":["ㄷ", "ㅅ"], "ㄷ":["ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㄸ":["ㄷ","ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ" ], "ㄹ":["ㄴ"],
+            "ㅁ":["ㅂ", "ㅍ"], "ㅂ":["ㅁ", "ㅍ"], "ㅃ":["ㅁ", "ㅂ"], "ㅅ":["ㄷ", "ㅌ", "ㅆ", "ㅈ", "ㅊ"], "ㅆ":["ㄷ", "ㅌ", "ㅅ", "ㅈ", "ㅊ"], "ㅈ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅊ"],
+            "ㅊ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅈ"], "ㅋ":["ㄱ", "ㄲ"], "ㅌ":["ㄷ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅍ":["ㅁ", "ㅂ"]
+        }
+
+        //뒷글자에 의한 ㅣ 모음동화 잡아내기
+        const jointVowel = {"ㅏ":[["ㅐ"]], "ㅑ":[["ㅒ"], ["ㅖ"]], "ㅓ":[["ㅔ"]], "ㅕ":[["ㅒ"], ["ㅖ"]], "ㅗ":[["ㅗ", "ㅣ"]], "ㅜ":[["ㅜ", "ㅣ"]], "ㅡ":[["ㅡ", "ㅣ"]] }
+
+        //우선 유사초음 찾아내기. 밑바탕(!들어감) 자음의 유사자음 리스트 안에 원 자음이 들어가는 경우
+        if (compDisassemble["cho"][0] === charDisassemble["cho"][0] || (simInit[compDisassemble["cho"][0]]!==undefined && simInit[compDisassemble["cho"][0]].indexOf( charDisassemble["cho"][0] )!== -1)) {
+            resi = true;
+        }
+
+        // 유사중음 찾아내기. 치음의 경우
+
+        if (Utils.objectEqual(compDisassemble["jung"], charDisassemble["jung"])) {
+            resm = true;
+        }
+        else if (toothConsonant.indexOf(charDisassemble["cho"][0])!== -1 && Utils.objectIn(charDisassemble["jung"], toothSimMiddle[Hangul.assemble(compDisassemble["jung"])] ) === true) {
+            resm = true;
+        }
+        else if (toothConsonant.indexOf(charDisassemble["cho"][0])=== -1 && Utils.objectIn(charDisassemble["jung"], simMiddle[Hangul.assemble(compDisassemble["jung"])] ) === true) {
+            resm = true;
+        }
+        // 모음 동화 반영
+        else if (followDisassemble["jung"].length>0 && Utils.objectIn( followDisassemble["jung"],[["ㅣ"], ["ㅡ","ㅣ"], ["ㅜ","ㅣ"]]) === true && Utils.objectIn( charDisassemble["jung"], jointVowel[Hangul.assemble(compDisassemble["jung"])]) !== -1) {
+            resm = true;
+        }
+
+        // 유사종음 찾아내기.
+        // 우선 두 글자 받침이 동일할 때는 무조건 OK
+        if (Utils.objectEqual(compDisassemble["jong"], charDisassemble["jong"])) {
+            rese = true;
+        }
+        // 또 comp 받침 글자를 char가 포함하는 경우 무조건 OK
+        else if (compDisassemble["jong"].length>0 && Utils.objectInclude(compDisassemble["jong"], charDisassemble["jong"]) ) {
+            rese = true;
+        }
+        // 자음동화. comp에 받침이 없을 때 받침 맨 뒷글자가 follow의 초성과 자음동화를 이룰 때
+        else if (followDisassemble["cho"].length>0 && compDisassemble["jong"].length ===0 &&  charDisassemble["jong"].slice(-1)[0] === followDisassemble["cho"][0] ) {
+            rese = true;
+        }
+        else if (followDisassemble["cho"].length>0 && compDisassemble["jong"].length ===0 && jointConsonant[ followDisassemble["cho"][0] ]!== undefined && jointConsonant[ followDisassemble["cho"][0] ].indexOf( charDisassemble["jong"].slice(-1)[0] ) !==-1 ) {
+            rese = true;
+        }
+
+        return resi && resm && rese;
     }
 
     //어떤 단어가 다른 단어에 포함되는지 체크하기
@@ -1940,7 +2195,7 @@ class Tetrapod {
     static recursiveComponent (data, variable={}, nonParsedVariable = null) {
         // data : array.
 
-        console.log('recursiveComponent() start')
+        // console.log('recursiveComponent() start')
 
         // 데이터의 전항 후항을 순회합니다.
         for(let i=0;i<=1;i++){
@@ -1949,52 +2204,53 @@ class Tetrapod {
             for(let itemIndex in data[i]){
                 let item = data[i][itemIndex]
 
-                console.log("item LIST:::", item)
+               // console.log("item LIST:::", item)
 
                 // 데이터 항목이 배열인 경우
                 // 재귀 컴포넌트 해석을 진행합니다.
                 if(Array.isArray(item)){
                     let solvedData = this.recursiveComponent(item, variable, nonParsedVariable)
+                    // console.log("SOLVEDDATA", solvedData)
                     data[i][itemIndex] = null
                     data[i] = data[i].concat(solvedData)
-                    data[i] = this.assembleHangul(data[i])
+                    // data[i] = this.assembleHangul(data[i])
 
                 } else if(!Array.isArray(item) && typeof item === 'object'){
 
                     // 부가 함수를 사용한 경우
                     // 지정된 함수가 반환하는 리스트를 반영합니다.
                     data[i] = data[i].concat(this.recursiveComponent(item, variable, nonParsedVariable))
-                    data[i] = this.assembleHangul(data[i])
+                    // data[i] = this.assembleHangul(data[i])
 
                 } else if(typeof item === 'string' && item[0] === '*'){
 
                     // 만약 변수를 사용했다면 (단어 앞에 *로 시작) 해당 부분을
                     // 변수의 리스트로 대치합니다.
-                    console.log("item", item)
+                    // console.log("item", item)
                     let varName = item.slice(1);
                     // console.log(item, `함수호출됨: ${varName}`)
 
                     // 엘레멘트 이름이 "*사랑"일 때, 여기서 variable의 변수는 {"사랑":(리스트)} 형식으로 정의할 수 있다.
-                    console.log("varName", varName)
+                    // console.log("varName", varName)
 
                     if(typeof variable[varName] !== 'undefined'){
-                        console.log(`1함수호출됨: ${varName}`)
+                       //  console.log(`1함수호출됨: ${varName}`)
 
                         data[i] = data[i].concat(variable[varName])
-                        data[i] = this.assembleHangul(data[i])
+                        // data[i] = this.assembleHangul(data[i])
                     }
                     // 아니면 nonParsedVariable에서 변수가 있는지 확인해보기.
                     else {
-                        console.log(`2함수호출됨: ${varName}`)
+                       //  console.log(`2함수호출됨: ${varName}`)
                         // 만약 변수 안에서 변수를 참조한 경우
                         // 필요한 부분의 변수만 파싱하여 해당 리스트를 구성합니다.
                         if(nonParsedVariable !== null){
-                            console.log(`2함수진행됨: ${varName}`)
+                          //   console.log(`2함수진행됨: ${varName}`)
                             let parsedHeaderVariable = this.recursiveList(nonParsedVariable[varName], nonParsedVariable, true)
                             data[i] = data[i].concat(parsedHeaderVariable)
-                            data[i] = this.assembleHangul(data[i])
-                            console.log(`2함수결과:`)
-                            console.log(parsedHeaderVariable.length)
+                            // data[i] = this.assembleHangul(data[i])
+                           //  console.log(`2함수결과:`)
+                           //  console.log(parsedHeaderVariable.length)
                             if(parsedHeaderVariable.length == 0)
                                 throw new Error (`${varName} 변수를 찾을 수 없습니다. 또는 변수 내부 길이가 0입니다.`)
                         }else{
@@ -2015,7 +2271,7 @@ class Tetrapod {
                 solvedData.push(before+after)
             }
         }
-        console.log('recursiveComponent() end')
+        // console.log('recursiveComponent() end')
         return solvedData
     }
 
@@ -2032,7 +2288,7 @@ class Tetrapod {
      */
 
     static recursiveList (list, variable = null, isVariableParse = false, defaultType = 'string') {
-        console.log('recursiveList() start')
+        // console.log('recursiveList() start')
 
         // 변수단을 해석처리합니다.
         let parsedVaraible = {}
@@ -2048,7 +2304,7 @@ class Tetrapod {
         let rebuild = []
         // 리스트의 엘리먼트에 대해서
         for(let itemIndex in list){
-            console.log("ITEMINDEX:::", list[itemIndex])
+            // console.log("ITEMINDEX:::", list[itemIndex])
             let item = list[itemIndex]
 
             if(typeof item === defaultType){
@@ -2056,7 +2312,7 @@ class Tetrapod {
                 // 그냥 문자열이면 바로 리스트에 반영합니다.
                 // *로 시작하지 않는 경우 - 한글 분해 후 재조합.
                 if(item[0] !== '*'){
-                    rebuild.push(Hangul.assemble(Hangul.disassemble(item)))
+                    rebuild.push(item)
                 }
                 else {
 
@@ -2064,16 +2320,18 @@ class Tetrapod {
                     // 변수의 리스트를 반영합니다.
                     let varName = item.slice(1);
                     if(typeof parsedVaraible[varName] !== 'undefined' && !isVariableParse){
+                        // console.log("\n\nParsedVariable", parsedVaraible[varName])
                         rebuild = rebuild.concat(parsedVaraible[varName])
-                        rebuild = this.assembleHangul(rebuild)
+                        // rebuild = this.assembleHangul(rebuild)
                     }else{
                         if(isVariableParse){
 
                             // 정의된 변수가 없는데 변수가 들어갔으면
                             // 해당 변수만 별개로 해석하여 리스트에 첨부합니다.
                             let parsedHeaderVariable = this.recursiveList(variable[varName], variable, true)
+                            // console.log("\n\nParsedHeaderVariable", parsedHeaderVariable)
                             rebuild = rebuild.concat(parsedHeaderVariable)
-                            rebuild = this.assembleHangul(rebuild)
+                            // rebuild = this.assembleHangul(rebuild)
                         }else{
                             throw new Error(`${varName} 음절 변수를 찾을 수 없습니다.`)
                         }
@@ -2085,16 +2343,16 @@ class Tetrapod {
                 // 데이터 항목이 배열인 경우
                 // 재귀 컴포넌트 해석을 진행합니다.
                 rebuild = rebuild.concat(this.recursiveComponent(item, parsedVaraible, variable))
-                rebuild = this.assembleHangul(rebuild)
+                // rebuild = this.assembleHangul(rebuild)
             }else{
 
                 // 부가 함수를 사용한 경우
                 // 지정된 함수가 반환하는 리스트를 반영합니다.
                 rebuild = rebuild.concat(this.additionalType(item, parsedVaraible, variable))
-                rebuild = this.assembleHangul(rebuild)
+                // rebuild = this.assembleHangul(rebuild)
             }
         }
-        console.log('recursiveList() end')
+        // console.log('recursiveList() end')
         return rebuild
     }
 
@@ -2122,8 +2380,8 @@ class Tetrapod {
             case '자모합성':
                 for(let item of this.recursiveComponent(component.data, parsedVaraible, nonParsedVariable)){
                     item = item.split('')
-                    console.log(item)
-                    list.push(Hangul.assemble(item))
+                    // console.log(item)
+                    list.push(item)
                 }
                 break
         }

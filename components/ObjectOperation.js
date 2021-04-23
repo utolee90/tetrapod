@@ -2,18 +2,26 @@
 
 const ObjectOperation = {
 
-    // 배열/오브젝트 동일성 체크
+    // 배열/오브젝트 동일성 체크. 기능 확장.
     objectEqual: (a,b) => {
         let val = true;
-        if (Object.keys(a).length !== Object.keys(b).length ) {
-            val = false;
+        if (typeof a !== typeof b) {
+            return false;
         }
         else {
-            for (var key in a) { // a의 키에 대해 조사
-                if (a[key]!==b[key]) {val = false; break;}
+            if (typeof a === "string" || typeof a === "number" || typeof a === "boolean")
+                return (a===b);
+            else if (Object.keys(a).length !== Object.keys(b).length ) {
+                return false;
             }
+            else {
+                for (var key in a) { // a의 키에 대해 조사
+                    if (a[key]!==b[key]) {val = false; break;}
+                }
+            }
+            return val;
         }
-        return val;
+
     },
 
     // 배열/오브젝트의 포함관계 체크. a가 b안에 들어갈 때 True

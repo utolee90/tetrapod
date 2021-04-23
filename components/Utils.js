@@ -92,6 +92,9 @@ const Utils = {
 
     // 메시지에서 단어의 위치를 찾아주는 함수.
     getPositionAll: (message, search, isString = true) => {
+        // 버그 방지를 위해 !, ? 기호는 드롭시키자.
+        search = search.replace("!","").replace("?","")
+
         let i = message.indexOf(search),
             indexes = []
         while (i !== -1) {
@@ -255,33 +258,38 @@ const Utils = {
     // 2차원 배열 형태로 정의된 것을 풀어쓰기.
     recursiveComponent: (data) => {
 
-        // 데이터의 전항 후항을 순회합니다.
-        for (let i=0;i<=1;i++){
+        // 배열 정의되지 않은 것은 그대로 출력
+        if (typeof data !== "object") return data
+        else {
+            // 데이터의 전항 후항을 순회합니다.
+            for (let i=0;i<=1;i++){
 
-            // 데이터의 모든 항목을 순회합니다.
-            for(let itemIndex in data[i]){
-                let item = data[i][itemIndex]
+                // 데이터의 모든 항목을 순회합니다.
+                for(let itemIndex in data[i]){
+                    let item = data[i][itemIndex]
 
-                // 데이터 항목이 배열인 경우
-                // 재귀 컴포넌트 해석을 진행합니다.
-                if(Array.isArray(item)){
-                    let solvedData = Utils.recursiveComponent(item)
-                    data[i][itemIndex] = null
-                    data[i] = data[i].concat(solvedData)
+                    // 데이터 항목이 배열인 경우
+                    // 재귀 컴포넌트 해석을 진행합니다.
+                    if(Array.isArray(item)){
+                        let solvedData = Utils.recursiveComponent(item)
+                        data[i][itemIndex] = null
+                        data[i] = data[i].concat(solvedData)
+                    }
                 }
             }
+
+            // 데이터의 전항 후항을 순회합니다.
+            let solvedData = []
+            for(let before of data[0]){
+                if(before === null) continue
+                for(let after of data[1]){
+                    if(after === null) continue
+                    solvedData.push(before+after)
+                }
+            }
+            return solvedData
         }
 
-        // 데이터의 전항 후항을 순회합니다.
-        let solvedData = []
-        for(let before of data[0]){
-            if(before === null) continue
-            for(let after of data[1]){
-                if(after === null) continue
-                solvedData.push(before+after)
-            }
-        }
-        return solvedData
     },
 
 
@@ -305,7 +313,7 @@ const Utils = {
     },
 
     // 파싱하기 {씨:{value:시, index:[1]}, 브얼:{value:벌, index:[2]}}
-    // 맵 형식 - enToKo map, alphabetToKo map, dropIung map을 입력으로 한다.
+    // 맵 형식 - qwertyToDubeol map, antispoof map, dropDouble map을 입력으로 한다.
     parseMap: (map) => {
         let originalMessageList = [];
         let originalMessageIndex = [];
@@ -337,15 +345,15 @@ const Utils = {
     ,
 
     // 영자조합 만들기
-    enToKo: (msg, isMap = false)=> {
+    qwertyToDubeol: (msg, isMap = false)=> {
         const mapping = Utils.enKoKeyMapping;
 
-        const enToKoMacro = (letter) =>  (Object.keys(mapping).indexOf(letter)!==-1 ? mapping[letter] : letter)
+        const qwertyToDubeolMacro = (letter) =>  (Object.keys(mapping).indexOf(letter)!==-1 ? mapping[letter] : letter)
 
         // 맵을 만들 필요 없을 때
         if (!isMap) {
             // 낱자 분리 후에 영어 -> 한글 전환
-            let msgReplacedToKo = msg.split('').map((letter) => enToKoMacro(letter));
+            let msgReplacedToKo = msg.split('').map((letter) => qwertyToDubeolMacro(letter));
             // 분리된 낱자를 합치기.
             let newMsg = msgReplacedToKo.join('');
             // 결과 - 낱자를 조합하기.
@@ -365,7 +373,7 @@ const Utils = {
                 let resMacro = (letter, val=temp) => {
                     if (val!=="") {
                         msgRes.push(val);
-                        if (!res[val]) res[val] = {value: Utils.enToKo(val), index: [ind - val.length]}
+                        if (!res[val]) res[val] = {value: Utils.qwertyToDubeol(val), index: [ind - val.length]}
                         else { res[val].index.push(ind - val.length);}
                         temp = letter;
                     }
@@ -403,7 +411,7 @@ const Utils = {
                 }
                 // 목모음 케이스도 고려해보자
                 else if (ind>1 && consonant.indexOf(msgSplit[ind-2].toLowerCase())!== -1  && vowel.indexOf(msgSplit[ind-1].toLowerCase())!== -1 && vowel.indexOf(letter.toLowerCase())!== -1) {
-                    let tempList = [ enToKoMacro(msgSplit[ind-1]), enToKoMacro(letter)];
+                    let tempList = [ qwertyToDubeolMacro(msgSplit[ind-1]), qwertyToDubeolMacro(letter)];
                     if (Utils.objectIn(tempList, Utils.doubleVowel)) {
                         temp += letter;
                     }
@@ -416,7 +424,7 @@ const Utils = {
             // 마지막 글자 붙이기
             if (temp!=="") {
                 msgRes.push(temp);
-                if (!res[temp]) res[temp]= {value:Utils.enToKo(temp), index: [msg.length-temp.length]}
+                if (!res[temp]) res[temp]= {value:Utils.qwertyToDubeol(temp), index: [msg.length-temp.length]}
                 else {res[temp].index.push(msg.length-temp.length);}
                 temp = "";
             }
@@ -427,7 +435,7 @@ const Utils = {
     },
 
     //자모조합을 악용한 비속어 걸러내기 ㄱH^H77| 검출 가능. isMap 사용시 오브젝트 형태로 결과물 도출.
-    alphabetToKo: (msg, isMap = false) => {
+    antispoof: (msg, isMap = false) => {
 
         const korConsonant = /[ㄱ-ㅎ]/;
         const korVowel = /[ㅏ-ㅣ]/;
@@ -654,7 +662,7 @@ const Utils = {
     // 예시 : 브압오 -> {'브아':'바', 'ㅂ오':'보'}
     // simplify 옵션을 true로 지정하면 거센소리 된소리를 예사소리화하기, 복모음, 이중모음 단모음화하는 작업도 추가.
     // 메시지는 반드시 한글자모로만 조합.
-    dropIung: (msg, isMap=false, simplify = false) => {
+    dropDouble: (msg, isMap=false, simplify = false) => {
 
         let msgAlphabet = Hangul.disassemble(msg, false);
         const varAlphabet = {"ㄲ":'ㄱ', 'ㄸ':'ㄷ', 'ㅃ':'ㅂ','ㅆ':'ㅅ', 'ㅉ':'ㅈ', 'ㅋ':'ㄱ', 'ㅌ':'ㄷ', 'ㅍ':'ㅂ',
@@ -737,7 +745,7 @@ const Utils = {
                     else i++;
                 }
 
-                // 모음일 때는 앞의 모음과 복모음을 형성하지 못하는 경우 모음들만 제거하기  - 일단 dropIung은 완전한 한글에서만 실험할 것.
+                // 모음일 때는 앞의 모음과 복모음을 형성하지 못하는 경우 모음들만 제거하기  - 일단 dropDouble은 완전한 한글에서만 실험할 것.
                 else if (Utils.korVowels.indexOf(msgAlphabet[i])!== -1) {
                     if (simplify && Object.keys(varAlphabet).indexOf(msgAlphabet[i])!== -1) {
                         msgAlphabet[i] = varAlphabet[msgAlphabet[i]];
@@ -772,7 +780,7 @@ const Utils = {
             return Hangul.assemble(msgAlphabet);
 
         }
-        // isMap으로 정의할 경우 음절 단위로 우선 쪼갠 뒤 dropIung 수행
+        // isMap으로 정의할 경우 음절 단위로 우선 쪼갠 뒤 dropDouble 수행
         else {
             for (var i = 0; i < msgAlphabet.length; i++) {
                 if (i === 0) {
@@ -910,17 +918,19 @@ const Utils = {
 
             let ind =0;
             for (i =0; i<divideSyllable.length; i++) {
-                let cnt = 0;
-                for (var letter of Hangul.assemble(divideSyllable[i])) { // 한글 숫자 조합. Hangul.assemble로 조합.
-                    // 한글 자음 낱자 아니면 cnt 늘리기...
-                    if (!/[ㄱ-ㅎ]/.test(letter) ) cnt++;
+                let cnt = 0, assembledSyllable =  Hangul.assemble(divideSyllable[i]);
+                for (var leti in assembledSyllable ) { // 한글 숫자 조합. Hangul.assemble로 조합.
+                    // 한글 자음이면서 낱자 바로 뒤나 앞에 한글이 오지 않으면 cnt 늘리기...
+                    if (!/[ㄱ-ㅎ]/.test( assembledSyllable[leti] )  ) cnt++;
+                    else if (leti > 0 && !/[가-힣]/.test( assembledSyllable[leti-1] ) ) cnt++;
+                    else if (leti === 0 && !/[가-힣]/.test( assembledSyllable[leti+1] ) ) cnt++;
                 }
                 if (res[Hangul.assemble(divideSyllable[i])]) {
                     res[Hangul.assemble(divideSyllable[i])]["index"].push(ind);
                 }
                 else {
                     res[Hangul.assemble(divideSyllable[i])] = {
-                        value: Utils.dropIung(Hangul.assemble(divideSyllable[i]), false, simplify),
+                        value: Utils.dropDouble(Hangul.assemble(divideSyllable[i]), false, simplify),
                         index: [ind]
                     }
                 }

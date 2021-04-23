@@ -1,14 +1,15 @@
 {
   "name": "tetrapod",
-  "version": "1.0.0",
-  "description": "😊 Improved swear word detection module",
+  "version": "1.0.1",
+  "description": "😊 Improved swear word detection module, made by hmmhmmhmm, arranged by utolee90",
   "main": "tetrapod.js",
   "scripts": {
     "lint": "eslint *.js --fix",
     "build": "webpack --config webpack.config.js",
     "test": "node --no-warnings --no-deprecation ./node_modules/@babel/node/bin/babel-node.js ./test/find.js",
     "bias": "node --no-warnings --no-deprecation ./node_modules/@babel/node/bin/babel-node.js ./bias/build.js",
-    "input": "node --no-warnings --no-deprecation ./node_modules/@babel/node/bin/babel-node.js ./bias/input.js"
+    "input": "node --no-warnings --no-deprecation ./node_modules/@babel/node/bin/babel-node.js ./bias/input.js",
+    "experiment": "node --no-warnings ./node_modules/@babel/node/bin/babel-node.js ./test/find2.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.5",
@@ -23,7 +24,7 @@
     "webpack": "^4.25.1",
     "webpack-cli": "^3.1.2"
   },
-  "author": "hmmhmmhm <hmmhmmhm@naver.com>",
+  "author": ["hmmhmmhm <hmmhmmhm@naver.com>", "utolee90 <itdatabasewiki@gmail.com>"],
   "license": "MIT",
   "dependencies": {
     "hangul-js": "^0.2.5",

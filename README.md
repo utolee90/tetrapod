@@ -98,20 +98,23 @@ find.js 파일에 `import Tetrapod from '../tetrapod';`라고 입력하신 뒤�
   1. 결과값은 `{bad:(비속어 갯수),soft:(저속한 표현 갯수),end:(부적절한 받침 갯수)} ` 형식으로 출력됩니다.
   1. `isStrong`값을 참으로 지정하면 다른 문자를 한글자모처럼 이용해서 우회적 표현이나 (예: `ㄱH새77|`) 첫 자음 ㅇ, 무의미한 모음 ㅡ삽입 및 된소리를 이용한 우회표현(`브아보 썌끼`)도 잡아낼 수 있습니다.   
 
-- 비속어 표현 직접 찾기 : `Tetrapod.find(message, needMultipleCheck=false, splitCheck=15, needEnToKo=false, stronger=false)`
+- 비속어 표현 직접 찾기 : `Tetrapod.find(message, needMultipleCheck=false, splitCheck=15, qwertyToDubeol=false, stronger=false)`
   1. message 항에는 문자열을 직접 입력해서 사용가능합니다.
   1. 결과값은 `{totalResult:[(비속어 단어 목록)], softResult:[(저속한 표현 단어 목록)], endResult:[(받침 악용한 표현 목록)]}` 형식의 오브젝트로 출력됩니다.
   1. `needMultiplecheck`를 true로 지정하면 필터에 걸리는 모든 표현을 잡아낼 수 있습니다. 
   1. `splitCheck`를 임의의 숫자(예 20)로 지정하면 지정한 숫자만큼 문자열을 나눈 뒤 나눈 조각들만 조사합니다. 기본값은 15이며, 0을 지정하면 문자열을 나누지 않고 전체 문자열을 검사합니다. isStrong을 지정하면 활성화되지 않습니다.
-  1. `needEnToKo`를 true로 지정하면 한/영전환된 표현을 잡아낼 수 있습니다. 예를 들면 `시발`의 QWERTY에 대응되는 표현인 `tlqkf`을 잡아낼 수 있습니다.
-  1. `isStrong`을 true로 지정하면 다른 문자를 한글자모처럼 이용하는 우회적 표현이나 첫자음 ㅇ, 무의미한 모음 ㅡ삽입 및 된소리를 이용한 우회 표현도 잡아낼 수 있습니다. 영자를 한글로 변화해서 검사하는 특성상 위의 needEnToKo와 같이 사용할 수 없습니다.
+  1. `qwertyToDubeol`를 true로 지정하면 한/영전환된 표현을 잡아낼 수 있습니다. 예를 들면 `시발`의 QWERTY에 대응되는 표현인 `tlqkf`을 잡아낼 수 있습니다.
+  1. `isStrong`을 true로 지정하면 다른 문자를 한글자모처럼 이용하는 우회적 표현이나 첫자음 ㅇ, 무의미한 모음 ㅡ삽입 및 된소리를 이용한 우회 표현도 잡아낼 수 있습니다. 영자를 한글로 변화해서 검사하는 특성상 위의 `qwertyToDubeol`와 같이 사용할 수 없습니다.
   
 - 비속어 표현 숨기기 : `Tetrapod.fix(message, replaceCharacter, condition)` 형태로 사용합니다. 
   1. message 항에는 욕설이 들어간 문자열을 직접 입력해서 사용 가능합니다. 
   1. replaceCharacter 항에는 욕설을 숨길 때 사용하는 문자를 지정할 수 있습니다. 기본값은 "*"입니다.
-  1. condition 항에는 enToKo, alphabetToKo, dropIung 옵션 중 하나를 켤 수 있습니다. 기본은 `{enToKo:false, alphabetToKo:false, dropIung:false, fixSoft:false}`으로 모두 비활성화된 상태입니다.
-  1. 현재는 condition에 옵션을 켤 경우 enToKo(qwerty자판->두벌식 자판으로 한영변환 후 테스트), alphabetToKo(유사자음, 유사모음 전부 자모로 바꾼 후 테스트), dropIung(ㅇ 들어가서 음 늘리기 등 잡아냄)으로 바뀐 후에 잡아낸 메시지만 체크 가능합니다. 원문에서 교정하는 옵션은 현재 불가능합니다.
+  1. condition 항에는 qwertyToDubeol, antispoof, dropDouble 옵션 중 하나를 켤 수 있습니다. 기본은 `{qwertyToDubeol:false, antispoof:false, dropDouble:false, fixSoft:false}`으로 모두 비활성화된 상태입니다.
+  1. 현재는 condition에 옵션을 켤 경우 qwertyToDubeol(qwerty자판->두벌식 자판으로 한영변환 후 테스트), antispoof(유사자음, 유사모음 전부 자모로 바꾼 후 테스트), dropDouble(ㅇ 들어가서 음 늘리기 등 잡아냄)으로 바뀐 후에 잡아낸 메시지만 체크 가능합니다. 원문에서 교정하는 옵션은 현재 불가능합니다.
   1. condition 조건에 `{fixSoft:true}`라고 지정할 경우 비속어 뿐 아니라 저속한 표현과 과도한 겹받침 표현도 숨김처리가 가능합니다.
+  
+- 비속어 표현 리스트 불러오기 : `Tetrapod.defaultLoad`를 사용하시면 됩니다.
+- 파싱한 비속어 표현 리스트 저장하기 : `Tetrapod.defaultSaveAllData`를 사용하시면 됩니다. 
   
 #### JSON 파일 작성방법
 기본적으로 `./resource/dictionary` 디렉토리에 있는 `bad-words.json`, `normal-words.json`, `soft-search-words.json` 이 세 파일을 검사합니다. 
@@ -122,10 +125,34 @@ find.js 파일에 `import Tetrapod from '../tetrapod';`라고 입력하신 뒤�
   - `insult` : 모욕적인 표현 관련 비속어 목록
   - `sexuality` : 성적인 표현 관련 비속어 목록
   - `violence` : 폭력적 표현 관련 비속어 목록
-  - `macro` : 
-- `normal-words.json` - 예상되는 정상 단어를 저장합니다. tetrapod 프로젝트는 메시지에서 정상단어로 예상되는 위치에서는 검사하지 않는 방식입니다. 정상단어에 모욕적 표현이 붙은 경우 예외처리를 위해서는 exception 부분에 리스트를 추가하시면 됩니다.
-- `soft-search-words.json` - 예상되는 저속한 표현을 저장합니다. 단어목록을 파싱할 때 recursiveComponent 메소드를 사용합니다. 비속어로 보기 애매하지만 저속한 표현이라 여기는 표현을 추가할 수 있습니다.
+  - `macro` : 특정 반복되는 패턴들을 저장할 수 있습니다. 저장할 때는 `"매크로명":[(매크로에 포함된 리스트)]` 형식으로 사용하시면 되며, 매크로를 사용할 때에는 매크로 이름 앞에 "*"표시를 붙이면 됩니다. 
+    + 매크로 예시 : `{놈:["놈", "뇸", "넘", "롬", "룜", "럼"]}`
+    + `badword` 입력할 때 `[[["개", "멍청한"], ["*놈"]]]`
+    + 파싱 결과 :
+  ```json
+  [
+    "개놈",
+    "개뇸",
+    "개넘",
+    "개롬",
+    "개룜",
+    "개럼",
+    "멍청한놈",
+    "멍청한뇸",
+    "멍청한넘",
+    "멍청한롬",
+    "멍청한룜",
+    "멍청한럼"
+  ]
 
+- `normal-words.json` - 예상되는 정상 단어를 저장합니다. tetrapod 프로젝트는 메시지에서 정상단어로 예상되는 위치에서는 검사하지 않는 방식입니다. 정상단어에 모욕적 표현이 붙은 경우 이 부분을 감지하지 않기 위한 예외 목록을 추가하려면 `exception` 부분에 리스트를 추가하시면 됩니다.
+- `soft-search-words.json` - 예상되는 저속한 표현을 저장합니다. 단어목록을 파싱할 때 recursiveComponent 메소드를 사용합니다. 비속어로 보기 애매하지만 저속한 표현이라 여기는 표현을 추가할 수 있습니다. 기본적으로 저속한 표현은 잡지 않지만 옵션을 주어서 저속한 표현도 잡아낼 수 있게 변경할 수 있습니다.
+
+#### 작성용 기호
+한글 단어 이외에 `*, !, ?`등을 사용할 수 있습니다. 사용하는 방법은 다음과 같습니다.
+- `*` 매크로 사용할 때 사용할 수 있습니다. 주의할 점은 매크로 이름은 띄어쓰기를 해서는 안 되며, 리스트에 독립된 단어 형식으로 들어가야 합니다.
+- `!` 앞에 오는 글자에 대해 변형패턴까지 모두 감지합니다. `Tetrapod.isKindChar` 함수를 이용해서 변형 패턴을 잡아낼 수 있습니다. 예를 들면 `시!`의 경우 `ㅅ`의 된소리인 `ㅆ`이나 `ㅣ`와 발음이 유사한 이중모음인 `ㅟ`, `ㅢ`로 변형된 글자도 잡아낼 수 있습니다. 
+- `?` 앞에 오는 글자에 대해 뒤에 아무 한글 한 자를 모두 감지합니다. 예를 들면 `멍?청`이라고 입력할 경우, `멍개청`을 감지할 수 있습니다. 기본적으로 Tetrapod는 어느 정도 글자 사이가 벌어진 것을 감지하지만 이 문자를 이용하면 문자 뒤에 어떤 한글이 와도 무시할 수 있습니다.
 
 ### Bias.js
 find.js 파일에 `import Bias from '../bias/bias';`를 입력하신 뒤에 
