@@ -43,7 +43,7 @@ class Tetrapod {
         typeofBadWords = inputTypeofBadWords
         badWordMacros = inputBadWordMacros
 
-        console.log("LOADING...", new Date().getTime())
+        // console.log("LOADING...", new Date().getTime())
 
         if (disableAutoParse != false) {
             this.parse()
@@ -179,7 +179,8 @@ class Tetrapod {
                 parsedBadWords.push(Utils.wordToArray(badWords[index]))
         }
 
-        console.log("befor Sorting Words", new Date().getTime())
+        // console.log("befor Sorting Words", new Date().getTime())
+
         // 단어의 길이 역순으로 정렬
         parsedBadWords.sort((a,b)=> a.length-b.length).reverse();
         parsedSoftSearchWords.sort((a,b)=> a.length-b.length).reverse();
@@ -188,7 +189,7 @@ class Tetrapod {
         parsedSexualityWords.sort((a,b)=> a.length-b.length).reverse();
         parsedViolenceWords.sort((a,b)=> a.length-b.length).reverse();
 
-        console.log("parseWords", new Date().getTime())
+        // console.log("parseWords", new Date().getTime())
 
     }
 
@@ -938,7 +939,6 @@ class Tetrapod {
                                 originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
                             }
                             for (var k =0; k <originalCount; k++) {
-
                                     tempSoftSearchWordOriginalPositions.push(originalMessageSyllablePositions[pos] + k);
                             }
                         }
@@ -1267,13 +1267,15 @@ class Tetrapod {
                     // map일 때는 메시지 더 찾기
                     if (isMap) {
 
-                        // 갯수 세기. isReassemble일 때에는 한글 낱자의 갯수만 센다.
-                        let originalCount = originalMessageList[Number(pos)].length;
-                        if (isReassemble) {
-                            originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
-                        }
+
 
                         for (var pos of tempBadWordPositions) {
+                            // 갯수 세기. isReassemble일 때에는 한글 낱자의 갯수만 센다.
+                            let originalCount = originalMessageList[Number(pos)].length;
+                            if (isReassemble) {
+                                originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
+                            }
+
                             for (var k =0; k <originalCount; k++) {
 
                                 tempBadWordOriginalPositions.push( originalMessageSyllablePositions[pos] + k);
@@ -1577,13 +1579,14 @@ class Tetrapod {
 
                     if (isMap) {
 
-                        // 갯수 세기. isReassemble일 때에는 한글 낱자의 갯수만 센다.
-                        let originalCount = originalMessageList[Number(pos)].length;
-                        if (isReassemble) {
-                            originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
-                        }
 
                         for (var pos of tempBadWordPositions) {
+                            // 갯수 세기. isReassemble일 때에는 한글 낱자의 갯수만 센다.
+                            let originalCount = originalMessageList[Number(pos)].length;
+                            if (isReassemble) {
+                                originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
+                            }
+
                             for (var k =0; k <originalCount; k++) {
 
                                 tempBadWordOriginalPositions.push(originalMessageSyllablePositions[pos] + k);

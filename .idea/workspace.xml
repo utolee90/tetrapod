@@ -2,18 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="104ff4eb-fd97-4171-9f6f-14d519183829" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/resource/dictionary/macros.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resource/sample/bad-words.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/find2.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/ObjectOperation.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/ObjectOperation.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/Utils.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Utils.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/resource/dictionary/bad-words.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/bad-words.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resource/dictionary/normal-words.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/normal-words.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resource/dictionary/soft-search-words.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/soft-search-words.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/find.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/find.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/find2.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/find2.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tetrapod.js" beforeDir="false" afterPath="$PROJECT_DIR$/tetrapod.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -44,8 +38,8 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="javascript.nodejs.core.library.configured.version" value="14.15.2" />
-    <property name="javascript.nodejs.core.library.typings.version" value="14.14.31" />
+    <property name="javascript.nodejs.core.library.configured.version" value="14.15.4" />
+    <property name="javascript.nodejs.core.library.typings.version" value="14.14.41" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\PhpStorm 2020.3\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
@@ -96,6 +90,7 @@
       <workItem from="1618374271637" duration="24289000" />
       <workItem from="1618463777571" duration="144078000" />
       <workItem from="1619066641691" duration="53365000" />
+      <workItem from="1619307996059" duration="5977000" />
     </task>
     <task id="LOCAL-00001" summary="modify source">
       <created>1618747573738</created>
@@ -131,30 +126,27 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/tetrapod.js</url>
-          <line>693</line>
+          <line>694</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/tetrapod.js</url>
-          <line>463</line>
+          <line>464</line>
           <option name="timeStamp" value="5" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/test/find.js</url>
           <line>23</line>
-          <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/tetrapod.js</url>
           <line>79</line>
-          <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="7" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/test/find.js</url>
           <line>16</line>
-          <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="9" />
         </line-breakpoint>
       </breakpoints>

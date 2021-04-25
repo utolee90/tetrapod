@@ -110,10 +110,10 @@ console.log("지?랄?염병 테스트", Tetrapod.isExistBadWord("지!랄!염병"
 // console.log(Utils.filterList(["1", 2, "사기"], "string"))
 // console.log(Tetrapod.isKindChar("즤", "지"))
 
-console.log(Utils.objectEqual([Hangul.disassemble("즤")[0], Hangul.disassemble("즤")[2]], Hangul.disassemble("지")))
+// console.log(Utils.objectEqual([Hangul.disassemble("즤")[0], Hangul.disassemble("즤")[2]], Hangul.disassemble("지")))
 
 console.log(Tetrapod.nativeFind("지뢀염병", true))
-console.log(Tetrapod.isKindChar("뢀", "랄"))
+// console.log(Tetrapod.isKindChar("뢀", "랄"))
 
 console.log("걸린 시간:::", new Date().getTime()-initTime)
 initTime = new Date().getTime()
@@ -121,10 +121,13 @@ initTime = new Date().getTime()
 // console.log(Utils.objectInclude(['지', '병'], ["지", "염", "병", "룡"], true))
 // console.log(Utils.objectInclude(["지","병"], ["병","지"], true))
 // console.log(Utils.objectInclude(["지","병"], ["병","지"], false))
-console.log(Tetrapod.wordInclude("지뢀염병", "지!랄!염병"))
-console.log(Tetrapod.isKindChar("즤", "지"))
-console.log(Tetrapod.assembleHangul(["가ㅈㅣ", "구라", "개굴ㅣ"]))
-console.log(Tetrapod.find("^l바2롬", true, 0, false, true))
+// console.log(Tetrapod.wordInclude("지뢀염병", "지!랄!염병"))
+// console.log(Tetrapod.isKindChar("즤", "지"))
+// console.log(Tetrapod.assembleHangul(["가ㅈㅣ", "구라", "개굴ㅣ"]))
+// console.log(Tetrapod.find("^l바2롬", true, 0, false, true))
 
-console.log("걸린 시간:::", new Date().getTime()-initTime)
+// console.log("걸린 시간:::", new Date().getTime()-initTime)
 initTime = new Date().getTime()
+
+console.log(Tetrapod.find("야 이 우리왕 아주 짜증나 죽겠어. 에휴에휴!!! 질알.", false, 0, false, true))
+console.log("걸린 시간:::", new Date().getTime()-initTime)
