@@ -1267,15 +1267,14 @@ class Tetrapod {
                     // map일 때는 메시지 더 찾기
                     if (isMap) {
 
-                        // 갯수 세기. isReassemble일 때에는 한글 낱자의 갯수만 센다.
-                        let originalCount = originalMessageList[Number(pos)].length;
-                        if (isReassemble) {
-                            originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
-                        }
-
                         for (var pos of tempBadWordPositions) {
-                            for (var k =0; k <originalCount; k++) {
+                            // 갯수 세기. isReassemble일 때에는 한글 낱자의 갯수만 센다.
+                            let originalCount = originalMessageList[Number(pos)].length;
+                            if (isReassemble) {
+                                originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
+                            }
 
+                            for (var k =0; k <originalCount; k++) {
                                 tempBadWordOriginalPositions.push( originalMessageSyllablePositions[pos] + k);
                             }
                         }
