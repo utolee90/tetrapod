@@ -469,46 +469,46 @@ class Tetrapod {
 
                 // 중복체크가 포함될 때에는 각 단어를 모두 추가해준다.
                 if (needMultipleCheck) {
-                    for (var index2 = 0; index2 <= currentResult.founded.length - 1; index2++) {
-                        if (currentResult.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResult.founded[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResult.founded[index2], positions:currentResult.positions[index2]}];
+                    for (var index2 = 0; index2 <= currentResult.found.length - 1; index2++) {
+                        if (currentResult.found !== [] && totalResult.map(v=>v.value).indexOf(currentResult.found[index2])===-1)
+                            totalResult = [...totalResult, {value:currentResult.found[index2], positions:currentResult.positions[index2]}];
                     }
-                    for (index2 = 0; index2 <= currentResult.softSearchFounded.length - 1; index2++) {
-                        if (currentResult.softSearchFounded !== [] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFounded[index2])===-1)
-                            softResult = [...softResult, {value:currentResult.softSearchFounded[index2], positions:currentResult.softSearchPositions[index2]}];
+                    for (index2 = 0; index2 <= currentResult.softSearchFound.length - 1; index2++) {
+                        if (currentResult.softSearchFound !== [] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFound[index2])===-1)
+                            softResult = [...softResult, {value:currentResult.softSearchFound[index2], positions:currentResult.softSearchPositions[index2]}];
                     }
-                    for (index2 = 0; index2 <= currentResultDrug.founded.length - 1; index2++) {
-                        if (currentResultDrug.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultDrug.founded[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResultDrug.founded[index2], positions:currentResultDrug.positions[index2], type:"drug"}];
+                    for (index2 = 0; index2 <= currentResultDrug.found.length - 1; index2++) {
+                        if (currentResultDrug.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultDrug.found[index2])===-1)
+                            totalResult = [...totalResult, {value:currentResultDrug.found[index2], positions:currentResultDrug.positions[index2], type:"drug"}];
                     }
-                    for (index2 = 0; index2 <= currentResultInsult.founded.length - 1; index2++) {
-                        if (currentResultInsult.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultInsult.founded[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResultInsult.founded[index2], positions:currentResultInsult.positions[index2], type:"insult"}];
+                    for (index2 = 0; index2 <= currentResultInsult.found.length - 1; index2++) {
+                        if (currentResultInsult.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultInsult.found[index2])===-1)
+                            totalResult = [...totalResult, {value:currentResultInsult.found[index2], positions:currentResultInsult.positions[index2], type:"insult"}];
                     }
-                    for (index2 = 0; index2 <= currentResultSexuality.founded.length - 1; index2++) {
-                        if (currentResultSexuality.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultSexuality.founded[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResultSexuality.founded[index2], positions:currentResultSexuality.positions[index2], type:"sexuality"}];
+                    for (index2 = 0; index2 <= currentResultSexuality.found.length - 1; index2++) {
+                        if (currentResultSexuality.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultSexuality.found[index2])===-1)
+                            totalResult = [...totalResult, {value:currentResultSexuality.found[index2], positions:currentResultSexuality.positions[index2], type:"sexuality"}];
                     }
-                    for (index2 = 0; index2 <= currentResultViolence.founded.length - 1; index2++) {
-                        if (currentResultViolence.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultViolence.founded[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResultViolence.founded[index2], positions:currentResultViolence.positions[index2], type:"violence"}];
+                    for (index2 = 0; index2 <= currentResultViolence.found.length - 1; index2++) {
+                        if (currentResultViolence.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultViolence.found[index2])===-1)
+                            totalResult = [...totalResult, {value:currentResultViolence.found[index2], positions:currentResultViolence.positions[index2], type:"violence"}];
                     }
                 } else {
                     if (currentResult !== null){
-                        totalResult = [...totalResult, currentResult.founded];
-                        softResult = [...softResult, currentResult.softSearchFounded];
+                        totalResult = [...totalResult, currentResult.found];
+                        softResult = [...softResult, currentResult.softSearchFound];
                     }
                     if (currentResultDrug !== null) {
-                        totalResult = [...totalResult, currentResultDrug.founded];
+                        totalResult = [...totalResult, currentResultDrug.found];
                     }
                     if (currentResultInsult !== null) {
-                        totalResult = [...totalResult, currentResultInsult.founded];
+                        totalResult = [...totalResult, currentResultInsult.found];
                     }
                     if (currentResultSexuality !== null) {
-                        totalResult = [...totalResult, currentResultSexuality.founded];
+                        totalResult = [...totalResult, currentResultSexuality.found];
                     }
                     if (currentResultViolence !== null) {
-                        totalResult = [...totalResult, currentResultViolence.founded];
+                        totalResult = [...totalResult, currentResultViolence.found];
                     }
                 }
             }
@@ -523,46 +523,46 @@ class Tetrapod {
 
                 if (needMultipleCheck) {
 
-                    for (var index = 0; index <= currentResult.founded.length - 1; index++) {
-                        if (currentResult.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResult.founded[index])===-1)
-                            totalResult = [...totalResult, {value:currentResult.founded[index], positions:currentResult.positions[index]}  ];
+                    for (var index = 0; index <= currentResult.found.length - 1; index++) {
+                        if (currentResult.found !== [] && totalResult.map(v=>v.value).indexOf(currentResult.found[index])===-1)
+                            totalResult = [...totalResult, {value:currentResult.found[index], positions:currentResult.positions[index]}  ];
                     }
-                    for (index = 0; index <= currentResult2.softSearchFounded.length - 1; index++) {
-                        if (currentResult.softSearchFounded !== [] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFounded[index])===-1)
-                            softResult = [...softResult, {value:currentResult.softSearchFounded[index], positions:currentResult.softSearchPositions[index]}];
+                    for (index = 0; index <= currentResult2.softSearchFound.length - 1; index++) {
+                        if (currentResult.softSearchFound !== [] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFound[index])===-1)
+                            softResult = [...softResult, {value:currentResult.softSearchFound[index], positions:currentResult.softSearchPositions[index]}];
                     }
-                    for (var index = 0; index <= currentResultDrug.founded.length - 1; index++) {
-                        if (currentResultDrug.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultDrug.founded[index])===-1)
-                            totalResult = [...totalResult, {value:currentResultDrug.founded[index], positions:currentResultDrug.positions[index], type:"drug"}  ];
+                    for (var index = 0; index <= currentResultDrug.found.length - 1; index++) {
+                        if (currentResultDrug.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultDrug.found[index])===-1)
+                            totalResult = [...totalResult, {value:currentResultDrug.found[index], positions:currentResultDrug.positions[index], type:"drug"}  ];
                     }
-                    for (var index = 0; index <= currentResultInsult.founded.length - 1; index++) {
-                        if (currentResultInsult.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultInsult.founded[index])===-1)
-                            totalResult = [...totalResult, {value:currentResultInsult.founded[index], positions:currentResultInsult.positions[index], type:"insult"}  ];
+                    for (var index = 0; index <= currentResultInsult.found.length - 1; index++) {
+                        if (currentResultInsult.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultInsult.found[index])===-1)
+                            totalResult = [...totalResult, {value:currentResultInsult.found[index], positions:currentResultInsult.positions[index], type:"insult"}  ];
                     }
-                    for (var index = 0; index <= currentResultSexuality.founded.length - 1; index++) {
-                        if (currentResultSexuality.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultSexuality.founded[index])===-1)
-                            totalResult = [...totalResult, {value:currentResultSexuality.founded[index], positions:currentResultSexuality.positions[index], type:"sexuality"}  ];
+                    for (var index = 0; index <= currentResultSexuality.found.length - 1; index++) {
+                        if (currentResultSexuality.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultSexuality.found[index])===-1)
+                            totalResult = [...totalResult, {value:currentResultSexuality.found[index], positions:currentResultSexuality.positions[index], type:"sexuality"}  ];
                     }
-                    for (var index = 0; index <= currentResultViolence.founded.length - 1; index++) {
-                        if (currentResultViolence.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultViolence.founded[index])===-1)
-                            totalResult = [...totalResult, {value:currentResultViolence.founded[index], positions:currentResultViolence.positions[index], type:"violence"}  ];
+                    for (var index = 0; index <= currentResultViolence.found.length - 1; index++) {
+                        if (currentResultViolence.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultViolence.found[index])===-1)
+                            totalResult = [...totalResult, {value:currentResultViolence.found[index], positions:currentResultViolence.positions[index], type:"violence"}  ];
                     }
                 } else {
                     if (currentResult !== null){
-                        totalResult = [...totalResult, currentResult.founded];
-                        softResult = [...softResult, currentResult.softSearchFounded];
+                        totalResult = [...totalResult, currentResult.found];
+                        softResult = [...softResult, currentResult.softSearchFound];
                     }
                     if (currentResultDrug !== null) {
-                        totalResult = [...totalResult, currentResultDrug.founded];
+                        totalResult = [...totalResult, currentResultDrug.found];
                     }
                     if (currentResultInsult !== null) {
-                        totalResult = [...totalResult, currentResultInsult.founded];
+                        totalResult = [...totalResult, currentResultInsult.found];
                     }
                     if (currentResultSexuality !== null) {
-                        totalResult = [...totalResult, currentResultSexuality.founded];
+                        totalResult = [...totalResult, currentResultSexuality.found];
                     }
                     if (currentResultViolence !== null) {
-                        totalResult = [...totalResult, currentResultViolence.founded];
+                        totalResult = [...totalResult, currentResultViolence.found];
                     }
                 }
 
@@ -584,77 +584,77 @@ class Tetrapod {
             tooMuchEnds.push(currentResult.tooMuchDoubleEnd);
 
             if (needMultipleCheck) {
-                for (var index =0; index<currentResult.founded.length; index++) {
-                    if (currentResult.founded !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResult.founded[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResult.founded[index], positions:currentResult.positions[index]}];
+                for (var index =0; index<currentResult.found.length; index++) {
+                    if (currentResult.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResult.found[index]) ===-1)
+                        originalTotalResult = [...originalTotalResult, {value:currentResult.found[index], positions:currentResult.positions[index]}];
                 }
-                for (index =0; index< currentResult.softSearchFounded.length; index++) {
-                    if (currentResult.softSearchFounded!==[] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFounded[index]===-1)) {
-                        originalSoftResult = [...originalSoftResult, {value:currentResult.softSearchFounded[index], positions: currentResult.softSearchPositions[index]}]
+                for (index =0; index< currentResult.softSearchFound.length; index++) {
+                    if (currentResult.softSearchFound!==[] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFound[index]===-1)) {
+                        originalSoftResult = [...originalSoftResult, {value:currentResult.softSearchFound[index], positions: currentResult.softSearchPositions[index]}]
                     }
                 }
-                for (var index =0; index<currentResultDrug.founded.length; index++) {
-                    if (currentResultDrug.founded !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultDrug.founded[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResultDrug.founded[index], positions:currentResultDrug.positions[index], type:"drug"}];
+                for (var index =0; index<currentResultDrug.found.length; index++) {
+                    if (currentResultDrug.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultDrug.found[index]) ===-1)
+                        originalTotalResult = [...originalTotalResult, {value:currentResultDrug.found[index], positions:currentResultDrug.positions[index], type:"drug"}];
                 }
-                for (var index =0; index<currentResultInsult.founded.length; index++) {
-                    if (currentResultInsult.founded !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultInsult.founded[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResultInsult.founded[index], positions:currentResultInsult.positions[index], type:"insult"}];
+                for (var index =0; index<currentResultInsult.found.length; index++) {
+                    if (currentResultInsult.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultInsult.found[index]) ===-1)
+                        originalTotalResult = [...originalTotalResult, {value:currentResultInsult.found[index], positions:currentResultInsult.positions[index], type:"insult"}];
                 }
-                for (var index =0; index<currentResultSexuality.founded.length; index++) {
-                    if (currentResultSexuality.founded !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultSexuality.founded[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResultSexuality.founded[index], positions:currentResultSexuality.positions[index], type:"sexuality"}];
+                for (var index =0; index<currentResultSexuality.found.length; index++) {
+                    if (currentResultSexuality.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultSexuality.found[index]) ===-1)
+                        originalTotalResult = [...originalTotalResult, {value:currentResultSexuality.found[index], positions:currentResultSexuality.positions[index], type:"sexuality"}];
                 }
-                for (var index =0; index<currentResultViolence.founded.length; index++) {
-                    if (currentResultViolence.founded !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultViolence.founded[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResultViolence.founded[index], positions:currentResultViolence.positions[index], type:"violence"}];
+                for (var index =0; index<currentResultViolence.found.length; index++) {
+                    if (currentResultViolence.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultViolence.found[index]) ===-1)
+                        originalTotalResult = [...originalTotalResult, {value:currentResultViolence.found[index], positions:currentResultViolence.positions[index], type:"violence"}];
                 }
 
-                for (index =0; index<currentResult2.founded.length; index++) {
-                    if (currentResult2.founded !==[] && totalResult.map(v=>v.value).indexOf(currentResult2.founded[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResult2.founded[index], positions:currentResult2.positions[index]}];
+                for (index =0; index<currentResult2.found.length; index++) {
+                    if (currentResult2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResult2.found[index]) ===-1)
+                        totalResult = [...totalResult, {value:currentResult2.found[index], positions:currentResult2.positions[index]}];
                 }
-                for (index =0; index< currentResult2.softSearchFounded.length; index++) {
-                    if (currentResult2.softSearchFounded!==[] && softResult.map(v=>v.value).indexOf(currentResult2.softSearchFounded[index]===-1)) {
-                        softResult = [...softResult, {value:currentResult2.softSearchFounded[index], positions: currentResult2.softSearchPositions[index]}]
+                for (index =0; index< currentResult2.softSearchFound.length; index++) {
+                    if (currentResult2.softSearchFound!==[] && softResult.map(v=>v.value).indexOf(currentResult2.softSearchFound[index]===-1)) {
+                        softResult = [...softResult, {value:currentResult2.softSearchFound[index], positions: currentResult2.softSearchPositions[index]}]
                     }
                 }
-                for (var index =0; index<currentResultDrug2.founded.length; index++) {
-                    if (currentResultDrug2.founded !==[] && totalResult.map(v=>v.value).indexOf(currentResultDrug2.founded[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResultDrug2.founded[index], positions:currentResultDrug.positions[index], type:"drug"}];
+                for (var index =0; index<currentResultDrug2.found.length; index++) {
+                    if (currentResultDrug2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResultDrug2.found[index]) ===-1)
+                        totalResult = [...totalResult, {value:currentResultDrug2.found[index], positions:currentResultDrug.positions[index], type:"drug"}];
                 }
-                for (var index =0; index<currentResultInsult2.founded.length; index++) {
-                    if (currentResultInsult2.founded !==[] && totalResult.map(v=>v.value).indexOf(currentResultInsult2.founded[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResultInsult2.founded[index], positions:currentResultInsult2.positions[index], type:"insult"}];
+                for (var index =0; index<currentResultInsult2.found.length; index++) {
+                    if (currentResultInsult2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResultInsult2.found[index]) ===-1)
+                        totalResult = [...totalResult, {value:currentResultInsult2.found[index], positions:currentResultInsult2.positions[index], type:"insult"}];
                 }
-                for (var index =0; index<currentResultSexuality2.founded.length; index++) {
-                    if (currentResultSexuality2.founded !==[] && totalResult.map(v=>v.value).indexOf(currentResultSexuality2.founded[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResultSexuality2.founded[index], positions:currentResultSexuality2.positions[index], type:"sexuality"}];
+                for (var index =0; index<currentResultSexuality2.found.length; index++) {
+                    if (currentResultSexuality2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResultSexuality2.found[index]) ===-1)
+                        totalResult = [...totalResult, {value:currentResultSexuality2.found[index], positions:currentResultSexuality2.positions[index], type:"sexuality"}];
                 }
-                for (var index =0; index<currentResultViolence2.founded.length; index++) {
-                    if (currentResultViolence2.founded !==[] && totalResult.map(v=>v.value).indexOf(currentResultViolence2.founded[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResultViolence2.founded[index], positions:currentResultViolence2.positions[index], type:"violence"}];
+                for (var index =0; index<currentResultViolence2.found.length; index++) {
+                    if (currentResultViolence2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResultViolence2.found[index]) ===-1)
+                        totalResult = [...totalResult, {value:currentResultViolence2.found[index], positions:currentResultViolence2.positions[index], type:"violence"}];
                 }
 
             }
             else {
                 if (currentResult !== null){
-                    originalTotalResult = [...originalTotalResult, currentResult.founded];
-                    originalSoftResult = [...originalSoftResult, currentResult.softSearchFounded];
+                    originalTotalResult = [...originalTotalResult, currentResult.found];
+                    originalSoftResult = [...originalSoftResult, currentResult.softSearchFound];
                 }
-                if (currentResultDrug !==null) originalTotalResult = [...originalTotalResult, currentResultDrug.founded];
-                if (currentResultInsult !==null) originalTotalResult = [...originalTotalResult, currentResultInsult.founded];
-                if (currentResultSexuality !==null) originalTotalResult = [...originalTotalResult, currentResultSexuality.founded];
-                if (currentResultViolence !==null) originalTotalResult = [...originalTotalResult, currentResultViolence.founded];
+                if (currentResultDrug !==null) originalTotalResult = [...originalTotalResult, currentResultDrug.found];
+                if (currentResultInsult !==null) originalTotalResult = [...originalTotalResult, currentResultInsult.found];
+                if (currentResultSexuality !==null) originalTotalResult = [...originalTotalResult, currentResultSexuality.found];
+                if (currentResultViolence !==null) originalTotalResult = [...originalTotalResult, currentResultViolence.found];
 
                 if (currentResult2 !== null){
-                    totalResult = [...totalResult, currentResult2.founded];
-                    softResult = [...softResult, currentResult2.softSearchFounded];
+                    totalResult = [...totalResult, currentResult2.found];
+                    softResult = [...softResult, currentResult2.softSearchFound];
                 }
-                if (currentResultDrug2 !==null) totalResult = [...originalTotalResult, currentResultDrug.founded];
-                if (currentResultInsult2 !==null) originalTotalResult = [...originalTotalResult, currentResultInsult.founded];
-                if (currentResultSexuality2 !==null) originalTotalResult = [...originalTotalResult, currentResultSexuality.founded];
-                if (currentResultViolence2 !==null) originalTotalResult = [...originalTotalResult, currentResultViolence.founded];
+                if (currentResultDrug2 !==null) totalResult = [...originalTotalResult, currentResultDrug.found];
+                if (currentResultInsult2 !==null) originalTotalResult = [...originalTotalResult, currentResultInsult.found];
+                if (currentResultSexuality2 !==null) originalTotalResult = [...originalTotalResult, currentResultSexuality.found];
+                if (currentResultViolence2 !==null) originalTotalResult = [...originalTotalResult, currentResultViolence.found];
 
             }
 
@@ -686,14 +686,14 @@ class Tetrapod {
 
         // let unsafeMessage = message.toLowerCase()
         // let normalWordPositions = {}
-        let foundedBadWords = [];
-        let foundedBadOriginalWords = []; // isMap에서 original 단어
-        let foundedBadWordPositions = []
-        let foundedBadWordOriginalPositions = []; // isMap에서 original 단어 위치
-        let foundedSoftSearchWords = []
-        let foundedSoftSearchOriginalWords = [] // isMap에서 original Softsearch 단어
-        let foundedSoftSearchWordPositions = []
-        let foundedSoftSearchWordOriginalPositions = []; // isMap에서 original Softserach 단어 위치
+        let foundBadWords = [];
+        let foundBadOriginalWords = []; // isMap에서 original 단어
+        let foundBadWordPositions = []
+        let foundBadWordOriginalPositions = []; // isMap에서 original 단어 위치
+        let foundSoftSearchWords = []
+        let foundSoftSearchOriginalWords = [] // isMap에서 original Softsearch 단어
+        let foundSoftSearchWordPositions = []
+        let foundSoftSearchWordOriginalPositions = []; // isMap에서 original Softserach 단어 위치
         let originalMessageList = [];
         let originalMessageSyllablePositions = []; // 원래 음가 위치
 
@@ -752,8 +752,8 @@ class Tetrapod {
             let parserLength = 0;
 
             // 이미 더 긴 단어에서 욕설을 찾았다면 그냥 넘어가보자.
-            for (let alreadyFounded of foundedSoftSearchWords) {
-                if (Utils.objectInclude(softSearchWord, alreadyFounded.split(""))) {
+            for (let alreadyFound of foundSoftSearchWords) {
+                if (Utils.objectInclude(softSearchWord, alreadyFound.split(""))) {
                     isSkip = true; break;
                 }
             }
@@ -913,7 +913,7 @@ class Tetrapod {
 
                 // 중복 비속어 체크하기.
                 var tmpTF = true;
-                for (let positions of foundedSoftSearchWordPositions) {
+                for (let positions of foundSoftSearchWordPositions) {
                     // 다른 비속어와 포지션이 일치할 때 강제 종료
                     for (let softSearchPosition of positions) {
                         if (Utils.objectInclude(tempSoftSearchWordPositions, softSearchPosition)) {
@@ -970,25 +970,25 @@ class Tetrapod {
                     console.log(`발견된 저속한 표현 위치: [${softSearchWordPositions}]`)
                     console.log(`발견된 저속한 표현 원래 위치: [${softSearchWordOriginalPositions}]`)
                     console.log('\n')
-                    foundedSoftSearchWords.push(softSearchWord.join(''))
-                    foundedSoftSearchWordPositions.push(softSearchWordPositions)
-                    foundedSoftSearchOriginalWords.push(originalSoftSearchWords);
-                    foundedSoftSearchWordOriginalPositions.push(softSearchWordOriginalPositions);
+                    foundSoftSearchWords.push(softSearchWord.join(''))
+                    foundSoftSearchWordPositions.push(softSearchWordPositions)
+                    foundSoftSearchOriginalWords.push(originalSoftSearchWords);
+                    foundSoftSearchWordOriginalPositions.push(softSearchWordOriginalPositions);
                 }
                 else {
                     console.log(`원문: ${newMessage}`)
                     console.log(`발견된 저속한 표현: [${softSearchWord.join()}]`)
                     console.log(`발견된 저속한 표현 위치: [${softSearchWordPositions}]`)
                     console.log('\n')
-                    foundedSoftSearchWords.push(softSearchWord.join(''))
-                    foundedSoftSearchWordPositions.push(softSearchWordPositions)
+                    foundSoftSearchWords.push(softSearchWord.join(''))
+                    foundSoftSearchWordPositions.push(softSearchWordPositions)
                 }
 
             }
 
 
             // 반복 줄이기 위해 강제 탈출.
-            if (needMultipleCheck === false && foundedSoftSearchWords.length>0) break;
+            if (needMultipleCheck === false && foundSoftSearchWords.length>0) break;
 
         }
 
@@ -1025,9 +1025,9 @@ class Tetrapod {
 
             let isSkip = false;
             // 이미 더 긴 단어에서 욕설을 찾았다면 그냥 넘어가보자.
-            for (let alreadyFounded of foundedBadWords) {
-                // console.log(badWord, alreadyFounded.split(""))
-                if (Utils.objectInclude(badWord, alreadyFounded.split(""))) {
+            for (let alreadyFound of foundBadWords) {
+                // console.log(badWord, alreadyFound.split(""))
+                if (Utils.objectInclude(badWord, alreadyFound.split(""))) {
 
                     isSkip = true; break;
                 }
@@ -1203,7 +1203,7 @@ class Tetrapod {
 
                 // 중복 비속어 체크하기.
                 var tmpTF = true;
-                for (let positions of foundedBadWordPositions) {
+                for (let positions of foundBadWordPositions) {
                     // 다른 비속어와 포지션이 일치할 때 강제 종료
                     for (let badPosition of positions) {
                         if (Utils.objectInclude(tempBadWordPositions, badPosition)) {
@@ -1213,7 +1213,7 @@ class Tetrapod {
                 }
 
                 // 저속한 표현과 중복되는지 확인해보자.
-                for (let positions of foundedSoftSearchWordPositions) {
+                for (let positions of foundSoftSearchWordPositions) {
 
                     for (let softSearchPosition of positions) {
 
@@ -1226,12 +1226,12 @@ class Tetrapod {
 
                         // if (Math.min(...tempBadWordPositions) <= Math.min(...softSearchPosition) &&  Math.min(...softSearchPosition)  <= Math.max(...tempBadWordPositions) ) {
                         //     tmpTF = true;
-                        //     badWord = Utils.removeMultiple([...badWord, ...foundedSoftSearchWords[foundedSoftSearchWordPositions.indexOf(positions)] ])
+                        //     badWord = Utils.removeMultiple([...badWord, ...foundSoftSearchWords[foundSoftSearchWordPositions.indexOf(positions)] ])
                         //     tempBadWordPositions = Utils.removeMultiple([...tempBadWordPositions, ...softSearchPosition])
                         // }
                         // else if (Math.min(...tempBadWordPositions) <= Math.max(...softSearchPosition) && Math.max(...softSearchPosition)  <= Math.max(...tempBadWordPositions) ) {
                         //     tmpTF = true;
-                        //     badWord = Utils.removeMultiple([...foundedSoftSearchWords[foundedSoftSearchWordPositions.indexOf(positions)], ...badWord]);
+                        //     badWord = Utils.removeMultiple([...foundSoftSearchWords[foundSoftSearchWordPositions.indexOf(positions)], ...badWord]);
                         //     badWordPositions = Utils.removeMultiple([...softSearchPosition, ...tempBadWordPositions ]);
                         // }
                         // // 만약 비속어와 저속한 표현 사이에 숫자, 알파벳, 공백밖에 없으면 비속어로 합치기
@@ -1240,7 +1240,7 @@ class Tetrapod {
                         //     let inter1 = Math.min(...softSearchPosition);
                         //     if (newMessage.slice(inter0 + 1, inter1).match(/^[0-9A-Za-z\s~!@#$%^&*()_\-+\\|\[\]{};:'"<,>.?/]*$/ )) {
                         //         tmpTF = true;
-                        //         badWord = [...badWord, ...foundedSoftSearchWords[foundedSoftSearchWordPositions.indexOf(positions)]];
+                        //         badWord = [...badWord, ...foundSoftSearchWords[foundSoftSearchWordPositions.indexOf(positions)]];
                         //         tempBadWordPositions = [...tempBadWordPositions, ...softSearchPosition];
                         //     }
                         // }
@@ -1249,7 +1249,7 @@ class Tetrapod {
                         //     let inter1 = Math.min(...tempBadWordPositions);
                         //     if (newMessage.slice(inter0+1, inter1).match(/^[0-9A-Za-z\s~!@#$%^&*()_\-+\\|\[\]{};:'"<,>.?/]*$/) ) {
                         //         tmpTF = true;
-                        //         badWord = [...foundedSoftSearchWords[foundedSoftSearchWordPositions.indexOf(positions)], ...badWord];
+                        //         badWord = [...foundSoftSearchWords[foundSoftSearchWordPositions.indexOf(positions)], ...badWord];
                         //         tempBadWordPositions = [...softSearchPosition, ...tempBadWordPositions];
                         //     }
                         // }
@@ -1302,23 +1302,23 @@ class Tetrapod {
                     console.log(`발견된 비속어 위치: [${badWordPositions}]`)
                     console.log(`발견된 비속어 원래 위치: [${badWordOriginalPositions}]`)
                     console.log('\n')
-                    foundedBadWords.push(badWord.join(''))
-                    foundedBadWordPositions.push(badWordPositions)
-                    foundedBadOriginalWords.push(originalBadWords);
-                    foundedBadWordOriginalPositions.push(badWordOriginalPositions);
+                    foundBadWords.push(badWord.join(''))
+                    foundBadWordPositions.push(badWordPositions)
+                    foundBadOriginalWords.push(originalBadWords);
+                    foundBadWordOriginalPositions.push(badWordOriginalPositions);
                 }
                 else {
                     console.log(`원문: ${newMessage}`)
                     console.log(`발견된 비속어: [${badWord.join()}]`)
                     console.log(`발견된 비속어 위치: [${badWordPositions}]`)
                     console.log('\n')
-                    foundedBadWords.push(badWord.join(''))
-                    foundedBadWordPositions.push(badWordPositions)
+                    foundBadWords.push(badWord.join(''))
+                    foundBadWordPositions.push(badWordPositions)
                 }
 
             }
             // 반복 줄이기 위해 강제 탈출.
-            if (needMultipleCheck === false && foundedBadWords.length>0) break;
+            if (needMultipleCheck === false && foundBadWords.length>0) break;
         }
 
         //부적절하게 겹받침 많이 사용했는지 여부 확인하기
@@ -1335,19 +1335,19 @@ class Tetrapod {
             let isMapAdded = {};
             if (isMap) {
                 isMapAdded = {
-                    originalFounded: needMultipleCheck ? foundedBadOriginalWords : foundedBadOriginalWords.slice(0).slice(0),
-                    originalPositions: needMultipleCheck ? foundedBadWordOriginalPositions : foundedBadWordOriginalPositions.slice(0).slice(0),
-                    originalSoftSearchFounded : needMultipleCheck ? foundedSoftSearchOriginalWords : foundedSoftSearchOriginalWords.slice(0).slice(0),
-                    originalSoftSearchPositions : needMultipleCheck ? foundedSoftSearchWordOriginalPositions : foundedSoftSearchWordOriginalPositions.slice(0).slice(0)
+                    originalFound: needMultipleCheck ? foundBadOriginalWords : foundBadOriginalWords.slice(0).slice(0),
+                    originalPositions: needMultipleCheck ? foundBadWordOriginalPositions : foundBadWordOriginalPositions.slice(0).slice(0),
+                    originalSoftSearchFound : needMultipleCheck ? foundSoftSearchOriginalWords : foundSoftSearchOriginalWords.slice(0).slice(0),
+                    originalSoftSearchPositions : needMultipleCheck ? foundSoftSearchWordOriginalPositions : foundSoftSearchWordOriginalPositions.slice(0).slice(0)
                 };
             }
 
         // 결과 출력
         return {
-            founded: needMultipleCheck? foundedBadWords : foundedBadWords.slice(0),
-            positions: needMultipleCheck? foundedBadWordPositions : foundedBadWordPositions.slice(0).slice(0),
-            softSearchFounded: needMultipleCheck? foundedSoftSearchWords: foundedSoftSearchWords.slice(0),
-            softSearchPositions: needMultipleCheck? foundedSoftSearchWordPositions : foundedSoftSearchWordPositions.slice(0).slice(0),
+            found: needMultipleCheck? foundBadWords : foundBadWords.slice(0),
+            positions: needMultipleCheck? foundBadWordPositions : foundBadWordPositions.slice(0).slice(0),
+            softSearchFound: needMultipleCheck? foundSoftSearchWords: foundSoftSearchWords.slice(0),
+            softSearchPositions: needMultipleCheck? foundSoftSearchWordPositions : foundSoftSearchWordPositions.slice(0).slice(0),
             //부적절하게 겹자음 받침을 많이 사용한 단어 적발.
             tooMuchDoubleEnd: tooMuchDouble,
             ...isMapAdded
@@ -1357,10 +1357,10 @@ class Tetrapod {
     // 비속어 리스트가 주어졌을 때 비속어 리스트 안에서 검사하기.
     static nativeFindFromList(message, parsedWordsList, needMultipleCheck=false, isMap=false, isReassemble=false) {
         // let normalWordPositions = {}
-        let foundedBadWords = []
-        let foundedBadOriginalWords = []
-        let foundedBadWordPositions = []
-        let foundedBadWordOriginalPositions = []; // isMap에서 original 단어 위치
+        let foundBadWords = []
+        let foundBadOriginalWords = []
+        let foundBadWordPositions = []
+        let foundBadWordOriginalPositions = []; // isMap에서 original 단어 위치
         let originalMessageList = [];
         let originalMessageSyllablePositions = []; // 원래 음가 위치
 
@@ -1409,8 +1409,8 @@ class Tetrapod {
 
             let isSkip = false;
             // 이미 더 긴 단어에서 욕설을 찾았다면 그냥 넘어가보자.
-            for (let alreadyFounded of foundedBadWords) {
-                if (Utils.objectInclude(badWord, alreadyFounded.split(""))) {
+            for (let alreadyFound of foundBadWords) {
+                if (Utils.objectInclude(badWord, alreadyFound.split(""))) {
                     isSkip = true; break;
                 }
             }
@@ -1559,7 +1559,7 @@ class Tetrapod {
 
                 // 중복 비속어 체크하기.
                 var tmpTF = true;
-                for (let positions of foundedBadWordPositions) {
+                for (let positions of foundBadWordPositions) {
                     // 다른 비속어와 포지션이 일치할 때 강제 종료
                     for (let badPosition of positions) {
                         if (Utils.objectInclude(tempBadWordPositions, badPosition)) {
@@ -1616,40 +1616,40 @@ class Tetrapod {
                     console.log(`발견된 비속어 위치: [${badWordPositions}]`)
                     console.log(`발견된 비속어 원래 위치: [${badWordOriginalPositions}]`)
                     console.log('\n')
-                    foundedBadWords.push(badWord.join(''))
-                    foundedBadWordPositions.push(badWordPositions)
-                    foundedBadOriginalWords.push(originalBadWords);
-                    foundedBadWordOriginalPositions.push(badWordOriginalPositions);
+                    foundBadWords.push(badWord.join(''))
+                    foundBadWordPositions.push(badWordPositions)
+                    foundBadOriginalWords.push(originalBadWords);
+                    foundBadWordOriginalPositions.push(badWordOriginalPositions);
                 }
                 else {
                     console.log(`원문: ${newMessage}`)
                     console.log(`발견된 비속어: [${badWord.join()}]`)
                     console.log(`발견된 비속어 위치: [${badWordPositions}]`)
                     console.log('\n')
-                    foundedBadWords.push(badWord.join(''))
-                    foundedBadWordPositions.push(badWordPositions)
+                    foundBadWords.push(badWord.join(''))
+                    foundBadWordPositions.push(badWordPositions)
                 }
 
             }
 
 
             // 반복 줄이기 위해 강제 탈출.
-            if (needMultipleCheck === false && foundedBadWords.length>0) break;
+            if (needMultipleCheck === false && foundBadWords.length>0) break;
 
         }
 
         let isMapAdded = {};
         if (isMap) {
             isMapAdded = {
-                originalFounded: needMultipleCheck ? foundedBadOriginalWords : foundedBadOriginalWords.slice(0).slice(0),
-                originalPositions: needMultipleCheck ? foundedBadWordOriginalPositions : foundedBadWordOriginalPositions.slice(0).slice(0),
+                originalFound: needMultipleCheck ? foundBadOriginalWords : foundBadOriginalWords.slice(0).slice(0),
+                originalPositions: needMultipleCheck ? foundBadWordOriginalPositions : foundBadWordOriginalPositions.slice(0).slice(0),
             };
         }
 
         // 결과 출력
         return {
-            founded: needMultipleCheck? foundedBadWords : foundedBadWords.slice(0),
-            positions: needMultipleCheck? foundedBadWordPositions : foundedBadWordPositions.slice(0).slice(0),
+            found: needMultipleCheck? foundBadWords : foundBadWords.slice(0),
+            positions: needMultipleCheck? foundBadWordPositions : foundBadWordPositions.slice(0).slice(0),
             ...isMapAdded
         }
 
