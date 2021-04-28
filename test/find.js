@@ -91,7 +91,7 @@ const test = (word)=>{
 
 
 // console.log("text", Tetrapod.fix("즤랄 왕이 나셨도다 ㄱHㅅH끼", '$', {antispoof:true, isOriginal:true}))
-console.log(Tetrapod.nativeFind("시발롬아"))
+console.log(Tetrapod.nativeFind("존병"))
 console.log(Tetrapod.nativeFind( Utils.dropDouble("십발 정말 값삾핪닚닶", true) , true, true))
 console.log("걸린 시간:::", new Date().getTime()-initTime)
 initTime = new Date().getTime()

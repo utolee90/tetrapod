@@ -13,12 +13,6 @@ const Utils = {
         'ㅏ', 'ㅐ' , 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'
     ],
 
-    // 유사한 자모. 예를 들면 껴져 -> 꺼저로 축약할 때 사용.
-    korSimParts: {'ㄱ':['ㄱ','ㅋ','ㄲ'], 'ㄲ':['ㄲ','ㅋ'], 'ㄴ':['ㄴ', 'ㄹ'], 'ㄷ':['ㄴ','ㄷ', 'ㄸ', 'ㅌ'], 'ㄹ':['ㄴ'], 'ㅁ':['ㅇ'], 'ㅂ':['ㅃ', 'ㅍ'], 'ㅅ':['ㅆ'], 'ㅇ':['ㅁ'],
-        'ㅈ':['ㅉ','ㅊ'], 'ㅊ':['ㅉ', 'ㅌ'], 'ㅋ':['ㄲ'], 'ㅌ':['ㄸ', 'ㅊ'], 'ㅍ':['ㅃ'], 'ㅎ': ['ㅇ'],
-        'ㅏ':['ㅑ', 'ㅘ'], 'ㅐ':['ㅒ', 'ㅖ', 'ㅔ'], 'ㅑ':['ㅏ', 'ㅛ'], 'ㅒ':['ㅐ', 'ㅔ', 'ㅖ'], 'ㅓ':['ㅕ', 'ㅗ', 'ㅝ'], 'ㅔ':['ㅐ', 'ㅒ', 'ㅖ'], 'ㅕ':['ㅓ', 'ㅛ', ''], 'ㅖ':['ㅔ', 'ㅐ', 'ㅒ'],
-        'ㅗ':['ㅓ', 'ㅛ', 'ㅘ'], 'ㅘ':['ㅏ'], 'ㅙ':['ㅚ', 'ㅞ'], 'ㅚ':['ㅙ', 'ㅞ'], 'ㅜ':['ㅡ', 'ㅠ'], 'ㅝ':['ㅓ'], 'ㅞ':['ㅙ', 'ㅚ'], 'ㅟ':['ㅜ', 'ㅣ'], 'ㅠ':['ㅜ', 'ㅡ'], 'ㅡ':['ㅢ', 'ㅜ'] , 'ㅢ':['ㅡ', 'ㅣ'], 'ㅣ':['ㅡ', 'ㅢ', 'ㅟ']
-    },
 
     // 이중 받침 자음
     doubleConsonant: [['ㄱ','ㅅ'], ['ㄴ','ㅈ'], ['ㄴ','ㅎ'], ['ㄹ','ㄱ'], ['ㄹ','ㅁ'], ['ㄹ','ㅂ'], ['ㄹ','ㅅ'],
@@ -125,18 +119,29 @@ const Utils = {
         return couple
     },
 
-    // 단어 -> 낱자로 분리.
-    // 수정 - !, ?을 이용한 매크로 옵션 추가.
-    // 바! -> [바, 박, 밖 ... ].
+    // 단어 -> 낱자로 분리하는 함수. 매크로를 이용한 처리
+    // 수정 - 매크로 ., !, +, ?
+    // . 이스케이프 문자.
+    // 바! -> [바, 뱌, 빠,... ].
     // 바? -> 한글 ? 개수까지 완전 무시...
+    // 바+ -> [바, 박, 밖,...]. 받침 포함.
     // wordToarray -
     wordToArray: word => {
     let wordArray = []
-    let macroChar = ["?", "!"]
     for (let i = 0; i <= word.length - 1; i++) {
-        if (word[i] === "!" || word[i] === "?" ) {
+
+        if ((i===1 || i>1 && word[i-2]!== "." )&& word[i-1] === ".") {
+            wordArray.splice(-1, 1, word[i])
+        }
+        // .뒤에 오지 않는 경우 ? 기호는 뒷 문자에 밀너허기
+        else if (word[i] === "?") {
             wordArray.splice(-1, 1, wordArray.slice(-1)[0]+word[i])
         }
+        // !, + 기호 관련. 한글 뒤에 오는 경우 앞 문자에 붙이기.
+        else if (i>0 && /[가-힣]/.test(word[i-1]) && (word[i] === "!" || word[i] === "+") ) {
+            wordArray.splice(-1, 1, wordArray.slice(-1)[0]+word[i])
+        }
+        // 그 외의 경우는 따로 놓기.
         else {
             wordArray.push(word[i])
         }
@@ -194,9 +199,12 @@ const Utils = {
 
     // 단어 정렬 기준을 가나다순이 아닌 단어 길이 역순으로 정렬해보자. 긴 단어부터 검사하면 짧은 단어를 중복으로 검사할 이유가 줄어든다.
     sortMap: (inputMap) => {
-        let sortedMap = {}
+        let sortedMap = Array.isArray(inputMap)?[]:{}
 
-        if (typeof inputMap === 'object' && Object.keys(inputMap).length>0) {
+        if (typeof inputMap === "object" && Array.isArray(inputMap) === true) {
+            sortedMap = inputMap.sort((a, b) => (a.length - b.length) ).reverse();
+        }
+        else if (typeof inputMap === 'object' && Object.keys(inputMap).length>0) {
             Object.keys(inputMap).sort((a,b) => a.length-b.length).reverse().forEach((key) => {
                 sortedMap[key] = inputMap[key]
             })

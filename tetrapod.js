@@ -179,7 +179,7 @@ class Tetrapod {
                 parsedBadWords.push(Utils.wordToArray(badWords[index]))
         }
 
-        console.log("befor Sorting Words", new Date().getTime())
+        console.log("before Sorting Words", new Date().getTime())
         // 단어의 길이 역순으로 정렬
         parsedBadWords.sort((a,b)=> a.length-b.length).reverse();
         parsedSoftSearchWords.sort((a,b)=> a.length-b.length).reverse();
@@ -201,6 +201,7 @@ class Tetrapod {
         // 각 원소에 대해 objectEqual을 이용해서 체크하기
         for (let i in List) {
             sameLengthList = sameLengthList.filter(x=> (Utils.objectEqual(List[i], x[i])))
+            if (sameLengthList.length ===0 ) return false;
         }
         // 리스트 안에 있으면 true, 없으면 false
         if (sameLengthList.length>0) return true;
@@ -279,15 +280,15 @@ class Tetrapod {
         }
         console.log("getDefaultData", new Date().getTime())
         return {
-            badWords: this.recursiveList(require('./resource/dictionary/bad-words.json').badwords, badWordMacros),
-            normalWords: this.recursiveList(require('./resource/dictionary/normal-words.json').dictionary, badWordMacros),
-            exceptWords: this.recursiveList(require('./resource/dictionary/normal-words.json').exception, badWordMacros),
-            softSearchWords: this.recursiveList(require('./resource/dictionary/soft-search-words.json').badwords, badWordMacros),
+            badWords: this.assembleHangul( this.recursiveList(require('./resource/dictionary/bad-words.json').badwords, badWordMacros) ),
+            normalWords: this.assembleHangul( this.recursiveList(require('./resource/dictionary/normal-words.json').dictionary, badWordMacros) ),
+            exceptWords: this.assembleHangul( this.recursiveList(require('./resource/dictionary/normal-words.json').exception, badWordMacros) ),
+            softSearchWords: this.assembleHangul( this.recursiveList(require('./resource/dictionary/soft-search-words.json').badwords, badWordMacros)),
             typeofBadWords: {
-                drug: this.recursiveList(require('./resource/dictionary/bad-words.json').drug, badWordMacros),
-                insult: this.recursiveList(require('./resource/dictionary/bad-words.json').insult, badWordMacros),
-                sexuality: this.recursiveList(require('./resource/dictionary/bad-words.json').sexuality, badWordMacros),
-                violence : this.recursiveList(require('./resource/dictionary/bad-words.json').violence, badWordMacros),
+                drug: this.assembleHangul(this.recursiveList(require('./resource/dictionary/bad-words.json').drug, badWordMacros)),
+                insult: this.assembleHangul(this.recursiveList(require('./resource/dictionary/bad-words.json').insult, badWordMacros)),
+                sexuality: this.assembleHangul(this.recursiveList(require('./resource/dictionary/bad-words.json').sexuality, badWordMacros)),
+                violence : this.assembleHangul(this.recursiveList(require('./resource/dictionary/bad-words.json').violence, badWordMacros)),
             },
             badWordMacros
         }
@@ -365,14 +366,22 @@ class Tetrapod {
     }
 
 
-    // 메시지에 비속어가 들어갔는지 검사
-    static isBad(message, includeSoft=false) {
-        if (includeSoft === true)
-            return (this.find(message, false).totalResult.length != 0 ||
-                this.find(message, false).softResult.length != 0 ||
-                this.find(message, false).endResult.length != 0
-            );
-        else return this.find(message, false).totalResult.length != 0;
+    // 메시지에 비속어가 들어갔는지 검사.
+    static isBad(message, includeSoft=false, fromList = undefined) {
+        if (fromList === undefined) {
+            if (includeSoft === true)
+                return (this.nativeFind(message, false).found.length >0 ||
+                    this.nativeFind(message, false).softSearchFound.length >0 ||
+                    this.nativeFind(message, false).tooMuchDoubleEnd.val
+                );
+            else
+                return this.nativeFind(message, false).found.length>0;
+        }
+            // fromList가 리스트 형식으로 주어지면 includeSoft와 무관하게 fromList 안에 있는 함수만 검출
+        // fromList는 단어 리스트 또는 파싱된 단어 리스트 중 하나 입력 가능.
+        else if (Array.isArray(fromList)) {
+            return (this.nativeFindFromList(message, fromList, false).found.length > 0)
+        }
     }
 
     // 메시지에 비속어가 몇 개 있는지 검사.
@@ -743,7 +752,7 @@ class Tetrapod {
         for (let softSearchWord of parsedSoftSearchWords) {
 
             // 단순히 찾는 것으로 정보를 수집하는 것이 아닌 위치를 아예 수집해보자.
-            // findCount 형태 : {바: [1,8], 보:[2,7,12]}등
+             // findCount 형태 : {바: [1,8], 보:[2,7,12]}등
             let findCount = {}
             // 저속한 단어 수집 형태. 이 경우는 [[1,2], [8,7]]로 수집된다.
             let softSearchWordPositions = []
@@ -768,8 +777,8 @@ class Tetrapod {
 
                 let mainCharacter = character[0]
 
-                let parserCharacter = character[1] // ! 또는 ?
-                parserLength = parserCharacter === "!" ? character.length -2 : character.length-1; // ? 개수 추정.
+                let parserCharacter = character[1] // !, + 또는 ?, 정의 안 될수도 있음.
+                parserLength = (parserCharacter === "!" || parserCharacter ==="+") ? character.length -2 : character.length-1; // ? 개수 추정.
                 let nextCharacter = (parserLength===0 && softSearchWord.indexOf(character)<softSearchWord.length-1)
                     ? softSearchWord[ softSearchWord.indexOf(character)+1 ][0]: "" // 뒤의 낱자 수집.
 
@@ -798,6 +807,11 @@ class Tetrapod {
                             findCount[softSearchOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
                         }
 
+                    }
+                    else if (parserCharacter === "+") {
+                        if ( Utils.objectInclude( Hangul.disassemble(softSearchOneCharacter), Hangul.disassemble(unsafeOneCharacter), true) ) {
+                            findCount[softSearchOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
+                        }
                     }
                     else {
                         if (softSearchOneCharacter === unsafeOneCharacter) {
@@ -1042,7 +1056,7 @@ class Tetrapod {
                 let mainCharacter = character[0]
                 let parserCharacter = character[1] // ! 또는 ?
 
-                parserLength = parserCharacter === "!" ? character.length -2 : character.length-1; // ? 개수 추정.
+                parserLength = (parserCharacter === "!" || parserCharacter === "+") ? character.length -2 : character.length-1; // ? 개수 추정.
 
                 // 뒤의 낱자 수집
                 let nextCharacter = (parserLength===0 && badWord.indexOf(character)<badWord.length-1)
@@ -1073,6 +1087,11 @@ class Tetrapod {
                             findCount[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
                         }
 
+                    }
+                    else if (parserCharacter === "+") {
+                        if ( Utils.objectInclude( Hangul.disassemble(badOneCharacter), Hangul.disassemble(unsafeOneCharacter), true) ) {
+                            findCount[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
+                        }
                     }
                     else {
                         if (badOneCharacter === unsafeOneCharacter) {
@@ -1355,7 +1374,14 @@ class Tetrapod {
     }
 
     // 비속어 리스트가 주어졌을 때 비속어 리스트 안에서 검사하기.
+    // 옵션 추가 - parsedWordList 대신 wordList를 입력해도 자동으로 parsedWordList로 변환해서 처리 가능.
     static nativeFindFromList(message, parsedWordsList, needMultipleCheck=false, isMap=false, isReassemble=false) {
+
+        // check whether wordList is parsed or not
+        if (typeof parsedWordsList[0] === "string" ) {
+            parsedWordsList = this.parseFromList(parsedWordsList)
+        }
+
         // let normalWordPositions = {}
         let foundBadWords = []
         let foundBadOriginalWords = []
@@ -1423,8 +1449,8 @@ class Tetrapod {
             for (let character of badWord) {
 
                 let mainCharacter = character[0]
-                let parserCharacter = character[1] // !, ? 또는 undefined
-                parserLength = parserCharacter==="!"? character.length-2 : character.length-1
+                let parserCharacter = character[1] // !, ?, + 또는 undefined
+                parserLength =  (parserCharacter==="!" || parserCharacter === "+") ? character.length-2 : character.length-1
                 let badOneCharacter = String(mainCharacter).toLowerCase();
                 // 뒤의 낱자 수집
                 let nextCharacter = (parserLength===0 && badWord.indexOf(character)<badWord.length-1)
@@ -1451,7 +1477,11 @@ class Tetrapod {
                         if (this.isKindChar(unsafeOneCharacter, badOneCharacter, nextCharacter)) {
                             findCount[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
                         }
-
+                    }
+                    else if (parserCharacter === "+") {
+                        if ( Utils.objectInclude( Hangul.disassemble(badOneCharacter), Hangul.disassemble(unsafeOneCharacter), true) ) {
+                            findCount[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
+                        }
                     }
                     else {
                         if (badOneCharacter === unsafeOneCharacter) {
@@ -2124,7 +2154,7 @@ class Tetrapod {
             // inc 낱자 파싱
             let mainChar = inc[incCnt][0]; // 기본 낱자
             let parserChar = inc[incCnt][1]; // 파싱 낱자. ! 또는 ?
-            let astLength = parserChar==="!"? inc[incCnt].length-2: inc[incCnt].length-1; // ? 갯수
+            let astLength = (parserChar==="!"|| parserChar==="+")? inc[incCnt].length-2: inc[incCnt].length-1; // ? 갯수
 
             while(tempCnt < exc.length) {
                 // exc 낱자 파싱
@@ -2167,9 +2197,23 @@ class Tetrapod {
 
     }
 
-    // 한글 조합 함수. 각 원소들을 Hangul.assemble(Hangul.disassemble())로 조합하는데 사용합니다.
-    static assembleHangul(elem) {
-        return Utils.listMap(elem, x=>(Hangul.assemble(Hangul.disassemble(x))));
+    // 한글 조합 함수. 각 원소들을 Hangul.assemble(Hangul.disassemble())로 조합하는데 사용합니다. isComma 옵션은 파서 문자 ,를 무시할지 물어봅니다.
+    static assembleHangul(elem, isIgnoreComma = true) {
+        return Utils.listMap(elem, x=>(
+            isIgnoreComma ? Hangul.assemble(Hangul.disassemble(x)).replace("\,", "，").replace(",","").replace("，",",")
+                : Hangul.assemble(Hangul.disassemble(x))
+        ));
+    }
+
+    // 단어 리스트가 존재할 때 parse하는 함수
+    static parseFromList(wordList) {
+        let res  = []
+        for (let word of wordList) {
+            res.push(Utils.wordToArray(word))
+        }
+        res.sort((a,b) => (a.length-b.length)).reverse()
+
+        return res;
     }
 
     /**
