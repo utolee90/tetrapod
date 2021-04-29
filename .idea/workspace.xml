@@ -3,10 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="104ff4eb-fd97-4171-9f6f-14d519183829" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/ObjectOperation.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/ObjectOperation.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Utils.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Utils.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resource/dictionary/bad-words.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/bad-words.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/find.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/find.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/find2.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/find2.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tetrapod.js" beforeDir="false" afterPath="$PROJECT_DIR$/tetrapod.js" afterDir="false" />
@@ -93,7 +90,7 @@
       <workItem from="1619066641691" duration="54907000" />
       <workItem from="1619408413171" duration="191000" />
       <workItem from="1619494933083" duration="1485000" />
-      <workItem from="1619610725943" duration="9253000" />
+      <workItem from="1619610725943" duration="33354000" />
     </task>
     <task id="LOCAL-00001" summary="modify source">
       <created>1618747573738</created>
@@ -129,12 +126,12 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/tetrapod.js</url>
-          <line>702</line>
+          <line>698</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/tetrapod.js</url>
-          <line>472</line>
+          <line>468</line>
           <option name="timeStamp" value="5" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
@@ -154,9 +151,15 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/tetrapod.js</url>
-          <line>1377</line>
+          <line>1373</line>
           <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="10" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/components/Utils.js</url>
+          <line>1069</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="11" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

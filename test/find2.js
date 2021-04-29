@@ -4,13 +4,15 @@ import Utils from "../components/Utils";
 import Tetrapod from "../tetrapod";
 import Hangul from "hangul-js"
 
-// console.log( Utils.dropDouble("십발 정말 값삾핪닚닶", true))
+console.log()
+console.log( Utils.dropDouble("없닶", true))
 // // Tetrapod.loadFile(
 // //     './resource/sample/bad-words.json',
 // //     './resource/klleon/normal-words.json',
 // //     './resource/klleon/soft-search-words.json',
 // //     './resource/klleon/macros.json',
 // // )
+
 // console.log("\n\n======================")
 // console.log(Tetrapod.findNormalWordPositions("십발 정말 값삾핪닚닶"))
 // console.log("\n\n======================")
@@ -21,4 +23,4 @@ import Hangul from "hangul-js"
 // console.log("\n\n======================")
 // console.log(Utils.dropDouble("십발 정말 값삾핪닚닶", true))
 
-console.log(Hangul.assemble(Hangul.disassemble("ㄱ,ㅓ")))
+console.log(Utils.dropDouble("야 이 우리왕 아주 짜증나 죽겠어. 에휴에휴!!! 질알.", true))

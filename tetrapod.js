@@ -437,9 +437,7 @@ class Tetrapod {
         let message3Map = {}
         let message3 = ''
         let message4Map = {}
-        let message4 = ''
-        let message5Map = {}
-        let message5 = ''
+
 
         if (qwertyToDubeol === true && isStrong === false) { // 만약 한영 검사가 필요하면...
             message2Map = Utils.qwertyToDubeol(message, true);
@@ -448,9 +446,7 @@ class Tetrapod {
         if (isStrong === true) { // 문자열을 악용한 것까지 잡아보자.
             message3Map = Utils.antispoof(message, true);
             message3 = Utils.antispoof(message, false);
-            message4Map = Utils.dropDouble(message3, true, true);
-            message5Map = Utils.dropDouble(message3, true, true);
-            message5 = Utils.dropDouble(message3, false, true);
+            message4Map = Utils.dropDouble(message3, true, false);
         }
 
         if (splitCheck === undefined) splitCheck = 15
@@ -1693,19 +1689,19 @@ class Tetrapod {
         let fixedMessageIndex = []
         let fixedMessageObject = {}
         // condition
-        if (condition.qwertyToDubeol) {
+        if (condition.qwertyToDubeol === true) {
             fixedMessageObject = this.nativeFind(Utils.qwertyToDubeol(message, true), true, true)
             fixedMessageList = condition.isOriginal ? Utils.parseMap(Utils.qwertyToDubeol(message, true)).messageList : Utils.parseMap(Utils.qwertyToDubeol(message, true)).parsedMessage
             fixedMessageIndex = Utils.parseMap(Utils.qwertyToDubeol(message, true)).messageIndex;
             // fixedMessage = fixedMessageList.join("")
         }
-        else if (condition.dropDouble) {
+        else if (condition.dropDouble=== true) {
             fixedMessageObject = this.nativeFind(Utils.dropDouble(message, true), true, true, true)
             fixedMessageList = condition.isOriginal? Utils.parseMap(Utils.dropDouble(message, true)).messageList:Utils.parseMap(Utils.dropDouble(message, true)).parsedMessage
             fixedMessageIndex = Utils.parseMap(Utils.dropDouble(message, true)).messageIndex;
             // fixedMessage = fixedMessageList.join("")
         }
-        else if (condition.antispoof) {
+        else if (condition.antispoof === true) {
             fixedMessageObject = this.nativeFind(Utils.antispoof(message, true), true, true)
             fixedMessageList = condition.isOriginal? Utils.parseMap(Utils.antispoof(message, true)).messageList: Utils.parseMap(Utils.antispoof(message, true)).parsedMessage
             fixedMessageIndex = Utils.parseMap(Utils.antispoof(message, true)).messageIndex;
@@ -2026,76 +2022,41 @@ class Tetrapod {
         return isCount?cnt:(cnt === 0);
     }
 
-    // 한글 낱자를 초성중성종성으로 분리하기
-    static choJungJong(char) {
-        const consonant = Utils.korConsonants;
-        const vowel = Utils.korVowels;
-        const charDisassemble = Hangul.disassemble(char);
-        let res = {cho:[], jung:[], jong:[]}
-        // 오류 방지를 위해 한글 낱자일 때에만 함수 수행.
-        if (/[가-힣]/.test(char)) {
-            for (var letter of charDisassemble) {
-                // 초성
-                if (consonant.indexOf(letter)!==-1 && res.jung.length ===0) {
-                    res.cho.push(letter)
-                }
-                else if (vowel.indexOf(letter)!==-1 ) res.jung.push(letter)
-                else res.jong.push(letter)
-            }
-        }
-        return res;
-    }
+
 
     // 유사 낱자 검사. 낱자에 가? 형태로 표현되었을 경우 가뿐 아니라 각, 간 등 다 포함.
     // char : 낱자
     // comp : 낱자. comp!에 char가 포함되는 경우 true, 아닌 경우 false를 반환한다.
-    // following : !뒤에 오는 낱자. 받침이
+    // following : !뒤에 오는 낱자. 없으면 ""
     static isKindChar(char, comp, following="") {
         // 초성중성종성 분리 데이터 이용하기
-        let charDisassemble = this.choJungJong(char)
-        let compDisassemble = this.choJungJong(comp)
-        let followDisassemble = following===""?{cho:[], jung:[], jong:[]}:this.choJungJong(following)
+        let charDisassemble = Utils.choJungJong(char)
+        let compDisassemble = Utils.choJungJong(comp)
+        let followDisassemble = following===""?{cho:[], jung:[], jong:[]}:Utils.choJungJong(following)
         let resi = false; // 초성 유사음
         let resm = false; // 중성 유사음
         let rese = false; // 종성 유사음
 
         // console.log(charDisassemble, compDisassemble, followDisassemble)
 
-        const toothConsonant = ["ㄷ", "ㄸ", "ㅅ", "ㅆ", "ㅈ", "ㅉ", "ㅊ"]
+        const toothConsonant = Utils.toothConsonant;
 
         // 유사초성. 가 -> 까, 카
-        const simInit = {
-            "ㄱ":["ㄲ", "ㅋ"], "ㄲ":['ㅋ'], "ㄷ":["ㄸ", "ㅌ", "ㅆ", "ㅉ"], "ㄸ":["ㅌ", "ㅉ"], "ㄹ":["ㄴ"], "ㅂ":["ㅃ", "ㅍ"], "ㅃ":["ㅍ"],
-            "ㅅ":[ "ㄸ", "ㅆ", "ㅉ"], "ㅆ": ["ㅉ"], "ㅈ":["ㅆ", "ㅉ", "ㅊ"], "ㅉ":["ㅊ", "ㅆ"], "ㅊ":["ㅉ"], "ㅋ":["ㄲ"], "ㅌ":["ㄸ"], "ㅍ":["ㅃ"], "ㅎ":["ㅍ"]
-        }
+        const simInit = Utils.simInit;
+
         // 유사중성.  고 -> 거, 교
-        const simMiddle = {
-            "ㅏ":[["ㅑ"], ["ㅗ", "ㅏ"]], "ㅐ":[["ㅒ"], ["ㅔ"], ["ㅖ"], ["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]], "ㅒ":[["ㅖ"]],
-            "ㅓ":[["ㅕ"], ["ㅜ", "ㅓ"], ["ㅗ"]], "ㅔ":[["ㅒ"], ["ㅔ"], ["ㅖ"], ["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]], "ㅕ":[["ㅛ"]], "ㅖ":[["ㅖ"]],
-            "ㅗ":[["ㅓ"], ["ㅛ"]], "ㅙ":[["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]], "ㅚ":[["ㅗ", "ㅐ"], ["ㅜ","ㅔ"]], "ㅛ":[["ㅕ"]],
-            "ㅜ":[["ㅠ"],["ㅡ"]], "ㅞ":[["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"]], "ㅡ":[["ㅜ"]], "ㅣ":[["ㅜ","ㅣ"], ["ㅡ", "ㅣ"]]
-        }
+        const simMiddle = Utils.simMiddle;
+
         // 초성이 치음일 때 유사중성 for ㄷ,ㄸ,ㅅ,ㅆ,ㅈ,ㅊ,ㅉ,ㅌ 이 경우는 y복모음 구별불가인 특수 케이스
-        const toothSimMiddle = { ...simMiddle,
-            "ㅑ":[["ㅏ"], ["ㅗ", "ㅏ"]], "ㅒ": [["ㅐ"], ["ㅔ"], ["ㅖ"], ["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]],
-            "ㅕ":[["ㅓ"], ["ㅜ","ㅓ"], ["ㅗ"], ["ㅛ"]], "ㅖ":[["ㅐ"], ["ㅔ"], ["ㅒ"], ["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]],
-            "ㅛ":[["ㅓ"], ["ㅕ"], ["ㅜ","ㅓ"], ["ㅗ"]], "ㅠ":[["ㅜ"], ["ㅡ"]]
-        }
+        const toothSimMiddle =  Utils.toothSimMiddle;
         // 유사종성
-        const simEnd = {
-            "ㄱ": ["ㅋ", "ㄲ"], "ㄲ":["ㄱ", "ㅋ"], "ㄷ":["ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅂ":["ㅂ", "ㅍ"], "ㅅ":["ㄷ", "ㅌ", "ㅆ", "ㅈ", "ㅊ"], "ㅆ":["ㄷ", "ㅌ", "ㅅ", "ㅈ", "ㅊ"],
-            "ㅈ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅊ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅋ":["ㄱ", "ㄲ"], "ㅌ":["ㄷ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅍ":["ㅂ", "ㅍ"], "ㅎ":["ㅅ"]
-        }
+        const simEnd = Utils.simEnd;
 
         // 뒷글자에 의한 자음동화. 뒷글자가
-        const jointConsonant = {
-            "ㄱ":["ㄲ", "ㅋ"], "ㄲ":["ㄱ", "ㅋ"], "ㄴ":["ㄷ", "ㅅ"], "ㄷ":["ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㄸ":["ㄷ","ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ" ], "ㄹ":["ㄴ"],
-            "ㅁ":["ㅂ", "ㅍ"], "ㅂ":["ㅁ", "ㅍ"], "ㅃ":["ㅁ", "ㅂ"], "ㅅ":["ㄷ", "ㅌ", "ㅆ", "ㅈ", "ㅊ"], "ㅆ":["ㄷ", "ㅌ", "ㅅ", "ㅈ", "ㅊ"], "ㅈ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅊ"],
-            "ㅊ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅈ"], "ㅋ":["ㄱ", "ㄲ"], "ㅌ":["ㄷ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅍ":["ㅁ", "ㅂ"]
-        }
+        const jointConsonant = Utils.jointConsonant;
 
         //뒷글자에 의한 ㅣ 모음동화 잡아내기
-        const jointVowel = {"ㅏ":[["ㅐ"]], "ㅑ":[["ㅒ"], ["ㅖ"]], "ㅓ":[["ㅔ"]], "ㅕ":[["ㅒ"], ["ㅖ"]], "ㅗ":[["ㅗ", "ㅣ"]], "ㅜ":[["ㅜ", "ㅣ"]], "ㅡ":[["ㅡ", "ㅣ"]] }
+        const jointVowel = Utils.jointVowel;
 
         //우선 유사초음 찾아내기. 밑바탕(!들어감) 자음의 유사자음 리스트 안에 원 자음이 들어가는 경우
         if (compDisassemble["cho"][0] === charDisassemble["cho"][0] || (simInit[compDisassemble["cho"][0]]!==undefined && simInit[compDisassemble["cho"][0]].indexOf( charDisassemble["cho"][0] )!== -1)) {
@@ -2121,6 +2082,9 @@ class Tetrapod {
         // 유사종음 찾아내기.
         // 우선 두 글자 받침이 동일할 때는 무조건 OK
         if (Utils.objectEqual(compDisassemble["jong"], charDisassemble["jong"])) {
+            rese = true;
+        }
+        else if (Utils.objectIn(charDisassemble["jong"], simEnd[compDisassemble["jong"]])) {
             rese = true;
         }
         // 또 comp 받침 글자를 char가 포함하는 경우 무조건 OK
