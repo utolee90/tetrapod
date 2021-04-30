@@ -23,4 +23,6 @@ console.log( Utils.dropDouble("없닶", true))
 // console.log("\n\n======================")
 // console.log(Utils.dropDouble("십발 정말 값삾핪닚닶", true))
 
-console.log(Utils.dropDouble("야 이 우리왕 아주 짜증나 죽겠어. 에휴에휴!!! 질알.", true))
+console.log(Utils.antispoof("야 이 우리왕 아주 짜증나 죽겠어. 에휴에후!! 질알.", true))
+
+console.log(Utils.parseMap(Utils.antispoof("야 이 우리왕 아주 짜증나 죽겠어. 에휴에후!! 질알.", true)))

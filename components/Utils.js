@@ -521,7 +521,7 @@ const Utils = {
          */
         let letterType ='';
         let newLetterType='';
-        const msgAlphabet = Utils.wordToArray(msg);
+        const msgAlphabet = msg.split(""); // 낱자별로 나누어 처리하기
         let msgAlphabetType = []; //타입별로 나누기
 
         for (var letter of msgAlphabet ) {

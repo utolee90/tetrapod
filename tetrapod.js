@@ -1707,7 +1707,7 @@ class Tetrapod {
             fixedMessageIndex = Utils.parseMap(Utils.antispoof(message, true)).messageIndex;
             // fixedMessage = fixedMessageList.join("")
         }
-        else {``
+        else {
             fixedMessageObject = this.nativeFind(Utils.antispoof(message, true), true, true)
             fixedMessageList = Utils.parseMap(Utils.antispoof(message, true)).parsedMessage
             fixedMessage = fixedMessageList.join("")
