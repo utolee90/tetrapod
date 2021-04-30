@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="104ff4eb-fd97-4171-9f6f-14d519183829" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tetrapod.js" beforeDir="false" afterPath="$PROJECT_DIR$/tetrapod.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,7 +90,7 @@
       <workItem from="1619494933083" duration="1485000" />
       <workItem from="1619610725943" duration="33974000" />
       <workItem from="1619756601627" duration="9466000" />
-      <workItem from="1619777012736" duration="6709000" />
+      <workItem from="1619777012736" duration="9670000" />
     </task>
     <task id="LOCAL-00001" summary="modify source">
       <created>1618747573738</created>
@@ -124,12 +126,12 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/tetrapod.js</url>
-          <line>698</line>
+          <line>688</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/tetrapod.js</url>
-          <line>468</line>
+          <line>458</line>
           <option name="timeStamp" value="5" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
@@ -139,7 +141,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/tetrapod.js</url>
-          <line>79</line>
+          <line>80</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
@@ -149,7 +151,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/tetrapod.js</url>
-          <line>1397</line>
+          <line>1387</line>
           <option name="timeStamp" value="10" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">

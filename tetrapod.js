@@ -46,9 +46,10 @@ class Tetrapod {
         console.log("LOADING...", new Date().getTime())
 
         if (disableAutoParse != false) {
-            this.parse()
-            this.mapping()
-            this.sortAll()
+            this.parse();
+            this.sortAll();
+            this.mapping();
+
         }
     }
 
@@ -132,50 +133,50 @@ class Tetrapod {
         // }
         // softSearchWord 파싱
         for (let index in softSearchWords) {
-            if (!this.testInList( Utils.wordToArray(softSearchWords[index]), parsedSoftSearchWords ) )
+            // if (!this.testInList( Utils.wordToArray(softSearchWords[index]), parsedSoftSearchWords ) )
                 parsedSoftSearchWords.push(Utils.wordToArray(softSearchWords[index]))
         }
         // softSearchWords에 들어가지 않는 단어들만 집어넣기
         for (let index in typeofBadWords.drug) {
-            if (
-                !this.testInList( Utils.wordToArray(typeofBadWords.drug[index]), parsedDrugWords )
+            // if (
+            //    !this.testInList( Utils.wordToArray(typeofBadWords.drug[index]), parsedDrugWords )
                 // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.drug[index]), parsedSoftSearchWords)
-            )
+            //)
                 parsedDrugWords.push(Utils.wordToArray(typeofBadWords.drug[index]))
         }
         for (let index in typeofBadWords.insult) {
-            if (
-                !this.testInList( Utils.wordToArray(typeofBadWords.insult[index]), parsedInsultWords )
-                // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.insult[index]), parsedSoftSearchWords)
-            )
+            // if (
+            //    !this.testInList( Utils.wordToArray(typeofBadWords.insult[index]), parsedInsultWords )
+            //     // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.insult[index]), parsedSoftSearchWords)
+            // )
                 parsedInsultWords.push(Utils.wordToArray(typeofBadWords.insult[index]))
         }
         for (let index in typeofBadWords.sexuality) {
-            if (
-                !this.testInList( Utils.wordToArray(typeofBadWords.sexuality[index]), parsedSexualityWords )
-                // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.sexuality[index]), parsedSoftSearchWords)
-            )
+            // if (
+            //     !this.testInList( Utils.wordToArray(typeofBadWords.sexuality[index]), parsedSexualityWords )
+            //    // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.sexuality[index]), parsedSoftSearchWords)
+            //)
                 parsedSexualityWords.push(Utils.wordToArray(typeofBadWords.drug[index]))
         }
         for (let index in typeofBadWords.violence) {
-            if (
-                !this.testInList( Utils.wordToArray(typeofBadWords.violence[index]), parsedViolenceWords )
-                // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.violence[index]), parsedViolenceWords)
-            )
+            // if (
+            //    !this.testInList( Utils.wordToArray(typeofBadWords.violence[index]), parsedViolenceWords )
+            //    // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.violence[index]), parsedViolenceWords)
+            //)
                 parsedViolenceWords.push(Utils.wordToArray(typeofBadWords.violence[index]))
         }
 
 
         // softSearchWords나 위의 분류에 들어가지 않은 단어들만 집어넣게 변경.
         for (let index in badWords) {
-            if (
-                !this.testInList( Utils.wordToArray(badWords[index]), parsedBadWords )
+            // if (
+            //    !this.testInList( Utils.wordToArray(badWords[index]), parsedBadWords )
                 // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedSoftSearchWords)
                 // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedDrugWords)
                 // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedInsultWords)
                 // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedSexualityWords)
                 // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedViolenceWords)
-            )
+            // )
                 parsedBadWords.push(Utils.wordToArray(badWords[index]))
         }
 
@@ -234,35 +235,24 @@ class Tetrapod {
             typeofBadWordsMap.violence[word] = true
     }
 
-    // 맵 정렬하기
+    // 맵 정렬하기 - 그냥 parsedBadWords에 순서 맞춰주기.
     static sortBadWordsMap() {
-        badWordsMap = Utils.sortMap(badWordsMap)
-        typeofBadWordsMap = {
-            drug: Utils.sortMap(typeofBadWordsMap.drug),
-            insult: Utils.sortMap(typeofBadWordsMap.insult),
-            sexuality: Utils.sortMap(typeofBadWordsMap.sexuality),
-            violence: Utils.sortMap(typeofBadWordsMap.violence),
-        }
-        badWords = Object.keys(badWordsMap);
+        badWords = parsedBadWords.length>0? parsedBadWords.map(x=> x.join("")):[];
         typeofBadWords = {
-            drug : Object.keys(typeofBadWordsMap.drug),
-            insult : Object.keys(typeofBadWordsMap.insult),
-            sexuality : Object.keys(typeofBadWordsMap.sexuality),
-            violence : Object.keys(typeofBadWordsMap.violence)
+            drug: parsedDrugWords.length>0 ? parsedDrugWords.map(x=> x.join("")):[],
+            insult: parsedInsultWords.length>0 ? parsedInsultWords.map(x=>x.join("")) :[],
+            sexuality: parsedSexualityWords.length>0 ? parsedSexualityWords.map(x=>x.join("")):[],
+            violence: parsedViolenceWords.length>0 ? parsedViolenceWords.map(x=> x.join("")):[]
         }
-
     }
 
     static sortNormalWordsMap() {
-        normalWordsMap = Utils.sortMap(normalWordsMap)
-        exceptWordsMap = Utils.sortMap(exceptWordsMap)
-        normalWords = Object.keys(normalWordsMap)
-        exceptWords = Object.keys(exceptWordsMap)
+        normalWords = Utils.sortMap(normalWords);
+        exceptWords = Utils.sortMap(exceptWords);
     }
 
     static sortSoftSearchWordsMap() {
-        softSearchWordsMap = Utils.sortMap(softSearchWordsMap)
-        softSearchWords = Object.keys(softSearchWordsMap)
+        softSearchWords = parsedSoftSearchWords.length>0 ? parsedSoftSearchWords.map (x=> x.join("")): [];
     }
 
     static sortAll() {
@@ -1218,7 +1208,7 @@ class Tetrapod {
                     collectionTempQList[diffRangeIndex] = tempQList
 
                 }
-                if (Object.keys(collectionTempQList).length !==0 ) console.log(collectionTempQList);
+                // if (Object.keys(collectionTempQList).length !==0 ) console.log(collectionTempQList);
 
                 // 기존에 발견돤 단어와 낱자가 겹쳐도 pass
                 for (let usedBadWordPositions of badWordPositions) {
@@ -2204,7 +2194,7 @@ class Tetrapod {
     // 한글 조합 함수. 각 원소들을 Hangul.assemble(Hangul.disassemble())로 조합하는데 사용합니다. isComma 옵션은 파서 문자 ,를 무시할지 물어봅니다.
     static assembleHangul(elem, isIgnoreComma = true) {
         return Utils.listMap(elem, x=>(
-            isIgnoreComma ? Hangul.assemble(Hangul.disassemble(x)).replace("\,", "，").replace(",","").replace("，",",")
+            isIgnoreComma ? Hangul.assemble(Hangul.disassemble(x)).replace(".,", "，").replace(",","").replace("，",",")
                 : Hangul.assemble(Hangul.disassemble(x))
         ));
     }
@@ -2212,6 +2202,7 @@ class Tetrapod {
     // 단어 리스트가 존재할 때 parse하는 함수
     static parseFromList(wordList) {
         let res  = []
+        for (let word of wordList) {
         for (let word of wordList) {
             res.push(Utils.wordToArray(word))
         }
