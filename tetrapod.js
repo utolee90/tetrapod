@@ -867,16 +867,19 @@ class Tetrapod {
 
                 // positionInterval - 숫자 포지션 구간을 표시함.
                 let positionInterval = Utils.grabCouple(tempSoftSearchWordPositions)
+                let collectionTempQList = {}; // 사이 번호 삽입용
 
                 for(let diffRangeIndex in positionInterval){
 
                     // 글자간 사이에 있는 모든 글자를 순회합니다.
                     let diff = ''
                     let tempCnt = numberOfQs[diffRangeIndex]
+                    let tempQList = []; // ?에 해당하는 문자의 위치 찾기
+
                     for(let diffi = positionInterval[diffRangeIndex][0]+1; diffi <= (positionInterval[diffRangeIndex][1]-1); diffi++){
 
                         if (tempCnt>0) {
-                            if (/[가-힣]/.test(newMessage[diffi])) tempCnt--;
+                            if (/[가-힣]/.test(newMessage[diffi])) {tempCnt--; tempQList.push(diffi);}
                             else if (newMessage[diffi]=== " ") {tempCnt = 0; diffi +=newMessage[diffi];}
                             else diff += newMessage[diffi]
                         }
@@ -905,14 +908,23 @@ class Tetrapod {
                             }
                         }
                     }
+                    collectionTempQList[diffRangeIndex] = tempQList
 
                 }
 
                 // 기존에 발견돤 단어와 낱자가 겹쳐도 pass.
                 for (let usedSoftSearchWordPositions of softSearchWordPositions) {
 
-                    if (Utils.listIntersection(usedSoftSearchWordPositions, tempSoftSearchWordPositions).length > 0 ) {
+                    if (!Utils.isDisjoint(usedSoftSearchWordPositions, tempSoftSearchWordPositions) ) {
                         isNeedToPass = true; break;
+                    }
+                }
+
+                // 이제 낱자가 안 겹치면 tempBadWordPosition을 확장해서 잡아보자.
+                for (let ind =0; ind<wordPosition.length-1; ind++) {
+                    if ( collectionTempQList[ (wordPosition.length-1-ind).toString() ] && collectionTempQList[ (wordPosition.length-1-ind).toString() ].length>0) {
+                        // 인덱스 꼬이는 일이 안 생기게 뒤에서부터 추가해보자.
+                        tempSoftSearchWordPositions.splice( (wordPosition.length-1-ind), 0, collectionTempQList[ (wordPosition.length-1-ind).toString() ] )
                     }
                 }
 
@@ -1163,17 +1175,19 @@ class Tetrapod {
                 // 해당 비속어가 사람이 인식하지 못할 정도로
                 // 퍼져있다거나 섞여있는지를 확인합니다.
 
-                let positionInterval = Utils.grabCouple(tempBadWordPositions)
+                let positionInterval = Utils.grabCouple(tempBadWordPositions);
+                let collectionTempQList = {}; // 사이 번호 삽입용
 
                 for(let diffRangeIndex in positionInterval){
 
                     let tempCnt = numberOfQs[diffRangeIndex];
+                    let tempQList = []; // ?에 해당하는 문자의 위치 찾기.
 
                     // 글자간 사이에 있는 모든 글자를 순회합니다.
                     let diff = ''
                     for(let diffi = positionInterval[diffRangeIndex][0]+1; diffi <= (positionInterval[diffRangeIndex][1]-1); diffi++){
                         if (tempCnt>0) {
-                            if (/[가-힣]/.test(newMessage[diffi])) tempCnt--;
+                            if (/[가-힣]/.test(newMessage[diffi])) {tempCnt--; tempQList.push(diffi);}
                             else if (newMessage[diffi]=== " ") {tempCnt = 0; diffi +=newMessage[diffi];}
                             else diff += newMessage[diffi]
                         }
@@ -1201,13 +1215,23 @@ class Tetrapod {
                             }
                         }
                     }
+                    collectionTempQList[diffRangeIndex] = tempQList
 
                 }
+                if (Object.keys(collectionTempQList).length !==0 ) console.log(collectionTempQList);
 
                 // 기존에 발견돤 단어와 낱자가 겹쳐도 pass
                 for (let usedBadWordPositions of badWordPositions) {
-                    if (Utils.listIntersection(usedBadWordPositions, tempBadWordPositions).length > 0 ) {
+                    if (!Utils.isDisjoint(usedBadWordPositions, tempBadWordPositions) ) {
                         isNeedToPass = true; break;
+                    }
+                }
+
+                // 이제 낱자가 안 겹치면 tempBadWordPosition을 확장해서 잡아보자.
+                for (let ind =0; ind<wordPosition.length-1; ind++) {
+                    if ( collectionTempQList[ (wordPosition.length-1-ind).toString() ] && collectionTempQList[ (wordPosition.length-1-ind).toString() ].length>0) {
+                        // 인덱스 꼬이는 일이 안 생기게 뒤에서부터 추가해보자.
+                        tempBadWordPositions.splice( (wordPosition.length-1-ind), 0, collectionTempQList[ (wordPosition.length-1-ind).toString() ] )
                     }
                 }
 
@@ -1537,15 +1561,18 @@ class Tetrapod {
                 // 해당 비속어가 사람이 인식하지 못할 정도로
                 // 퍼져있다거나 섞여있는지를 확인합니다.
                 let positionInterval = Utils.grabCouple(tempBadWordPositions)
+                let collectionTempQList = {}; // 사이 번호 삽입용.
 
                 for(let diffRangeIndex in positionInterval){
 
                     let tempCnt = numberOfQs[diffRangeIndex]
+                    let tempQList = []; // ?에 해당하는 문자의 위치 찾기.
 
                     // 글자간 사이에 있는 모든 글자를 순회합니다.
                     let diff = ''
                     for(let diffi =positionInterval[diffRangeIndex][0]+1; diffi <= (positionInterval[diffRangeIndex][1]-1); diffi++){
-                        if (tempCnt>0 && /[가-힣]/.test(newMessage[diffi])) tempCnt--;
+                        if (tempCnt>0 && /[가-힣]/.test(newMessage[diffi])) {tempCnt--; tempQlist.push(diffi);}
+                        else if (newMessage[diffi]=== " ") {tempCnt = 0; diffi +=newMessage[diffi];}
                         else diff += newMessage[diffi];
                     }
 
@@ -1569,18 +1596,31 @@ class Tetrapod {
                         }
                     }
 
+                    collectionTempQList[diffRangeIndex] = tempQList
                 }
 
-                // 기존에 발견돤 단어와 낱자가 겹쳐도 pass
+
+
+                // 기존에 발견돤 단어와 낱자가 겹쳐면 pass
                 for (let usedBadWordPositions of badWordPositions) {
-                    if (Utils.listIntersection(usedBadWordPositions, tempBadWordPositions).length > 0 ) {
+                    if ( !Utils.isDisjoint(usedBadWordPositions, tempBadWordPositions) ) {
                         isNeedToPass = true; break;
                     }
                 }
 
+                // 이제 낱자가 안 겹치면 tempBadWordPosition을 확장해서 잡아보자.
+                for (let ind =0; ind<wordPosition.length-1; ind++) {
+                    if ( collectionTempQList[ (wordPosition.length-1-ind).toString() ] && collectionTempQList[ (wordPosition.length-1-ind).toString() ].length>0) {
+                        // 인덱스 꼬이는 일이 안 생기게 뒤에서부터 추가해보자.
+                        tempBadWordPositions.splice( (wordPosition.length-1-ind), 0, collectionTempQList[ (wordPosition.length-1-ind).toString() ] )
+                    }
+                }
+
+
+
                 // 해당 저속한 표현을 발견은 하였지만,
                 // 사람이 인지하지 못할 것으로 간주되는 경우
-                // 해당 발견된 저속한 표현을 무시합니다.
+                // 해당 발견된 비속어를 무시합니다.
                 if(isNeedToPass) continue
 
                 // 중복 비속어 체크하기.

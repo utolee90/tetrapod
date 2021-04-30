@@ -30,11 +30,11 @@ console.log("\n\n======================")
 // console.log(Tetrapod.nativeFind("시발", true))
 // console.log(Tetrapod.antispoof('ㄱH^ㅣ불 완전 쨩나', true))
 
-let targetWord = '시발'
 // Bias.buildHelper(`kr-badwords`, targetWord, false)
 // console.log(Utils.lengthSplit("아니 정말 긴 메시지가 짜증나게 기네. 에휴...", 10))
 // console.log(Utils.dropDouble("시발 한남충 씨발", true, false))
-console.log(Tetrapod.isExistBadWord("굇떡"))
+console.log(Utils.antispoof("죽을래", true))
+console.log(Tetrapod.fix("죽을래"))
 console.log('\n\n\n\n==========================')
 // console.log(Utils.antispoof("^|발 한남충 씨발", false))
 // console.log(Tetrapod.find("^|발 한남충 씨발", true, 0, false, true));
@@ -134,3 +134,5 @@ console.log("걸린 시간:::", new Date().getTime()-initTime)
 initTime = new Date().getTime()
 console.log(Tetrapod.fix("야 이 우리왕 아주 짜증나 죽겠어. 에휴에휴!! 질알!", "*", {dropDouble:true}))
 console.log("걸린 시간:::", new Date().getTime()-initTime)
+
+Tetrapod.defaultSaveAllData()

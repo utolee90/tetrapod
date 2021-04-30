@@ -270,6 +270,21 @@ const Utils = {
     // 리스트 교집합 구하기
     listIntersection: ObjectOperation.listIntersection,
 
+    //빠른 연산을 위해 서로소 요건 판별하기
+    isDisjoint: (a, b) => {
+        if (typeof a === typeof b && typeof a === "object") {
+            for (var i in a) {
+                // 하나라도 안에 있으면 거짓을 출력.
+                if (ObjectOperation.objectIn(a[i], b)) return false;
+            }
+            return true;
+        }
+        else {
+            return false
+        }
+    },
+
+
     // 리스트에서 특정 타입만 필터링
     filterList: (list, type) => {
         let res = [];
