@@ -26,4 +26,5 @@ console.log( Utils.dropDouble("없닶", true))
 console.log(Utils.antispoof("야 이 우리왕 아주 짜증나 죽겠어. 에휴에후!! 질알.", true))
 
 console.log(Utils.parseMap(Utils.antispoof("야 이 우리왕 아주 짜증나 죽겠어. 에휴에후!! 질알.", true)))
-console.log(Utils.parseMap(Utils.antispoof("죽을래", true)))
+// console.log(Utils.parseMap(Utils.antispoof("죽을래", true)))
+console.log(Tetrapod.isKindChar("지", "자"))

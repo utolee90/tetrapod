@@ -2058,7 +2058,7 @@ class Tetrapod {
     // char : 낱자
     // comp : 낱자. comp!에 char가 포함되는 경우 true, 아닌 경우 false를 반환한다.
     // following : !뒤에 오는 낱자. 없으면 ""
-    static isKindChar(char, comp, following="") {
+    static  isKindChar(char, comp, following="") {
         // 초성중성종성 분리 데이터 이용하기
         let charDisassemble = Utils.choJungJong(char)
         let compDisassemble = Utils.choJungJong(comp)
@@ -2105,7 +2105,7 @@ class Tetrapod {
             resm = true;
         }
         // 모음 동화 반영
-        else if (followDisassemble["jung"].length>0 && Utils.objectIn( followDisassemble["jung"],[["ㅣ"], ["ㅡ","ㅣ"], ["ㅜ","ㅣ"]]) === true && Utils.objectIn( charDisassemble["jung"], jointVowel[Hangul.assemble(compDisassemble["jung"])]) !== -1) {
+        else if (followDisassemble["jung"].length>0 && Utils.objectIn( followDisassemble["jung"],[["ㅣ"], ["ㅡ","ㅣ"], ["ㅜ","ㅣ"]]) === true && Utils.objectIn( charDisassemble["jung"], jointVowel[Hangul.assemble(compDisassemble["jung"])]) === true) {
             resm = true;
         }
 
@@ -2202,7 +2202,6 @@ class Tetrapod {
     // 단어 리스트가 존재할 때 parse하는 함수
     static parseFromList(wordList) {
         let res  = []
-        for (let word of wordList) {
         for (let word of wordList) {
             res.push(Utils.wordToArray(word))
         }

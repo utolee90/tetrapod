@@ -135,4 +135,7 @@ initTime = new Date().getTime()
 console.log(Tetrapod.fix("야 이 우리왕 아주 짜증나 죽겠어. 에휴에휴!! 질알!", "*", {dropDouble:true}))
 console.log("걸린 시간:::", new Date().getTime()-initTime)
 
-Tetrapod.defaultSaveAllData()
+console.log(Tetrapod.nativeFind("지지"))
+
+
+//   Tetrapod.defaultSaveAllData()
