@@ -1739,7 +1739,7 @@ class Tetrapod {
         }
         else {
             fixedMessageObject = this.nativeFind(Utils.msgToMap(message), true, true)
-            fixedMessageList = Utils.parseMap(Utils.msgToMap(message).parsedMessage
+            fixedMessageList = Utils.parseMap(Utils.msgToMap(message)).parsedMessage
         }
 
         // console.log(fixedMessageObject)
