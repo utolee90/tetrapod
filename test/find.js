@@ -30,10 +30,11 @@ console.log("\n\n======================")
 // console.log(Tetrapod.nativeFind("시발", true))
 // console.log(Tetrapod.antispoof('ㄱH^ㅣ불 완전 쨩나', true))
 
-let targetWord = '시발'
 // Bias.buildHelper(`kr-badwords`, targetWord, false)
 // console.log(Utils.lengthSplit("아니 정말 긴 메시지가 짜증나게 기네. 에휴...", 10))
 // console.log(Utils.dropDouble("시발 한남충 씨발", true, false))
+console.log(Utils.antispoof("죽을래", true))
+console.log(Tetrapod.fix("죽을래"))
 console.log('\n\n\n\n==========================')
 // console.log(Utils.antispoof("^|발 한남충 씨발", false))
 // console.log(Tetrapod.find("^|발 한남충 씨발", true, 0, false, true));
@@ -91,9 +92,9 @@ const test = (word)=>{
 
 
 // console.log("text", Tetrapod.fix("즤랄 왕이 나셨도다 ㄱHㅅH끼", '$', {antispoof:true, isOriginal:true}))
-console.log(Tetrapod.nativeFind("시발롬아"))
-console.log(Tetrapod.nativeFind( Utils.dropDouble("십발 정말 값삾핪닚닶", true) , true, true))
-console.log("걸린 시간:::", new Date().getTime()-initTime)
+// console.log(Tetrapod.nativeFind("존병"))
+// console.log(Tetrapod.nativeFind( Utils.dropDouble("십발 정말 값삾핪닚닶", true) , true, true))
+// console.log("걸린 시간:::", new Date().getTime()-initTime)
 initTime = new Date().getTime()
 console.log("\n\n================")
 // console.log(Bias.recursiveComponent([["*별"], ["사랑", "사귐"]],
@@ -101,9 +102,9 @@ console.log("\n\n================")
 //     ))
 // console.log(Bias.recursiveList(["*별"],
 //     {"별":["벌", "별", "뻘", "뼐", "펄", "펼"]} ))
-console.log(Tetrapod.fix("tlqkf dhkddl sktuTehek", "X", {qwertyToDubeol:true}))
+// console.log(Tetrapod.fix("tlqkf dhkddl sktuTehek", "X", {qwertyToDubeol:true}))
 
-console.log("지?랄?염병 테스트", Tetrapod.isExistBadWord("지!랄!염병"))
+// console.log("지?랄?염병 테스트", Tetrapod.isExistBadWord("지!랄!염병"))
 // console.log(Utils.dropDouble("밥옵", true, true))
 // Bias.buildHelper('kr-fword', "지랄")
 // console.log(Tetrapod.recursiveComponent([["바"], ["*보"]], {"보":["*보", "*봉"]}))
@@ -112,11 +113,10 @@ console.log("지?랄?염병 테스트", Tetrapod.isExistBadWord("지!랄!염병"
 
 // console.log(Utils.objectEqual([Hangul.disassemble("즤")[0], Hangul.disassemble("즤")[2]], Hangul.disassemble("지")))
 
-console.log(Tetrapod.nativeFind("지뢀염병", true))
+// console.log(Tetrapod.nativeFind("지뢀염병", true))
 // console.log(Tetrapod.isKindChar("뢀", "랄"))
 
 console.log("걸린 시간:::", new Date().getTime()-initTime)
-initTime = new Date().getTime()
 
 // console.log(Utils.objectInclude(['지', '병'], ["지", "염", "병", "룡"], true))
 // console.log(Utils.objectInclude(["지","병"], ["병","지"], true))
@@ -129,5 +129,13 @@ initTime = new Date().getTime()
 // console.log("걸린 시간:::", new Date().getTime()-initTime)
 initTime = new Date().getTime()
 
-console.log(Tetrapod.find("야 이 우리왕 아주 짜증나 죽겠어. 에휴에휴!!! 질알.", false, 0, false, true))
+console.log(Tetrapod.nativeFind(Utils.dropDouble("야 이 우리왕 아주 짜증나 죽겠어. 에휴에휴!!! 질알.", true), true, true, true))
 console.log("걸린 시간:::", new Date().getTime()-initTime)
+initTime = new Date().getTime()
+console.log(Tetrapod.fix("야 이 우리왕 아주 짜증나 죽겠어. 에휴에휴!! 질알!", "*", {dropDouble:true}))
+console.log("걸린 시간:::", new Date().getTime()-initTime)
+
+console.log(Tetrapod.nativeFind("지지"))
+
+
+//   Tetrapod.defaultSaveAllData()

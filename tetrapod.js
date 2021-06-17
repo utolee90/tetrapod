@@ -43,12 +43,13 @@ class Tetrapod {
         typeofBadWords = inputTypeofBadWords
         badWordMacros = inputBadWordMacros
 
-        // console.log("LOADING...", new Date().getTime())
+        console.log("LOADING...", new Date().getTime())
 
         if (disableAutoParse != false) {
-            this.parse()
-            this.mapping()
-            this.sortAll()
+            this.parse();
+            this.sortAll();
+            this.mapping();
+
         }
     }
 
@@ -132,55 +133,54 @@ class Tetrapod {
         // }
         // softSearchWord 파싱
         for (let index in softSearchWords) {
-            if (!this.testInList( Utils.wordToArray(softSearchWords[index]), parsedSoftSearchWords ) )
+            // if (!this.testInList( Utils.wordToArray(softSearchWords[index]), parsedSoftSearchWords ) )
                 parsedSoftSearchWords.push(Utils.wordToArray(softSearchWords[index]))
         }
         // softSearchWords에 들어가지 않는 단어들만 집어넣기
         for (let index in typeofBadWords.drug) {
-            if (
-                !this.testInList( Utils.wordToArray(typeofBadWords.drug[index]), parsedDrugWords )
+            // if (
+            //    !this.testInList( Utils.wordToArray(typeofBadWords.drug[index]), parsedDrugWords )
                 // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.drug[index]), parsedSoftSearchWords)
-            )
+            //)
                 parsedDrugWords.push(Utils.wordToArray(typeofBadWords.drug[index]))
         }
         for (let index in typeofBadWords.insult) {
-            if (
-                !this.testInList( Utils.wordToArray(typeofBadWords.insult[index]), parsedInsultWords )
-                // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.insult[index]), parsedSoftSearchWords)
-            )
+            // if (
+            //    !this.testInList( Utils.wordToArray(typeofBadWords.insult[index]), parsedInsultWords )
+            //     // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.insult[index]), parsedSoftSearchWords)
+            // )
                 parsedInsultWords.push(Utils.wordToArray(typeofBadWords.insult[index]))
         }
         for (let index in typeofBadWords.sexuality) {
-            if (
-                !this.testInList( Utils.wordToArray(typeofBadWords.sexuality[index]), parsedSexualityWords )
-                // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.sexuality[index]), parsedSoftSearchWords)
-            )
+            // if (
+            //     !this.testInList( Utils.wordToArray(typeofBadWords.sexuality[index]), parsedSexualityWords )
+            //    // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.sexuality[index]), parsedSoftSearchWords)
+            //)
                 parsedSexualityWords.push(Utils.wordToArray(typeofBadWords.drug[index]))
         }
         for (let index in typeofBadWords.violence) {
-            if (
-                !this.testInList( Utils.wordToArray(typeofBadWords.violence[index]), parsedViolenceWords )
-                // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.violence[index]), parsedViolenceWords)
-            )
+            // if (
+            //    !this.testInList( Utils.wordToArray(typeofBadWords.violence[index]), parsedViolenceWords )
+            //    // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.violence[index]), parsedViolenceWords)
+            //)
                 parsedViolenceWords.push(Utils.wordToArray(typeofBadWords.violence[index]))
         }
 
 
         // softSearchWords나 위의 분류에 들어가지 않은 단어들만 집어넣게 변경.
         for (let index in badWords) {
-            if (
-                !this.testInList( Utils.wordToArray(badWords[index]), parsedBadWords )
+            // if (
+            //    !this.testInList( Utils.wordToArray(badWords[index]), parsedBadWords )
                 // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedSoftSearchWords)
                 // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedDrugWords)
                 // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedInsultWords)
                 // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedSexualityWords)
                 // && !Utils.objectIn(Utils.wordToArray(badWords[index]), parsedViolenceWords)
-            )
+            // )
                 parsedBadWords.push(Utils.wordToArray(badWords[index]))
         }
 
-        // console.log("befor Sorting Words", new Date().getTime())
-
+        console.log("before Sorting Words", new Date().getTime())
         // 단어의 길이 역순으로 정렬
         parsedBadWords.sort((a,b)=> a.length-b.length).reverse();
         parsedSoftSearchWords.sort((a,b)=> a.length-b.length).reverse();
@@ -189,7 +189,7 @@ class Tetrapod {
         parsedSexualityWords.sort((a,b)=> a.length-b.length).reverse();
         parsedViolenceWords.sort((a,b)=> a.length-b.length).reverse();
 
-        // console.log("parseWords", new Date().getTime())
+        console.log("parseWords", new Date().getTime())
 
     }
 
@@ -202,6 +202,7 @@ class Tetrapod {
         // 각 원소에 대해 objectEqual을 이용해서 체크하기
         for (let i in List) {
             sameLengthList = sameLengthList.filter(x=> (Utils.objectEqual(List[i], x[i])))
+            if (sameLengthList.length ===0 ) return false;
         }
         // 리스트 안에 있으면 true, 없으면 false
         if (sameLengthList.length>0) return true;
@@ -234,35 +235,24 @@ class Tetrapod {
             typeofBadWordsMap.violence[word] = true
     }
 
-    // 맵 정렬하기
+    // 맵 정렬하기 - 그냥 parsedBadWords에 순서 맞춰주기.
     static sortBadWordsMap() {
-        badWordsMap = Utils.sortMap(badWordsMap)
-        typeofBadWordsMap = {
-            drug: Utils.sortMap(typeofBadWordsMap.drug),
-            insult: Utils.sortMap(typeofBadWordsMap.insult),
-            sexuality: Utils.sortMap(typeofBadWordsMap.sexuality),
-            violence: Utils.sortMap(typeofBadWordsMap.violence),
-        }
-        badWords = Object.keys(badWordsMap);
+        badWords = parsedBadWords.length>0? parsedBadWords.map(x=> x.join("")):[];
         typeofBadWords = {
-            drug : Object.keys(typeofBadWordsMap.drug),
-            insult : Object.keys(typeofBadWordsMap.insult),
-            sexuality : Object.keys(typeofBadWordsMap.sexuality),
-            violence : Object.keys(typeofBadWordsMap.violence)
+            drug: parsedDrugWords.length>0 ? parsedDrugWords.map(x=> x.join("")):[],
+            insult: parsedInsultWords.length>0 ? parsedInsultWords.map(x=>x.join("")) :[],
+            sexuality: parsedSexualityWords.length>0 ? parsedSexualityWords.map(x=>x.join("")):[],
+            violence: parsedViolenceWords.length>0 ? parsedViolenceWords.map(x=> x.join("")):[]
         }
-
     }
 
     static sortNormalWordsMap() {
-        normalWordsMap = Utils.sortMap(normalWordsMap)
-        exceptWordsMap = Utils.sortMap(exceptWordsMap)
-        normalWords = Object.keys(normalWordsMap)
-        exceptWords = Object.keys(exceptWordsMap)
+        normalWords = Utils.sortMap(normalWords);
+        exceptWords = Utils.sortMap(exceptWords);
     }
 
     static sortSoftSearchWordsMap() {
-        softSearchWordsMap = Utils.sortMap(softSearchWordsMap)
-        softSearchWords = Object.keys(softSearchWordsMap)
+        softSearchWords = parsedSoftSearchWords.length>0 ? parsedSoftSearchWords.map (x=> x.join("")): [];
     }
 
     static sortAll() {
@@ -280,15 +270,15 @@ class Tetrapod {
         }
         console.log("getDefaultData", new Date().getTime())
         return {
-            badWords: this.recursiveList(require('./resource/dictionary/bad-words.json').badwords, badWordMacros),
-            normalWords: this.recursiveList(require('./resource/dictionary/normal-words.json').dictionary, badWordMacros),
-            exceptWords: this.recursiveList(require('./resource/dictionary/normal-words.json').exception, badWordMacros),
-            softSearchWords: this.recursiveList(require('./resource/dictionary/soft-search-words.json').badwords, badWordMacros),
+            badWords: this.assembleHangul( this.recursiveList(require('./resource/dictionary/bad-words.json').badwords, badWordMacros) ),
+            normalWords: this.assembleHangul( this.recursiveList(require('./resource/dictionary/normal-words.json').dictionary, badWordMacros) ),
+            exceptWords: this.assembleHangul( this.recursiveList(require('./resource/dictionary/normal-words.json').exception, badWordMacros) ),
+            softSearchWords: this.assembleHangul( this.recursiveList(require('./resource/dictionary/soft-search-words.json').badwords, badWordMacros)),
             typeofBadWords: {
-                drug: this.recursiveList(require('./resource/dictionary/bad-words.json').drug, badWordMacros),
-                insult: this.recursiveList(require('./resource/dictionary/bad-words.json').insult, badWordMacros),
-                sexuality: this.recursiveList(require('./resource/dictionary/bad-words.json').sexuality, badWordMacros),
-                violence : this.recursiveList(require('./resource/dictionary/bad-words.json').violence, badWordMacros),
+                drug: this.assembleHangul(this.recursiveList(require('./resource/dictionary/bad-words.json').drug, badWordMacros)),
+                insult: this.assembleHangul(this.recursiveList(require('./resource/dictionary/bad-words.json').insult, badWordMacros)),
+                sexuality: this.assembleHangul(this.recursiveList(require('./resource/dictionary/bad-words.json').sexuality, badWordMacros)),
+                violence : this.assembleHangul(this.recursiveList(require('./resource/dictionary/bad-words.json').violence, badWordMacros)),
             },
             badWordMacros
         }
@@ -366,14 +356,22 @@ class Tetrapod {
     }
 
 
-    // 메시지에 비속어가 들어갔는지 검사
-    static isBad(message, includeSoft=false) {
-        if (includeSoft === true)
-            return (this.find(message, false).totalResult.length != 0 ||
-                this.find(message, false).softResult.length != 0 ||
-                this.find(message, false).endResult.length != 0
-            );
-        else return this.find(message, false).totalResult.length != 0;
+    // 메시지에 비속어가 들어갔는지 검사.
+    static isBad(message, includeSoft=false, fromList = undefined) {
+        if (fromList === undefined) {
+            if (includeSoft === true)
+                return (this.nativeFind(message, false).found.length >0 ||
+                    this.nativeFind(message, false).softSearchFound.length >0 ||
+                    this.nativeFind(message, false).tooMuchDoubleEnd.val
+                );
+            else
+                return this.nativeFind(message, false).found.length>0;
+        }
+            // fromList가 리스트 형식으로 주어지면 includeSoft와 무관하게 fromList 안에 있는 함수만 검출
+        // fromList는 단어 리스트 또는 파싱된 단어 리스트 중 하나 입력 가능.
+        else if (Array.isArray(fromList)) {
+            return (this.nativeFindFromList(message, fromList, false).found.length > 0)
+        }
     }
 
     // 메시지에 비속어가 몇 개 있는지 검사.
@@ -429,9 +427,7 @@ class Tetrapod {
         let message3Map = {}
         let message3 = ''
         let message4Map = {}
-        let message4 = ''
-        let message5Map = {}
-        let message5 = ''
+
 
         if (qwertyToDubeol === true && isStrong === false) { // 만약 한영 검사가 필요하면...
             message2Map = Utils.qwertyToDubeol(message, true);
@@ -440,9 +436,7 @@ class Tetrapod {
         if (isStrong === true) { // 문자열을 악용한 것까지 잡아보자.
             message3Map = Utils.antispoof(message, true);
             message3 = Utils.antispoof(message, false);
-            message4Map = Utils.dropDouble(message3, true, true);
-            message5Map = Utils.dropDouble(message3, true, true);
-            message5 = Utils.dropDouble(message3, false, true);
+            message4Map = Utils.dropDouble(message3, true, false);
         }
 
         if (splitCheck === undefined) splitCheck = 15
@@ -470,46 +464,46 @@ class Tetrapod {
 
                 // 중복체크가 포함될 때에는 각 단어를 모두 추가해준다.
                 if (needMultipleCheck) {
-                    for (var index2 = 0; index2 <= currentResult.founded.length - 1; index2++) {
-                        if (currentResult.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResult.founded[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResult.founded[index2], positions:currentResult.positions[index2]}];
+                    for (var index2 = 0; index2 <= currentResult.found.length - 1; index2++) {
+                        if (currentResult.found !== [] && totalResult.map(v=>v.value).indexOf(currentResult.found[index2])===-1)
+                            totalResult = [...totalResult, {value:currentResult.found[index2], positions:currentResult.positions[index2]}];
                     }
-                    for (index2 = 0; index2 <= currentResult.softSearchFounded.length - 1; index2++) {
-                        if (currentResult.softSearchFounded !== [] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFounded[index2])===-1)
-                            softResult = [...softResult, {value:currentResult.softSearchFounded[index2], positions:currentResult.softSearchPositions[index2]}];
+                    for (index2 = 0; index2 <= currentResult.softSearchFound.length - 1; index2++) {
+                        if (currentResult.softSearchFound !== [] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFound[index2])===-1)
+                            softResult = [...softResult, {value:currentResult.softSearchFound[index2], positions:currentResult.softSearchPositions[index2]}];
                     }
-                    for (index2 = 0; index2 <= currentResultDrug.founded.length - 1; index2++) {
-                        if (currentResultDrug.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultDrug.founded[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResultDrug.founded[index2], positions:currentResultDrug.positions[index2], type:"drug"}];
+                    for (index2 = 0; index2 <= currentResultDrug.found.length - 1; index2++) {
+                        if (currentResultDrug.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultDrug.found[index2])===-1)
+                            totalResult = [...totalResult, {value:currentResultDrug.found[index2], positions:currentResultDrug.positions[index2], type:"drug"}];
                     }
-                    for (index2 = 0; index2 <= currentResultInsult.founded.length - 1; index2++) {
-                        if (currentResultInsult.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultInsult.founded[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResultInsult.founded[index2], positions:currentResultInsult.positions[index2], type:"insult"}];
+                    for (index2 = 0; index2 <= currentResultInsult.found.length - 1; index2++) {
+                        if (currentResultInsult.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultInsult.found[index2])===-1)
+                            totalResult = [...totalResult, {value:currentResultInsult.found[index2], positions:currentResultInsult.positions[index2], type:"insult"}];
                     }
-                    for (index2 = 0; index2 <= currentResultSexuality.founded.length - 1; index2++) {
-                        if (currentResultSexuality.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultSexuality.founded[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResultSexuality.founded[index2], positions:currentResultSexuality.positions[index2], type:"sexuality"}];
+                    for (index2 = 0; index2 <= currentResultSexuality.found.length - 1; index2++) {
+                        if (currentResultSexuality.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultSexuality.found[index2])===-1)
+                            totalResult = [...totalResult, {value:currentResultSexuality.found[index2], positions:currentResultSexuality.positions[index2], type:"sexuality"}];
                     }
-                    for (index2 = 0; index2 <= currentResultViolence.founded.length - 1; index2++) {
-                        if (currentResultViolence.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultViolence.founded[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResultViolence.founded[index2], positions:currentResultViolence.positions[index2], type:"violence"}];
+                    for (index2 = 0; index2 <= currentResultViolence.found.length - 1; index2++) {
+                        if (currentResultViolence.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultViolence.found[index2])===-1)
+                            totalResult = [...totalResult, {value:currentResultViolence.found[index2], positions:currentResultViolence.positions[index2], type:"violence"}];
                     }
                 } else {
                     if (currentResult !== null){
-                        totalResult = [...totalResult, currentResult.founded];
-                        softResult = [...softResult, currentResult.softSearchFounded];
+                        totalResult = [...totalResult, currentResult.found];
+                        softResult = [...softResult, currentResult.softSearchFound];
                     }
                     if (currentResultDrug !== null) {
-                        totalResult = [...totalResult, currentResultDrug.founded];
+                        totalResult = [...totalResult, currentResultDrug.found];
                     }
                     if (currentResultInsult !== null) {
-                        totalResult = [...totalResult, currentResultInsult.founded];
+                        totalResult = [...totalResult, currentResultInsult.found];
                     }
                     if (currentResultSexuality !== null) {
-                        totalResult = [...totalResult, currentResultSexuality.founded];
+                        totalResult = [...totalResult, currentResultSexuality.found];
                     }
                     if (currentResultViolence !== null) {
-                        totalResult = [...totalResult, currentResultViolence.founded];
+                        totalResult = [...totalResult, currentResultViolence.found];
                     }
                 }
             }
@@ -524,46 +518,46 @@ class Tetrapod {
 
                 if (needMultipleCheck) {
 
-                    for (var index = 0; index <= currentResult.founded.length - 1; index++) {
-                        if (currentResult.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResult.founded[index])===-1)
-                            totalResult = [...totalResult, {value:currentResult.founded[index], positions:currentResult.positions[index]}  ];
+                    for (var index = 0; index <= currentResult.found.length - 1; index++) {
+                        if (currentResult.found !== [] && totalResult.map(v=>v.value).indexOf(currentResult.found[index])===-1)
+                            totalResult = [...totalResult, {value:currentResult.found[index], positions:currentResult.positions[index]}  ];
                     }
-                    for (index = 0; index <= currentResult2.softSearchFounded.length - 1; index++) {
-                        if (currentResult.softSearchFounded !== [] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFounded[index])===-1)
-                            softResult = [...softResult, {value:currentResult.softSearchFounded[index], positions:currentResult.softSearchPositions[index]}];
+                    for (index = 0; index <= currentResult2.softSearchFound.length - 1; index++) {
+                        if (currentResult.softSearchFound !== [] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFound[index])===-1)
+                            softResult = [...softResult, {value:currentResult.softSearchFound[index], positions:currentResult.softSearchPositions[index]}];
                     }
-                    for (var index = 0; index <= currentResultDrug.founded.length - 1; index++) {
-                        if (currentResultDrug.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultDrug.founded[index])===-1)
-                            totalResult = [...totalResult, {value:currentResultDrug.founded[index], positions:currentResultDrug.positions[index], type:"drug"}  ];
+                    for (var index = 0; index <= currentResultDrug.found.length - 1; index++) {
+                        if (currentResultDrug.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultDrug.found[index])===-1)
+                            totalResult = [...totalResult, {value:currentResultDrug.found[index], positions:currentResultDrug.positions[index], type:"drug"}  ];
                     }
-                    for (var index = 0; index <= currentResultInsult.founded.length - 1; index++) {
-                        if (currentResultInsult.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultInsult.founded[index])===-1)
-                            totalResult = [...totalResult, {value:currentResultInsult.founded[index], positions:currentResultInsult.positions[index], type:"insult"}  ];
+                    for (var index = 0; index <= currentResultInsult.found.length - 1; index++) {
+                        if (currentResultInsult.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultInsult.found[index])===-1)
+                            totalResult = [...totalResult, {value:currentResultInsult.found[index], positions:currentResultInsult.positions[index], type:"insult"}  ];
                     }
-                    for (var index = 0; index <= currentResultSexuality.founded.length - 1; index++) {
-                        if (currentResultSexuality.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultSexuality.founded[index])===-1)
-                            totalResult = [...totalResult, {value:currentResultSexuality.founded[index], positions:currentResultSexuality.positions[index], type:"sexuality"}  ];
+                    for (var index = 0; index <= currentResultSexuality.found.length - 1; index++) {
+                        if (currentResultSexuality.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultSexuality.found[index])===-1)
+                            totalResult = [...totalResult, {value:currentResultSexuality.found[index], positions:currentResultSexuality.positions[index], type:"sexuality"}  ];
                     }
-                    for (var index = 0; index <= currentResultViolence.founded.length - 1; index++) {
-                        if (currentResultViolence.founded !== [] && totalResult.map(v=>v.value).indexOf(currentResultViolence.founded[index])===-1)
-                            totalResult = [...totalResult, {value:currentResultViolence.founded[index], positions:currentResultViolence.positions[index], type:"violence"}  ];
+                    for (var index = 0; index <= currentResultViolence.found.length - 1; index++) {
+                        if (currentResultViolence.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultViolence.found[index])===-1)
+                            totalResult = [...totalResult, {value:currentResultViolence.found[index], positions:currentResultViolence.positions[index], type:"violence"}  ];
                     }
                 } else {
                     if (currentResult !== null){
-                        totalResult = [...totalResult, currentResult.founded];
-                        softResult = [...softResult, currentResult.softSearchFounded];
+                        totalResult = [...totalResult, currentResult.found];
+                        softResult = [...softResult, currentResult.softSearchFound];
                     }
                     if (currentResultDrug !== null) {
-                        totalResult = [...totalResult, currentResultDrug.founded];
+                        totalResult = [...totalResult, currentResultDrug.found];
                     }
                     if (currentResultInsult !== null) {
-                        totalResult = [...totalResult, currentResultInsult.founded];
+                        totalResult = [...totalResult, currentResultInsult.found];
                     }
                     if (currentResultSexuality !== null) {
-                        totalResult = [...totalResult, currentResultSexuality.founded];
+                        totalResult = [...totalResult, currentResultSexuality.found];
                     }
                     if (currentResultViolence !== null) {
-                        totalResult = [...totalResult, currentResultViolence.founded];
+                        totalResult = [...totalResult, currentResultViolence.found];
                     }
                 }
 
@@ -585,77 +579,77 @@ class Tetrapod {
             tooMuchEnds.push(currentResult.tooMuchDoubleEnd);
 
             if (needMultipleCheck) {
-                for (var index =0; index<currentResult.founded.length; index++) {
-                    if (currentResult.founded !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResult.founded[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResult.founded[index], positions:currentResult.positions[index]}];
+                for (var index =0; index<currentResult.found.length; index++) {
+                    if (currentResult.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResult.found[index]) ===-1)
+                        originalTotalResult = [...originalTotalResult, {value:currentResult.found[index], positions:currentResult.positions[index]}];
                 }
-                for (index =0; index< currentResult.softSearchFounded.length; index++) {
-                    if (currentResult.softSearchFounded!==[] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFounded[index]===-1)) {
-                        originalSoftResult = [...originalSoftResult, {value:currentResult.softSearchFounded[index], positions: currentResult.softSearchPositions[index]}]
+                for (index =0; index< currentResult.softSearchFound.length; index++) {
+                    if (currentResult.softSearchFound!==[] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFound[index]===-1)) {
+                        originalSoftResult = [...originalSoftResult, {value:currentResult.softSearchFound[index], positions: currentResult.softSearchPositions[index]}]
                     }
                 }
-                for (var index =0; index<currentResultDrug.founded.length; index++) {
-                    if (currentResultDrug.founded !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultDrug.founded[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResultDrug.founded[index], positions:currentResultDrug.positions[index], type:"drug"}];
+                for (var index =0; index<currentResultDrug.found.length; index++) {
+                    if (currentResultDrug.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultDrug.found[index]) ===-1)
+                        originalTotalResult = [...originalTotalResult, {value:currentResultDrug.found[index], positions:currentResultDrug.positions[index], type:"drug"}];
                 }
-                for (var index =0; index<currentResultInsult.founded.length; index++) {
-                    if (currentResultInsult.founded !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultInsult.founded[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResultInsult.founded[index], positions:currentResultInsult.positions[index], type:"insult"}];
+                for (var index =0; index<currentResultInsult.found.length; index++) {
+                    if (currentResultInsult.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultInsult.found[index]) ===-1)
+                        originalTotalResult = [...originalTotalResult, {value:currentResultInsult.found[index], positions:currentResultInsult.positions[index], type:"insult"}];
                 }
-                for (var index =0; index<currentResultSexuality.founded.length; index++) {
-                    if (currentResultSexuality.founded !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultSexuality.founded[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResultSexuality.founded[index], positions:currentResultSexuality.positions[index], type:"sexuality"}];
+                for (var index =0; index<currentResultSexuality.found.length; index++) {
+                    if (currentResultSexuality.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultSexuality.found[index]) ===-1)
+                        originalTotalResult = [...originalTotalResult, {value:currentResultSexuality.found[index], positions:currentResultSexuality.positions[index], type:"sexuality"}];
                 }
-                for (var index =0; index<currentResultViolence.founded.length; index++) {
-                    if (currentResultViolence.founded !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultViolence.founded[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResultViolence.founded[index], positions:currentResultViolence.positions[index], type:"violence"}];
+                for (var index =0; index<currentResultViolence.found.length; index++) {
+                    if (currentResultViolence.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultViolence.found[index]) ===-1)
+                        originalTotalResult = [...originalTotalResult, {value:currentResultViolence.found[index], positions:currentResultViolence.positions[index], type:"violence"}];
                 }
 
-                for (index =0; index<currentResult2.founded.length; index++) {
-                    if (currentResult2.founded !==[] && totalResult.map(v=>v.value).indexOf(currentResult2.founded[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResult2.founded[index], positions:currentResult2.positions[index]}];
+                for (index =0; index<currentResult2.found.length; index++) {
+                    if (currentResult2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResult2.found[index]) ===-1)
+                        totalResult = [...totalResult, {value:currentResult2.found[index], positions:currentResult2.positions[index]}];
                 }
-                for (index =0; index< currentResult2.softSearchFounded.length; index++) {
-                    if (currentResult2.softSearchFounded!==[] && softResult.map(v=>v.value).indexOf(currentResult2.softSearchFounded[index]===-1)) {
-                        softResult = [...softResult, {value:currentResult2.softSearchFounded[index], positions: currentResult2.softSearchPositions[index]}]
+                for (index =0; index< currentResult2.softSearchFound.length; index++) {
+                    if (currentResult2.softSearchFound!==[] && softResult.map(v=>v.value).indexOf(currentResult2.softSearchFound[index]===-1)) {
+                        softResult = [...softResult, {value:currentResult2.softSearchFound[index], positions: currentResult2.softSearchPositions[index]}]
                     }
                 }
-                for (var index =0; index<currentResultDrug2.founded.length; index++) {
-                    if (currentResultDrug2.founded !==[] && totalResult.map(v=>v.value).indexOf(currentResultDrug2.founded[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResultDrug2.founded[index], positions:currentResultDrug.positions[index], type:"drug"}];
+                for (var index =0; index<currentResultDrug2.found.length; index++) {
+                    if (currentResultDrug2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResultDrug2.found[index]) ===-1)
+                        totalResult = [...totalResult, {value:currentResultDrug2.found[index], positions:currentResultDrug.positions[index], type:"drug"}];
                 }
-                for (var index =0; index<currentResultInsult2.founded.length; index++) {
-                    if (currentResultInsult2.founded !==[] && totalResult.map(v=>v.value).indexOf(currentResultInsult2.founded[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResultInsult2.founded[index], positions:currentResultInsult2.positions[index], type:"insult"}];
+                for (var index =0; index<currentResultInsult2.found.length; index++) {
+                    if (currentResultInsult2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResultInsult2.found[index]) ===-1)
+                        totalResult = [...totalResult, {value:currentResultInsult2.found[index], positions:currentResultInsult2.positions[index], type:"insult"}];
                 }
-                for (var index =0; index<currentResultSexuality2.founded.length; index++) {
-                    if (currentResultSexuality2.founded !==[] && totalResult.map(v=>v.value).indexOf(currentResultSexuality2.founded[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResultSexuality2.founded[index], positions:currentResultSexuality2.positions[index], type:"sexuality"}];
+                for (var index =0; index<currentResultSexuality2.found.length; index++) {
+                    if (currentResultSexuality2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResultSexuality2.found[index]) ===-1)
+                        totalResult = [...totalResult, {value:currentResultSexuality2.found[index], positions:currentResultSexuality2.positions[index], type:"sexuality"}];
                 }
-                for (var index =0; index<currentResultViolence2.founded.length; index++) {
-                    if (currentResultViolence2.founded !==[] && totalResult.map(v=>v.value).indexOf(currentResultViolence2.founded[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResultViolence2.founded[index], positions:currentResultViolence2.positions[index], type:"violence"}];
+                for (var index =0; index<currentResultViolence2.found.length; index++) {
+                    if (currentResultViolence2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResultViolence2.found[index]) ===-1)
+                        totalResult = [...totalResult, {value:currentResultViolence2.found[index], positions:currentResultViolence2.positions[index], type:"violence"}];
                 }
 
             }
             else {
                 if (currentResult !== null){
-                    originalTotalResult = [...originalTotalResult, currentResult.founded];
-                    originalSoftResult = [...originalSoftResult, currentResult.softSearchFounded];
+                    originalTotalResult = [...originalTotalResult, currentResult.found];
+                    originalSoftResult = [...originalSoftResult, currentResult.softSearchFound];
                 }
-                if (currentResultDrug !==null) originalTotalResult = [...originalTotalResult, currentResultDrug.founded];
-                if (currentResultInsult !==null) originalTotalResult = [...originalTotalResult, currentResultInsult.founded];
-                if (currentResultSexuality !==null) originalTotalResult = [...originalTotalResult, currentResultSexuality.founded];
-                if (currentResultViolence !==null) originalTotalResult = [...originalTotalResult, currentResultViolence.founded];
+                if (currentResultDrug !==null) originalTotalResult = [...originalTotalResult, currentResultDrug.found];
+                if (currentResultInsult !==null) originalTotalResult = [...originalTotalResult, currentResultInsult.found];
+                if (currentResultSexuality !==null) originalTotalResult = [...originalTotalResult, currentResultSexuality.found];
+                if (currentResultViolence !==null) originalTotalResult = [...originalTotalResult, currentResultViolence.found];
 
                 if (currentResult2 !== null){
-                    totalResult = [...totalResult, currentResult2.founded];
-                    softResult = [...softResult, currentResult2.softSearchFounded];
+                    totalResult = [...totalResult, currentResult2.found];
+                    softResult = [...softResult, currentResult2.softSearchFound];
                 }
-                if (currentResultDrug2 !==null) totalResult = [...originalTotalResult, currentResultDrug.founded];
-                if (currentResultInsult2 !==null) originalTotalResult = [...originalTotalResult, currentResultInsult.founded];
-                if (currentResultSexuality2 !==null) originalTotalResult = [...originalTotalResult, currentResultSexuality.founded];
-                if (currentResultViolence2 !==null) originalTotalResult = [...originalTotalResult, currentResultViolence.founded];
+                if (currentResultDrug2 !==null) totalResult = [...originalTotalResult, currentResultDrug.found];
+                if (currentResultInsult2 !==null) originalTotalResult = [...originalTotalResult, currentResultInsult.found];
+                if (currentResultSexuality2 !==null) originalTotalResult = [...originalTotalResult, currentResultSexuality.found];
+                if (currentResultViolence2 !==null) originalTotalResult = [...originalTotalResult, currentResultViolence.found];
 
             }
 
@@ -687,14 +681,14 @@ class Tetrapod {
 
         // let unsafeMessage = message.toLowerCase()
         // let normalWordPositions = {}
-        let foundedBadWords = [];
-        let foundedBadOriginalWords = []; // isMap에서 original 단어
-        let foundedBadWordPositions = []
-        let foundedBadWordOriginalPositions = []; // isMap에서 original 단어 위치
-        let foundedSoftSearchWords = []
-        let foundedSoftSearchOriginalWords = [] // isMap에서 original Softsearch 단어
-        let foundedSoftSearchWordPositions = []
-        let foundedSoftSearchWordOriginalPositions = []; // isMap에서 original Softserach 단어 위치
+        let foundBadWords = [];
+        let foundBadOriginalWords = []; // isMap에서 original 단어
+        let foundBadWordPositions = []
+        let foundBadWordOriginalPositions = []; // isMap에서 original 단어 위치
+        let foundSoftSearchWords = []
+        let foundSoftSearchOriginalWords = [] // isMap에서 original Softsearch 단어
+        let foundSoftSearchWordPositions = []
+        let foundSoftSearchWordOriginalPositions = []; // isMap에서 original Softserach 단어 위치
         let originalMessageList = [];
         let originalMessageSyllablePositions = []; // 원래 음가 위치
 
@@ -744,7 +738,7 @@ class Tetrapod {
         for (let softSearchWord of parsedSoftSearchWords) {
 
             // 단순히 찾는 것으로 정보를 수집하는 것이 아닌 위치를 아예 수집해보자.
-            // findCount 형태 : {바: [1,8], 보:[2,7,12]}등
+             // findCount 형태 : {바: [1,8], 보:[2,7,12]}등
             let findCount = {}
             // 저속한 단어 수집 형태. 이 경우는 [[1,2], [8,7]]로 수집된다.
             let softSearchWordPositions = []
@@ -753,8 +747,8 @@ class Tetrapod {
             let parserLength = 0;
 
             // 이미 더 긴 단어에서 욕설을 찾았다면 그냥 넘어가보자.
-            for (let alreadyFounded of foundedSoftSearchWords) {
-                if (Utils.objectInclude(softSearchWord, alreadyFounded.split(""))) {
+            for (let alreadyFound of foundSoftSearchWords) {
+                if (Utils.objectInclude(softSearchWord, alreadyFound.split(""))) {
                     isSkip = true; break;
                 }
             }
@@ -769,8 +763,8 @@ class Tetrapod {
 
                 let mainCharacter = character[0]
 
-                let parserCharacter = character[1] // ! 또는 ?
-                parserLength = parserCharacter === "!" ? character.length -2 : character.length-1; // ? 개수 추정.
+                let parserCharacter = character[1] // !, + 또는 ?, 정의 안 될수도 있음.
+                parserLength = (parserCharacter === "!" || parserCharacter ==="+") ? character.length -2 : character.length-1; // ? 개수 추정.
                 let nextCharacter = (parserLength===0 && softSearchWord.indexOf(character)<softSearchWord.length-1)
                     ? softSearchWord[ softSearchWord.indexOf(character)+1 ][0]: "" // 뒤의 낱자 수집.
 
@@ -799,6 +793,11 @@ class Tetrapod {
                             findCount[softSearchOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
                         }
 
+                    }
+                    else if (parserCharacter === "+") {
+                        if ( Utils.objectInclude( Hangul.disassemble(softSearchOneCharacter), Hangul.disassemble(unsafeOneCharacter), true) ) {
+                            findCount[softSearchOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
+                        }
                     }
                     else {
                         if (softSearchOneCharacter === unsafeOneCharacter) {
@@ -858,16 +857,19 @@ class Tetrapod {
 
                 // positionInterval - 숫자 포지션 구간을 표시함.
                 let positionInterval = Utils.grabCouple(tempSoftSearchWordPositions)
+                let collectionTempQList = {}; // 사이 번호 삽입용
 
                 for(let diffRangeIndex in positionInterval){
 
                     // 글자간 사이에 있는 모든 글자를 순회합니다.
                     let diff = ''
                     let tempCnt = numberOfQs[diffRangeIndex]
+                    let tempQList = []; // ?에 해당하는 문자의 위치 찾기
+
                     for(let diffi = positionInterval[diffRangeIndex][0]+1; diffi <= (positionInterval[diffRangeIndex][1]-1); diffi++){
 
                         if (tempCnt>0) {
-                            if (/[가-힣]/.test(newMessage[diffi])) tempCnt--;
+                            if (/[가-힣]/.test(newMessage[diffi])) {tempCnt--; tempQList.push(diffi);}
                             else if (newMessage[diffi]=== " ") {tempCnt = 0; diffi +=newMessage[diffi];}
                             else diff += newMessage[diffi]
                         }
@@ -896,14 +898,23 @@ class Tetrapod {
                             }
                         }
                     }
+                    collectionTempQList[diffRangeIndex] = tempQList
 
                 }
 
                 // 기존에 발견돤 단어와 낱자가 겹쳐도 pass.
                 for (let usedSoftSearchWordPositions of softSearchWordPositions) {
 
-                    if (Utils.listIntersection(usedSoftSearchWordPositions, tempSoftSearchWordPositions).length > 0 ) {
+                    if (!Utils.isDisjoint(usedSoftSearchWordPositions, tempSoftSearchWordPositions) ) {
                         isNeedToPass = true; break;
+                    }
+                }
+
+                // 이제 낱자가 안 겹치면 tempBadWordPosition을 확장해서 잡아보자.
+                for (let ind =0; ind<wordPosition.length-1; ind++) {
+                    if ( collectionTempQList[ (wordPosition.length-1-ind).toString() ] && collectionTempQList[ (wordPosition.length-1-ind).toString() ].length>0) {
+                        // 인덱스 꼬이는 일이 안 생기게 뒤에서부터 추가해보자.
+                        tempSoftSearchWordPositions.splice( (wordPosition.length-1-ind), 0, collectionTempQList[ (wordPosition.length-1-ind).toString() ] )
                     }
                 }
 
@@ -914,7 +925,7 @@ class Tetrapod {
 
                 // 중복 비속어 체크하기.
                 var tmpTF = true;
-                for (let positions of foundedSoftSearchWordPositions) {
+                for (let positions of foundSoftSearchWordPositions) {
                     // 다른 비속어와 포지션이 일치할 때 강제 종료
                     for (let softSearchPosition of positions) {
                         if (Utils.objectInclude(tempSoftSearchWordPositions, softSearchPosition)) {
@@ -939,6 +950,7 @@ class Tetrapod {
                                 originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
                             }
                             for (var k =0; k <originalCount; k++) {
+
                                     tempSoftSearchWordOriginalPositions.push(originalMessageSyllablePositions[pos] + k);
                             }
                         }
@@ -970,25 +982,25 @@ class Tetrapod {
                     console.log(`발견된 저속한 표현 위치: [${softSearchWordPositions}]`)
                     console.log(`발견된 저속한 표현 원래 위치: [${softSearchWordOriginalPositions}]`)
                     console.log('\n')
-                    foundedSoftSearchWords.push(softSearchWord.join(''))
-                    foundedSoftSearchWordPositions.push(softSearchWordPositions)
-                    foundedSoftSearchOriginalWords.push(originalSoftSearchWords);
-                    foundedSoftSearchWordOriginalPositions.push(softSearchWordOriginalPositions);
+                    foundSoftSearchWords.push(softSearchWord.join(''))
+                    foundSoftSearchWordPositions.push(softSearchWordPositions)
+                    foundSoftSearchOriginalWords.push(originalSoftSearchWords);
+                    foundSoftSearchWordOriginalPositions.push(softSearchWordOriginalPositions);
                 }
                 else {
                     console.log(`원문: ${newMessage}`)
                     console.log(`발견된 저속한 표현: [${softSearchWord.join()}]`)
                     console.log(`발견된 저속한 표현 위치: [${softSearchWordPositions}]`)
                     console.log('\n')
-                    foundedSoftSearchWords.push(softSearchWord.join(''))
-                    foundedSoftSearchWordPositions.push(softSearchWordPositions)
+                    foundSoftSearchWords.push(softSearchWord.join(''))
+                    foundSoftSearchWordPositions.push(softSearchWordPositions)
                 }
 
             }
 
 
             // 반복 줄이기 위해 강제 탈출.
-            if (needMultipleCheck === false && foundedSoftSearchWords.length>0) break;
+            if (needMultipleCheck === false && foundSoftSearchWords.length>0) break;
 
         }
 
@@ -1025,9 +1037,9 @@ class Tetrapod {
 
             let isSkip = false;
             // 이미 더 긴 단어에서 욕설을 찾았다면 그냥 넘어가보자.
-            for (let alreadyFounded of foundedBadWords) {
-                // console.log(badWord, alreadyFounded.split(""))
-                if (Utils.objectInclude(badWord, alreadyFounded.split(""))) {
+            for (let alreadyFound of foundBadWords) {
+                // console.log(badWord, alreadyFound.split(""))
+                if (Utils.objectInclude(badWord, alreadyFound.split(""))) {
 
                     isSkip = true; break;
                 }
@@ -1042,7 +1054,7 @@ class Tetrapod {
                 let mainCharacter = character[0]
                 let parserCharacter = character[1] // ! 또는 ?
 
-                parserLength = parserCharacter === "!" ? character.length -2 : character.length-1; // ? 개수 추정.
+                parserLength = (parserCharacter === "!" || parserCharacter === "+") ? character.length -2 : character.length-1; // ? 개수 추정.
 
                 // 뒤의 낱자 수집
                 let nextCharacter = (parserLength===0 && badWord.indexOf(character)<badWord.length-1)
@@ -1073,6 +1085,11 @@ class Tetrapod {
                             findCount[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
                         }
 
+                    }
+                    else if (parserCharacter === "+") {
+                        if ( Utils.objectInclude( Hangul.disassemble(badOneCharacter), Hangul.disassemble(unsafeOneCharacter), true) ) {
+                            findCount[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
+                        }
                     }
                     else {
                         if (badOneCharacter === unsafeOneCharacter) {
@@ -1148,17 +1165,19 @@ class Tetrapod {
                 // 해당 비속어가 사람이 인식하지 못할 정도로
                 // 퍼져있다거나 섞여있는지를 확인합니다.
 
-                let positionInterval = Utils.grabCouple(tempBadWordPositions)
+                let positionInterval = Utils.grabCouple(tempBadWordPositions);
+                let collectionTempQList = {}; // 사이 번호 삽입용
 
                 for(let diffRangeIndex in positionInterval){
 
                     let tempCnt = numberOfQs[diffRangeIndex];
+                    let tempQList = []; // ?에 해당하는 문자의 위치 찾기.
 
                     // 글자간 사이에 있는 모든 글자를 순회합니다.
                     let diff = ''
                     for(let diffi = positionInterval[diffRangeIndex][0]+1; diffi <= (positionInterval[diffRangeIndex][1]-1); diffi++){
                         if (tempCnt>0) {
-                            if (/[가-힣]/.test(newMessage[diffi])) tempCnt--;
+                            if (/[가-힣]/.test(newMessage[diffi])) {tempCnt--; tempQList.push(diffi);}
                             else if (newMessage[diffi]=== " ") {tempCnt = 0; diffi +=newMessage[diffi];}
                             else diff += newMessage[diffi]
                         }
@@ -1186,13 +1205,23 @@ class Tetrapod {
                             }
                         }
                     }
+                    collectionTempQList[diffRangeIndex] = tempQList
 
                 }
+                // if (Object.keys(collectionTempQList).length !==0 ) console.log(collectionTempQList);
 
                 // 기존에 발견돤 단어와 낱자가 겹쳐도 pass
                 for (let usedBadWordPositions of badWordPositions) {
-                    if (Utils.listIntersection(usedBadWordPositions, tempBadWordPositions).length > 0 ) {
+                    if (!Utils.isDisjoint(usedBadWordPositions, tempBadWordPositions) ) {
                         isNeedToPass = true; break;
+                    }
+                }
+
+                // 이제 낱자가 안 겹치면 tempBadWordPosition을 확장해서 잡아보자.
+                for (let ind =0; ind<wordPosition.length-1; ind++) {
+                    if ( collectionTempQList[ (wordPosition.length-1-ind).toString() ] && collectionTempQList[ (wordPosition.length-1-ind).toString() ].length>0) {
+                        // 인덱스 꼬이는 일이 안 생기게 뒤에서부터 추가해보자.
+                        tempBadWordPositions.splice( (wordPosition.length-1-ind), 0, collectionTempQList[ (wordPosition.length-1-ind).toString() ] )
                     }
                 }
 
@@ -1203,7 +1232,7 @@ class Tetrapod {
 
                 // 중복 비속어 체크하기.
                 var tmpTF = true;
-                for (let positions of foundedBadWordPositions) {
+                for (let positions of foundBadWordPositions) {
                     // 다른 비속어와 포지션이 일치할 때 강제 종료
                     for (let badPosition of positions) {
                         if (Utils.objectInclude(tempBadWordPositions, badPosition)) {
@@ -1213,7 +1242,7 @@ class Tetrapod {
                 }
 
                 // 저속한 표현과 중복되는지 확인해보자.
-                for (let positions of foundedSoftSearchWordPositions) {
+                for (let positions of foundSoftSearchWordPositions) {
 
                     for (let softSearchPosition of positions) {
 
@@ -1226,12 +1255,12 @@ class Tetrapod {
 
                         // if (Math.min(...tempBadWordPositions) <= Math.min(...softSearchPosition) &&  Math.min(...softSearchPosition)  <= Math.max(...tempBadWordPositions) ) {
                         //     tmpTF = true;
-                        //     badWord = Utils.removeMultiple([...badWord, ...foundedSoftSearchWords[foundedSoftSearchWordPositions.indexOf(positions)] ])
+                        //     badWord = Utils.removeMultiple([...badWord, ...foundSoftSearchWords[foundSoftSearchWordPositions.indexOf(positions)] ])
                         //     tempBadWordPositions = Utils.removeMultiple([...tempBadWordPositions, ...softSearchPosition])
                         // }
                         // else if (Math.min(...tempBadWordPositions) <= Math.max(...softSearchPosition) && Math.max(...softSearchPosition)  <= Math.max(...tempBadWordPositions) ) {
                         //     tmpTF = true;
-                        //     badWord = Utils.removeMultiple([...foundedSoftSearchWords[foundedSoftSearchWordPositions.indexOf(positions)], ...badWord]);
+                        //     badWord = Utils.removeMultiple([...foundSoftSearchWords[foundSoftSearchWordPositions.indexOf(positions)], ...badWord]);
                         //     badWordPositions = Utils.removeMultiple([...softSearchPosition, ...tempBadWordPositions ]);
                         // }
                         // // 만약 비속어와 저속한 표현 사이에 숫자, 알파벳, 공백밖에 없으면 비속어로 합치기
@@ -1240,7 +1269,7 @@ class Tetrapod {
                         //     let inter1 = Math.min(...softSearchPosition);
                         //     if (newMessage.slice(inter0 + 1, inter1).match(/^[0-9A-Za-z\s~!@#$%^&*()_\-+\\|\[\]{};:'"<,>.?/]*$/ )) {
                         //         tmpTF = true;
-                        //         badWord = [...badWord, ...foundedSoftSearchWords[foundedSoftSearchWordPositions.indexOf(positions)]];
+                        //         badWord = [...badWord, ...foundSoftSearchWords[foundSoftSearchWordPositions.indexOf(positions)]];
                         //         tempBadWordPositions = [...tempBadWordPositions, ...softSearchPosition];
                         //     }
                         // }
@@ -1249,7 +1278,7 @@ class Tetrapod {
                         //     let inter1 = Math.min(...tempBadWordPositions);
                         //     if (newMessage.slice(inter0+1, inter1).match(/^[0-9A-Za-z\s~!@#$%^&*()_\-+\\|\[\]{};:'"<,>.?/]*$/) ) {
                         //         tmpTF = true;
-                        //         badWord = [...foundedSoftSearchWords[foundedSoftSearchWordPositions.indexOf(positions)], ...badWord];
+                        //         badWord = [...foundSoftSearchWords[foundSoftSearchWordPositions.indexOf(positions)], ...badWord];
                         //         tempBadWordPositions = [...softSearchPosition, ...tempBadWordPositions];
                         //     }
                         // }
@@ -1267,8 +1296,6 @@ class Tetrapod {
                     // map일 때는 메시지 더 찾기
                     if (isMap) {
 
-
-
                         for (var pos of tempBadWordPositions) {
                             // 갯수 세기. isReassemble일 때에는 한글 낱자의 갯수만 센다.
                             let originalCount = originalMessageList[Number(pos)].length;
@@ -1277,7 +1304,6 @@ class Tetrapod {
                             }
 
                             for (var k =0; k <originalCount; k++) {
-
                                 tempBadWordOriginalPositions.push( originalMessageSyllablePositions[pos] + k);
                             }
                         }
@@ -1305,23 +1331,23 @@ class Tetrapod {
                     console.log(`발견된 비속어 위치: [${badWordPositions}]`)
                     console.log(`발견된 비속어 원래 위치: [${badWordOriginalPositions}]`)
                     console.log('\n')
-                    foundedBadWords.push(badWord.join(''))
-                    foundedBadWordPositions.push(badWordPositions)
-                    foundedBadOriginalWords.push(originalBadWords);
-                    foundedBadWordOriginalPositions.push(badWordOriginalPositions);
+                    foundBadWords.push(badWord.join(''))
+                    foundBadWordPositions.push(badWordPositions)
+                    foundBadOriginalWords.push(originalBadWords);
+                    foundBadWordOriginalPositions.push(badWordOriginalPositions);
                 }
                 else {
                     console.log(`원문: ${newMessage}`)
                     console.log(`발견된 비속어: [${badWord.join()}]`)
                     console.log(`발견된 비속어 위치: [${badWordPositions}]`)
                     console.log('\n')
-                    foundedBadWords.push(badWord.join(''))
-                    foundedBadWordPositions.push(badWordPositions)
+                    foundBadWords.push(badWord.join(''))
+                    foundBadWordPositions.push(badWordPositions)
                 }
 
             }
             // 반복 줄이기 위해 강제 탈출.
-            if (needMultipleCheck === false && foundedBadWords.length>0) break;
+            if (needMultipleCheck === false && foundBadWords.length>0) break;
         }
 
         //부적절하게 겹받침 많이 사용했는지 여부 확인하기
@@ -1338,19 +1364,19 @@ class Tetrapod {
             let isMapAdded = {};
             if (isMap) {
                 isMapAdded = {
-                    originalFounded: needMultipleCheck ? foundedBadOriginalWords : foundedBadOriginalWords.slice(0).slice(0),
-                    originalPositions: needMultipleCheck ? foundedBadWordOriginalPositions : foundedBadWordOriginalPositions.slice(0).slice(0),
-                    originalSoftSearchFounded : needMultipleCheck ? foundedSoftSearchOriginalWords : foundedSoftSearchOriginalWords.slice(0).slice(0),
-                    originalSoftSearchPositions : needMultipleCheck ? foundedSoftSearchWordOriginalPositions : foundedSoftSearchWordOriginalPositions.slice(0).slice(0)
+                    originalFound: needMultipleCheck ? foundBadOriginalWords : foundBadOriginalWords.slice(0).slice(0),
+                    originalPositions: needMultipleCheck ? foundBadWordOriginalPositions : foundBadWordOriginalPositions.slice(0).slice(0),
+                    originalSoftSearchFound : needMultipleCheck ? foundSoftSearchOriginalWords : foundSoftSearchOriginalWords.slice(0).slice(0),
+                    originalSoftSearchPositions : needMultipleCheck ? foundSoftSearchWordOriginalPositions : foundSoftSearchWordOriginalPositions.slice(0).slice(0)
                 };
             }
 
         // 결과 출력
         return {
-            founded: needMultipleCheck? foundedBadWords : foundedBadWords.slice(0),
-            positions: needMultipleCheck? foundedBadWordPositions : foundedBadWordPositions.slice(0).slice(0),
-            softSearchFounded: needMultipleCheck? foundedSoftSearchWords: foundedSoftSearchWords.slice(0),
-            softSearchPositions: needMultipleCheck? foundedSoftSearchWordPositions : foundedSoftSearchWordPositions.slice(0).slice(0),
+            found: needMultipleCheck? foundBadWords : foundBadWords.slice(0),
+            positions: needMultipleCheck? foundBadWordPositions : foundBadWordPositions.slice(0).slice(0),
+            softSearchFound: needMultipleCheck? foundSoftSearchWords: foundSoftSearchWords.slice(0),
+            softSearchPositions: needMultipleCheck? foundSoftSearchWordPositions : foundSoftSearchWordPositions.slice(0).slice(0),
             //부적절하게 겹자음 받침을 많이 사용한 단어 적발.
             tooMuchDoubleEnd: tooMuchDouble,
             ...isMapAdded
@@ -1358,12 +1384,19 @@ class Tetrapod {
     }
 
     // 비속어 리스트가 주어졌을 때 비속어 리스트 안에서 검사하기.
+    // 옵션 추가 - parsedWordList 대신 wordList를 입력해도 자동으로 parsedWordList로 변환해서 처리 가능.
     static nativeFindFromList(message, parsedWordsList, needMultipleCheck=false, isMap=false, isReassemble=false) {
+
+        // check whether wordList is parsed or not
+        if (typeof parsedWordsList[0] === "string" ) {
+            parsedWordsList = this.parseFromList(parsedWordsList)
+        }
+
         // let normalWordPositions = {}
-        let foundedBadWords = []
-        let foundedBadOriginalWords = []
-        let foundedBadWordPositions = []
-        let foundedBadWordOriginalPositions = []; // isMap에서 original 단어 위치
+        let foundBadWords = []
+        let foundBadOriginalWords = []
+        let foundBadWordPositions = []
+        let foundBadWordOriginalPositions = []; // isMap에서 original 단어 위치
         let originalMessageList = [];
         let originalMessageSyllablePositions = []; // 원래 음가 위치
 
@@ -1412,8 +1445,8 @@ class Tetrapod {
 
             let isSkip = false;
             // 이미 더 긴 단어에서 욕설을 찾았다면 그냥 넘어가보자.
-            for (let alreadyFounded of foundedBadWords) {
-                if (Utils.objectInclude(badWord, alreadyFounded.split(""))) {
+            for (let alreadyFound of foundBadWords) {
+                if (Utils.objectInclude(badWord, alreadyFound.split(""))) {
                     isSkip = true; break;
                 }
             }
@@ -1426,8 +1459,8 @@ class Tetrapod {
             for (let character of badWord) {
 
                 let mainCharacter = character[0]
-                let parserCharacter = character[1] // !, ? 또는 undefined
-                parserLength = parserCharacter==="!"? character.length-2 : character.length-1
+                let parserCharacter = character[1] // !, ?, + 또는 undefined
+                parserLength =  (parserCharacter==="!" || parserCharacter === "+") ? character.length-2 : character.length-1
                 let badOneCharacter = String(mainCharacter).toLowerCase();
                 // 뒤의 낱자 수집
                 let nextCharacter = (parserLength===0 && badWord.indexOf(character)<badWord.length-1)
@@ -1454,7 +1487,11 @@ class Tetrapod {
                         if (this.isKindChar(unsafeOneCharacter, badOneCharacter, nextCharacter)) {
                             findCount[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
                         }
-
+                    }
+                    else if (parserCharacter === "+") {
+                        if ( Utils.objectInclude( Hangul.disassemble(badOneCharacter), Hangul.disassemble(unsafeOneCharacter), true) ) {
+                            findCount[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
+                        }
                     }
                     else {
                         if (badOneCharacter === unsafeOneCharacter) {
@@ -1514,15 +1551,18 @@ class Tetrapod {
                 // 해당 비속어가 사람이 인식하지 못할 정도로
                 // 퍼져있다거나 섞여있는지를 확인합니다.
                 let positionInterval = Utils.grabCouple(tempBadWordPositions)
+                let collectionTempQList = {}; // 사이 번호 삽입용.
 
                 for(let diffRangeIndex in positionInterval){
 
                     let tempCnt = numberOfQs[diffRangeIndex]
+                    let tempQList = []; // ?에 해당하는 문자의 위치 찾기.
 
                     // 글자간 사이에 있는 모든 글자를 순회합니다.
                     let diff = ''
                     for(let diffi =positionInterval[diffRangeIndex][0]+1; diffi <= (positionInterval[diffRangeIndex][1]-1); diffi++){
-                        if (tempCnt>0 && /[가-힣]/.test(newMessage[diffi])) tempCnt--;
+                        if (tempCnt>0 && /[가-힣]/.test(newMessage[diffi])) {tempCnt--; tempQlist.push(diffi);}
+                        else if (newMessage[diffi]=== " ") {tempCnt = 0; diffi +=newMessage[diffi];}
                         else diff += newMessage[diffi];
                     }
 
@@ -1546,23 +1586,36 @@ class Tetrapod {
                         }
                     }
 
+                    collectionTempQList[diffRangeIndex] = tempQList
                 }
 
-                // 기존에 발견돤 단어와 낱자가 겹쳐도 pass
+
+
+                // 기존에 발견돤 단어와 낱자가 겹쳐면 pass
                 for (let usedBadWordPositions of badWordPositions) {
-                    if (Utils.listIntersection(usedBadWordPositions, tempBadWordPositions).length > 0 ) {
+                    if ( !Utils.isDisjoint(usedBadWordPositions, tempBadWordPositions) ) {
                         isNeedToPass = true; break;
                     }
                 }
 
+                // 이제 낱자가 안 겹치면 tempBadWordPosition을 확장해서 잡아보자.
+                for (let ind =0; ind<wordPosition.length-1; ind++) {
+                    if ( collectionTempQList[ (wordPosition.length-1-ind).toString() ] && collectionTempQList[ (wordPosition.length-1-ind).toString() ].length>0) {
+                        // 인덱스 꼬이는 일이 안 생기게 뒤에서부터 추가해보자.
+                        tempBadWordPositions.splice( (wordPosition.length-1-ind), 0, collectionTempQList[ (wordPosition.length-1-ind).toString() ] )
+                    }
+                }
+
+
+
                 // 해당 저속한 표현을 발견은 하였지만,
                 // 사람이 인지하지 못할 것으로 간주되는 경우
-                // 해당 발견된 저속한 표현을 무시합니다.
+                // 해당 발견된 비속어를 무시합니다.
                 if(isNeedToPass) continue
 
                 // 중복 비속어 체크하기.
                 var tmpTF = true;
-                for (let positions of foundedBadWordPositions) {
+                for (let positions of foundBadWordPositions) {
                     // 다른 비속어와 포지션이 일치할 때 강제 종료
                     for (let badPosition of positions) {
                         if (Utils.objectInclude(tempBadWordPositions, badPosition)) {
@@ -1579,14 +1632,13 @@ class Tetrapod {
 
                     if (isMap) {
 
+                        // 갯수 세기. isReassemble일 때에는 한글 낱자의 갯수만 센다.
+                        let originalCount = originalMessageList[Number(pos)].length;
+                        if (isReassemble) {
+                            originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
+                        }
 
                         for (var pos of tempBadWordPositions) {
-                            // 갯수 세기. isReassemble일 때에는 한글 낱자의 갯수만 센다.
-                            let originalCount = originalMessageList[Number(pos)].length;
-                            if (isReassemble) {
-                                originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
-                            }
-
                             for (var k =0; k <originalCount; k++) {
 
                                 tempBadWordOriginalPositions.push(originalMessageSyllablePositions[pos] + k);
@@ -1620,40 +1672,40 @@ class Tetrapod {
                     console.log(`발견된 비속어 위치: [${badWordPositions}]`)
                     console.log(`발견된 비속어 원래 위치: [${badWordOriginalPositions}]`)
                     console.log('\n')
-                    foundedBadWords.push(badWord.join(''))
-                    foundedBadWordPositions.push(badWordPositions)
-                    foundedBadOriginalWords.push(originalBadWords);
-                    foundedBadWordOriginalPositions.push(badWordOriginalPositions);
+                    foundBadWords.push(badWord.join(''))
+                    foundBadWordPositions.push(badWordPositions)
+                    foundBadOriginalWords.push(originalBadWords);
+                    foundBadWordOriginalPositions.push(badWordOriginalPositions);
                 }
                 else {
                     console.log(`원문: ${newMessage}`)
                     console.log(`발견된 비속어: [${badWord.join()}]`)
                     console.log(`발견된 비속어 위치: [${badWordPositions}]`)
                     console.log('\n')
-                    foundedBadWords.push(badWord.join(''))
-                    foundedBadWordPositions.push(badWordPositions)
+                    foundBadWords.push(badWord.join(''))
+                    foundBadWordPositions.push(badWordPositions)
                 }
 
             }
 
 
             // 반복 줄이기 위해 강제 탈출.
-            if (needMultipleCheck === false && foundedBadWords.length>0) break;
+            if (needMultipleCheck === false && foundBadWords.length>0) break;
 
         }
 
         let isMapAdded = {};
         if (isMap) {
             isMapAdded = {
-                originalFounded: needMultipleCheck ? foundedBadOriginalWords : foundedBadOriginalWords.slice(0).slice(0),
-                originalPositions: needMultipleCheck ? foundedBadWordOriginalPositions : foundedBadWordOriginalPositions.slice(0).slice(0),
+                originalFound: needMultipleCheck ? foundBadOriginalWords : foundBadOriginalWords.slice(0).slice(0),
+                originalPositions: needMultipleCheck ? foundBadWordOriginalPositions : foundBadWordOriginalPositions.slice(0).slice(0),
             };
         }
 
         // 결과 출력
         return {
-            founded: needMultipleCheck? foundedBadWords : foundedBadWords.slice(0),
-            positions: needMultipleCheck? foundedBadWordPositions : foundedBadWordPositions.slice(0).slice(0),
+            found: needMultipleCheck? foundBadWords : foundBadWords.slice(0),
+            positions: needMultipleCheck? foundBadWordPositions : foundBadWordPositions.slice(0).slice(0),
             ...isMapAdded
         }
 
@@ -1667,28 +1719,27 @@ class Tetrapod {
         let fixedMessageIndex = []
         let fixedMessageObject = {}
         // condition
-        if (condition.qwertyToDubeol) {
+        if (condition.qwertyToDubeol === true) {
             fixedMessageObject = this.nativeFind(Utils.qwertyToDubeol(message, true), true, true)
             fixedMessageList = condition.isOriginal ? Utils.parseMap(Utils.qwertyToDubeol(message, true)).messageList : Utils.parseMap(Utils.qwertyToDubeol(message, true)).parsedMessage
             fixedMessageIndex = Utils.parseMap(Utils.qwertyToDubeol(message, true)).messageIndex;
             // fixedMessage = fixedMessageList.join("")
         }
-        else if (condition.dropDouble) {
+        else if (condition.dropDouble=== true) {
             fixedMessageObject = this.nativeFind(Utils.dropDouble(message, true), true, true, true)
             fixedMessageList = condition.isOriginal? Utils.parseMap(Utils.dropDouble(message, true)).messageList:Utils.parseMap(Utils.dropDouble(message, true)).parsedMessage
             fixedMessageIndex = Utils.parseMap(Utils.dropDouble(message, true)).messageIndex;
             // fixedMessage = fixedMessageList.join("")
         }
-        else if (condition.antispoof) {
+        else if (condition.antispoof === true) {
             fixedMessageObject = this.nativeFind(Utils.antispoof(message, true), true, true)
             fixedMessageList = condition.isOriginal? Utils.parseMap(Utils.antispoof(message, true)).messageList: Utils.parseMap(Utils.antispoof(message, true)).parsedMessage
             fixedMessageIndex = Utils.parseMap(Utils.antispoof(message, true)).messageIndex;
             // fixedMessage = fixedMessageList.join("")
         }
-        else {``
-            fixedMessageObject = this.nativeFind(Utils.antispoof(message, true), true, true)
-            fixedMessageList = Utils.parseMap(Utils.antispoof(message, true)).parsedMessage
-            fixedMessage = fixedMessageList.join("")
+        else {
+            fixedMessageObject = this.nativeFind(Utils.msgToMap(message), true, true)
+            fixedMessageList = Utils.parseMap(Utils.msgToMap(message).parsedMessage
         }
 
         // console.log(fixedMessageObject)
@@ -2000,76 +2051,41 @@ class Tetrapod {
         return isCount?cnt:(cnt === 0);
     }
 
-    // 한글 낱자를 초성중성종성으로 분리하기
-    static choJungJong(char) {
-        const consonant = Utils.korConsonants;
-        const vowel = Utils.korVowels;
-        const charDisassemble = Hangul.disassemble(char);
-        let res = {cho:[], jung:[], jong:[]}
-        // 오류 방지를 위해 한글 낱자일 때에만 함수 수행.
-        if (/[가-힣]/.test(char)) {
-            for (var letter of charDisassemble) {
-                // 초성
-                if (consonant.indexOf(letter)!==-1 && res.jung.length ===0) {
-                    res.cho.push(letter)
-                }
-                else if (vowel.indexOf(letter)!==-1 ) res.jung.push(letter)
-                else res.jong.push(letter)
-            }
-        }
-        return res;
-    }
+
 
     // 유사 낱자 검사. 낱자에 가? 형태로 표현되었을 경우 가뿐 아니라 각, 간 등 다 포함.
     // char : 낱자
     // comp : 낱자. comp!에 char가 포함되는 경우 true, 아닌 경우 false를 반환한다.
-    // following : !뒤에 오는 낱자. 받침이
-    static isKindChar(char, comp, following="") {
+    // following : !뒤에 오는 낱자. 없으면 ""
+    static  isKindChar(char, comp, following="") {
         // 초성중성종성 분리 데이터 이용하기
-        let charDisassemble = this.choJungJong(char)
-        let compDisassemble = this.choJungJong(comp)
-        let followDisassemble = following===""?{cho:[], jung:[], jong:[]}:this.choJungJong(following)
+        let charDisassemble = Utils.choJungJong(char)
+        let compDisassemble = Utils.choJungJong(comp)
+        let followDisassemble = following===""?{cho:[], jung:[], jong:[]}:Utils.choJungJong(following)
         let resi = false; // 초성 유사음
         let resm = false; // 중성 유사음
         let rese = false; // 종성 유사음
 
         // console.log(charDisassemble, compDisassemble, followDisassemble)
 
-        const toothConsonant = ["ㄷ", "ㄸ", "ㅅ", "ㅆ", "ㅈ", "ㅉ", "ㅊ"]
+        const toothConsonant = Utils.toothConsonant;
 
         // 유사초성. 가 -> 까, 카
-        const simInit = {
-            "ㄱ":["ㄲ", "ㅋ"], "ㄲ":['ㅋ'], "ㄷ":["ㄸ", "ㅌ", "ㅆ", "ㅉ"], "ㄸ":["ㅌ", "ㅉ"], "ㄹ":["ㄴ"], "ㅂ":["ㅃ", "ㅍ"], "ㅃ":["ㅍ"],
-            "ㅅ":[ "ㄸ", "ㅆ", "ㅉ"], "ㅆ": ["ㅉ"], "ㅈ":["ㅆ", "ㅉ", "ㅊ"], "ㅉ":["ㅊ", "ㅆ"], "ㅊ":["ㅉ"], "ㅋ":["ㄲ"], "ㅌ":["ㄸ"], "ㅍ":["ㅃ"], "ㅎ":["ㅍ"]
-        }
+        const simInit = Utils.simInit;
+
         // 유사중성.  고 -> 거, 교
-        const simMiddle = {
-            "ㅏ":[["ㅑ"], ["ㅗ", "ㅏ"]], "ㅐ":[["ㅒ"], ["ㅔ"], ["ㅖ"], ["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]], "ㅒ":[["ㅖ"]],
-            "ㅓ":[["ㅕ"], ["ㅜ", "ㅓ"], ["ㅗ"]], "ㅔ":[["ㅒ"], ["ㅔ"], ["ㅖ"], ["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]], "ㅕ":[["ㅛ"]], "ㅖ":[["ㅖ"]],
-            "ㅗ":[["ㅓ"], ["ㅛ"]], "ㅙ":[["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]], "ㅚ":[["ㅗ", "ㅐ"], ["ㅜ","ㅔ"]], "ㅛ":[["ㅕ"]],
-            "ㅜ":[["ㅠ"],["ㅡ"]], "ㅞ":[["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"]], "ㅡ":[["ㅜ"]], "ㅣ":[["ㅜ","ㅣ"], ["ㅡ", "ㅣ"]]
-        }
+        const simMiddle = Utils.simMiddle;
+
         // 초성이 치음일 때 유사중성 for ㄷ,ㄸ,ㅅ,ㅆ,ㅈ,ㅊ,ㅉ,ㅌ 이 경우는 y복모음 구별불가인 특수 케이스
-        const toothSimMiddle = { ...simMiddle,
-            "ㅑ":[["ㅏ"], ["ㅗ", "ㅏ"]], "ㅒ": [["ㅐ"], ["ㅔ"], ["ㅖ"], ["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]],
-            "ㅕ":[["ㅓ"], ["ㅜ","ㅓ"], ["ㅗ"], ["ㅛ"]], "ㅖ":[["ㅐ"], ["ㅔ"], ["ㅒ"], ["ㅗ", "ㅐ"], ["ㅗ", "ㅣ"], ["ㅜ","ㅔ"]],
-            "ㅛ":[["ㅓ"], ["ㅕ"], ["ㅜ","ㅓ"], ["ㅗ"]], "ㅠ":[["ㅜ"], ["ㅡ"]]
-        }
+        const toothSimMiddle =  Utils.toothSimMiddle;
         // 유사종성
-        const simEnd = {
-            "ㄱ": ["ㅋ", "ㄲ"], "ㄲ":["ㄱ", "ㅋ"], "ㄷ":["ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅂ":["ㅂ", "ㅍ"], "ㅅ":["ㄷ", "ㅌ", "ㅆ", "ㅈ", "ㅊ"], "ㅆ":["ㄷ", "ㅌ", "ㅅ", "ㅈ", "ㅊ"],
-            "ㅈ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅊ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅋ":["ㄱ", "ㄲ"], "ㅌ":["ㄷ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅍ":["ㅂ", "ㅍ"], "ㅎ":["ㅅ"]
-        }
+        const simEnd = Utils.simEnd;
 
         // 뒷글자에 의한 자음동화. 뒷글자가
-        const jointConsonant = {
-            "ㄱ":["ㄲ", "ㅋ"], "ㄲ":["ㄱ", "ㅋ"], "ㄴ":["ㄷ", "ㅅ"], "ㄷ":["ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㄸ":["ㄷ","ㅌ", "ㅅ", "ㅆ", "ㅈ", "ㅊ" ], "ㄹ":["ㄴ"],
-            "ㅁ":["ㅂ", "ㅍ"], "ㅂ":["ㅁ", "ㅍ"], "ㅃ":["ㅁ", "ㅂ"], "ㅅ":["ㄷ", "ㅌ", "ㅆ", "ㅈ", "ㅊ"], "ㅆ":["ㄷ", "ㅌ", "ㅅ", "ㅈ", "ㅊ"], "ㅈ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅊ"],
-            "ㅊ":["ㄷ", "ㅌ", "ㅅ", "ㅆ", "ㅈ"], "ㅋ":["ㄱ", "ㄲ"], "ㅌ":["ㄷ", "ㅅ", "ㅆ", "ㅈ", "ㅊ"], "ㅍ":["ㅁ", "ㅂ"]
-        }
+        const jointConsonant = Utils.jointConsonant;
 
         //뒷글자에 의한 ㅣ 모음동화 잡아내기
-        const jointVowel = {"ㅏ":[["ㅐ"]], "ㅑ":[["ㅒ"], ["ㅖ"]], "ㅓ":[["ㅔ"]], "ㅕ":[["ㅒ"], ["ㅖ"]], "ㅗ":[["ㅗ", "ㅣ"]], "ㅜ":[["ㅜ", "ㅣ"]], "ㅡ":[["ㅡ", "ㅣ"]] }
+        const jointVowel = Utils.jointVowel;
 
         //우선 유사초음 찾아내기. 밑바탕(!들어감) 자음의 유사자음 리스트 안에 원 자음이 들어가는 경우
         if (compDisassemble["cho"][0] === charDisassemble["cho"][0] || (simInit[compDisassemble["cho"][0]]!==undefined && simInit[compDisassemble["cho"][0]].indexOf( charDisassemble["cho"][0] )!== -1)) {
@@ -2088,13 +2104,16 @@ class Tetrapod {
             resm = true;
         }
         // 모음 동화 반영
-        else if (followDisassemble["jung"].length>0 && Utils.objectIn( followDisassemble["jung"],[["ㅣ"], ["ㅡ","ㅣ"], ["ㅜ","ㅣ"]]) === true && Utils.objectIn( charDisassemble["jung"], jointVowel[Hangul.assemble(compDisassemble["jung"])]) !== -1) {
+        else if (followDisassemble["jung"].length>0 && Utils.objectIn( followDisassemble["jung"],[["ㅣ"], ["ㅡ","ㅣ"], ["ㅜ","ㅣ"]]) === true && Utils.objectIn( charDisassemble["jung"], jointVowel[Hangul.assemble(compDisassemble["jung"])]) === true) {
             resm = true;
         }
 
         // 유사종음 찾아내기.
         // 우선 두 글자 받침이 동일할 때는 무조건 OK
         if (Utils.objectEqual(compDisassemble["jong"], charDisassemble["jong"])) {
+            rese = true;
+        }
+        else if (Utils.objectIn(charDisassemble["jong"], simEnd[compDisassemble["jong"]])) {
             rese = true;
         }
         // 또 comp 받침 글자를 char가 포함하는 경우 무조건 OK
@@ -2128,7 +2147,7 @@ class Tetrapod {
             // inc 낱자 파싱
             let mainChar = inc[incCnt][0]; // 기본 낱자
             let parserChar = inc[incCnt][1]; // 파싱 낱자. ! 또는 ?
-            let astLength = parserChar==="!"? inc[incCnt].length-2: inc[incCnt].length-1; // ? 갯수
+            let astLength = (parserChar==="!"|| parserChar==="+")? inc[incCnt].length-2: inc[incCnt].length-1; // ? 갯수
 
             while(tempCnt < exc.length) {
                 // exc 낱자 파싱
@@ -2171,9 +2190,23 @@ class Tetrapod {
 
     }
 
-    // 한글 조합 함수. 각 원소들을 Hangul.assemble(Hangul.disassemble())로 조합하는데 사용합니다.
-    static assembleHangul(elem) {
-        return Utils.listMap(elem, x=>(Hangul.assemble(Hangul.disassemble(x))));
+    // 한글 조합 함수. 각 원소들을 Hangul.assemble(Hangul.disassemble())로 조합하는데 사용합니다. isComma 옵션은 파서 문자 ,를 무시할지 물어봅니다.
+    static assembleHangul(elem, isIgnoreComma = true) {
+        return Utils.listMap(elem, x=>(
+            isIgnoreComma ? Hangul.assemble(Hangul.disassemble(x)).replace(".,", "，").replace(",","").replace("，",",")
+                : Hangul.assemble(Hangul.disassemble(x))
+        ));
+    }
+
+    // 단어 리스트가 존재할 때 parse하는 함수
+    static parseFromList(wordList) {
+        let res  = []
+        for (let word of wordList) {
+            res.push(Utils.wordToArray(word))
+        }
+        res.sort((a,b) => (a.length-b.length)).reverse()
+
+        return res;
     }
 
     /**

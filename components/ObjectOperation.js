@@ -4,7 +4,6 @@ const ObjectOperation = {
 
     // 배열/오브젝트 동일성 체크. 기능 확장.
     objectEqual: (a,b) => {
-        let val = true;
         if (typeof a !== typeof b) {
             return false;
         }
@@ -16,10 +15,10 @@ const ObjectOperation = {
             }
             else {
                 for (var key in a) { // a의 키에 대해 조사
-                    if (a[key]!==b[key]) {val = false; break;}
+                    if (a[key]!==b[key]) {return false;}
                 }
             }
-            return val;
+            return true;
         }
 
     },
