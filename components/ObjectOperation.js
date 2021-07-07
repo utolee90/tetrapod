@@ -123,7 +123,12 @@ const ObjectOperation = {
     productList : (list) => {
         if (Array.isArray(list)) {
             if (list.length ===0) return [];
-            else if (list.length ===1 ) return list[0].length>0?list:[];
+            else if (list.length ===1 ) {
+                if (list[0].length>0) {
+                    return list[0].map(x=> [x])
+                }
+                else return [];
+            }
             else if (list.length ===2 ) {
                 let res = [];
                 for (var fele of list[0]) {

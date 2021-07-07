@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="104ff4eb-fd97-4171-9f6f-14d519183829" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/ObjectOperation.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/ObjectOperation.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,11 +33,11 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="javascript.nodejs.core.library.configured.version" value="14.15.2" />
-    <property name="javascript.nodejs.core.library.typings.version" value="14.14.31" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="javascript.nodejs.core.library.configured.version" value="14.15.4" />
+    <property name="javascript.nodejs.core.library.typings.version" value="14.17.3" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../klleon-home" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\PhpStorm 2020.3\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
+    <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\PhpStorm 2020.3.2\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RecentsManager">
@@ -90,6 +91,11 @@
       <workItem from="1622644504889" duration="592000" />
       <workItem from="1622971357256" duration="595000" />
       <workItem from="1623158419176" duration="771000" />
+      <workItem from="1624022651426" duration="607000" />
+      <workItem from="1624072165500" duration="617000" />
+      <workItem from="1624160149519" duration="594000" />
+      <workItem from="1625051440468" duration="1252000" />
+      <workItem from="1625660274877" duration="4253000" />
     </task>
     <task id="LOCAL-00001" summary="modify source">
       <created>1618747573738</created>
