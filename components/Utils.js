@@ -137,10 +137,11 @@ const Utils = {
             indexes.push(i)
             i = message.indexOf(search, ++i)
         }
-
+        // isString이 거짓이면 그냥 단어의 첫 위치 리스트로 출력
         if(!isString) return indexes
 
-        let stringPoses = []
+        // isString이 참이면 단어의 첫 위치와 끝 위치 듀플 형식으로 출력력
+       let stringPoses = []
         for(let wordIndex of indexes){
             if(wordIndex === -1) continue
             for(let i=0;i<search.length;i++)
@@ -326,10 +327,10 @@ const Utils = {
         // 배열 정의되지 않은 것은 그대로 출력
         if (typeof data !== "object") return data
         else {
-            // 데이터의 전항 후항을 순회합니다.
-            for (let i=0;i<=1;i++){
+            // 데이터의 모든 항 순회
+            for (let i=0;i<data.length;i++){
 
-                // 데이터의 모든 항목을 순회합니다.
+                // 데이터 원소 내부의 모든 항목을 순회합니다.
                 for(let itemIndex in data[i]){
                     let item = data[i][itemIndex]
 
@@ -343,22 +344,23 @@ const Utils = {
                 }
             }
 
-            // 데이터의 전항 후항을 순회합니다.
-            let solvedData = []
-            for(let before of data[0]){
-                if(before === null) continue
-                for(let after of data[1]){
-                    if(after === null) continue
-                    solvedData.push(before+after)
-                }
+            // 그 다음에 null 원소는 모두 제거하기
+            for (let i=0; i<data.length; i++) {
+                data[i] = data[i].filter(x => x !==null );
             }
+
+            // 데이터 리스트 곱 연산 수행.
+            // [[1,2],[3,4,5]] = [[1,3],[1,4],[1,5],[2,3],[2,4],[2,5]]
+            let presolvedData = ObjectOperation.productList(data)
+            let solvedData = presolvedData.map(x=> x.join(""))
+
             return solvedData
         }
 
     },
 
 
-    // 겹자모 판단하기. 순서 지켜주기
+    // 겹자모 판단하기. 순서 지켜주기 - 수정 필요
     isDouble: (var1, var2, allowSim =false) => {
         let res = false;
         let compareList;
