@@ -4,8 +4,8 @@ import Utils from "../components/Utils";
 import Tetrapod from "../tetrapod";
 import Hangul from "hangul-js"
 
-console.log()
-console.log( Utils.dropDouble("없닶", true))
+// console.log()
+// console.log( Utils.dropDouble("없닶", true))
 // // Tetrapod.loadFile(
 // //     './resource/sample/bad-words.json',
 // //     './resource/klleon/normal-words.json',
@@ -23,8 +23,21 @@ console.log( Utils.dropDouble("없닶", true))
 // console.log("\n\n======================")
 // console.log(Utils.dropDouble("십발 정말 값삾핪닚닶", true))
 
-console.log(Utils.antispoof("야 이 우리왕 아주 짜증나 죽겠어. 에휴에후!! 질알.", true))
+// console.log(Utils.antispoof("야 이 우리왕 아주 짜증나 죽겠어. 에휴에후!! 질알.", true))
+//
+// console.log(Utils.parseMap(Utils.antispoof("야 이 우리왕 아주 짜증나 죽겠어. 에휴에후!! 질알.", true)))
+// // console.log(Utils.parseMap(Utils.antispoof("죽을래", true)))
+// console.log(Tetrapod.isKindChar("지", "자"))
 
-console.log(Utils.parseMap(Utils.antispoof("야 이 우리왕 아주 짜증나 죽겠어. 에휴에후!! 질알.", true)))
-// console.log(Utils.parseMap(Utils.antispoof("죽을래", true)))
-console.log(Tetrapod.isKindChar("지", "자"))
+console.log(
+    [
+        ...Utils.doubleConsonant,
+        ...Utils.doubleVowel,
+        ...[
+            "ㄱ7", "77", ...Utils.recursiveComponent([["ㄱ", '7'],["ㅅ", "^"]]),
+        "ㄹ^", "#ㅅ", "ㅂ^", "#ㅅ",
+            "ㅗH", "ㅜ, y", "t, y", "T, y",
+        ...Utils.recursiveComponent([["ㅗ","ㅜ", "t", "T", "ㅡ", "_"], ["ㅣ", "!", "I", "1","l", "|"]])
+        ].map(x=> [x[0],x[1]])
+    ]
+);

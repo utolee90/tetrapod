@@ -360,23 +360,35 @@ const Utils = {
     },
 
 
-    // 겹자모 판단하기. 순서 지켜주기 - 수정 필요
+    // [var1,var2]가 겹자모 리스트 안에 있는지 판단하기.
     isDouble: (var1, var2, allowSim =false) => {
-        let res = false;
-        let compareList;
-        // 각 원소가 길이가 2개인 배열로 구성되어야 한다.
-        if (typeof allowSim === 'object') compareList = allowSim;
-        else compareList = allowSim?
-            Utils.recursiveComponent(
-                [...Utils.doubleConsonant, ...Utils.doubleVowel, "ㄱ7", "77", [["ㄱ", '7'],["ㅅ", "^"]],"ㄹ^", "#ㅅ", "ㅂ^", "#ㅅ",
-                    "ㅗH", "ㅜ, y", "t, y", "T, y", [["ㅗ","ㅜ", "t", "T", "ㅡ", "_"], ["ㅣ", "!", "I", "1","l", "|"]]]
-            ).map(x => x.split(""))
-            :[...Utils.doubleConsonant, ...Utils.doubleVowel];
 
-        for (var dbl of compareList) {
-            if (Utils.objectEqual([var1, var2], dbl.slice(0,2) )) res = true;
+        let compareList;
+        // compareList -> 각 원소의 형태가 "['v1','v2']"
+        // allowSim이 리스트 형식일 때...
+        if (typeof allowSim === 'object') {
+            // allowSim의 원소가 [v1,v2] 형식이면 compareList는 allowSim 그대로, String이면 원소를 [v[0], v[1]] 형식으로 바꿔주기.
+            compareList = Array.isArray(allowSim[0])? allowSim : allowSim.map(x=> [x[0], x[1]])
         }
-        return res;
+        // 아니면 allowSim이 true/false 때로... true는 유사자음 허용..
+        else {
+            compareList = allowSim?
+                (
+                    [
+                        ...Utils.doubleConsonant,
+                        ...Utils.doubleVowel,
+                        ...[
+                            ["ㄱ","7"], ["7","7"], ...Utils.productList([["ㄱ", '7'],["ㅅ", "^"]]),
+                            ["ㄹ","^"], ["#","ㅅ"], ["ㅂ","^"], ["#","ㅅ"],
+                            ["ㅗ","H"], ["ㅜ","y"], ["t","y"], ["T","y"],
+                            ...Utils.productList([["ㅗ","ㅜ", "t", "T", "ㅡ", "_"], ["ㅣ", "!", "I", "1","l", "|"]])
+                        ].map(x=> [x[0],x[1]])
+                    ]
+                )
+                :[...Utils.doubleConsonant, ...Utils.doubleVowel];
+        }
+        /// 각 원소에 대해서 포함여부 확인하기.
+        return Utils.objectIn([var1, var2], compareList);
     },
 
     // 파싱하기 {씨:{value:시, index:[1]}, 브얼:{value:벌, index:[2]}}
@@ -469,7 +481,7 @@ const Utils = {
             // 자음이나 영어 자음에 대응되는 경우
             msgSplit.map( (letter, ind) => {
                 let consonant = [...Utils.korConsonants, "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x", "c", "v"];
-                let vowel = [...Utils.korVowels, "y", 'u', "i", "o", "p", "h", "j", "k", "l", "b", "n", "m"];
+                let vowel = [...Utils.korVowels, "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x", "c", "v"];
 
                 let resMacro = (letter, val=temp) => {
                     if (val!=="") {
@@ -484,30 +496,26 @@ const Utils = {
                     temp +=letter;
                 }
                 // 자음의 경우 -> 뒤에 모음이 아닌 문자가 올 때만 앞글자에 붙인다.
-                else if (ind>0 && consonant.indexOf(letter.toLowerCase()) !==-1 && (ind===msg.length-1 || vowel.indexOf(msgSplit[ind+1].toLowerCase()) ===-1)) {
+                else if (consonant.indexOf(letter.toLowerCase()) !==-1 && (ind===msg.length-1 || vowel.indexOf(msgSplit[ind+1].toLowerCase()) ===-1)) {
                     // 앞에 모음이거나
                     if (vowel.indexOf(msgSplit[ind-1].toLowerCase())!==-1 ) {
                         temp +=letter;
                     }
                     // 앞앞이 모음& 앞자음이 쌍자음 형성할 수 있을 때
                     else if (ind>1 && vowel.indexOf(msgSplit[ind-2].toLowerCase())!==-1 && consonant.indexOf(msgSplit[ind-1].toLowerCase())!==-1) {
-                        let tf = false;
                         let mode = [
                             Object.keys(mapping).indexOf(msgSplit[ind-1])!==-1 ? mapping[msgSplit[ind-1]] : msgSplit[ind-1],
                             Object.keys(mapping).indexOf(letter)!==-1 ? mapping[letter] : letter
                         ];
                         // 겹자음 실험
-                        Utils.doubleConsonant.forEach( x=> {
-                            if (Utils.objectEqual(mode, x)) {
-                                temp +=letter; tf = true;
-                            }
-                        });
-                        if (!tf) resMacro(letter);
+
+                        if (Utils.objectIn(mode, Utils.doubleConsonant)) resMacro(letter);
+                        else temp += letter;
                     }
                     else resMacro(letter);
                 }
                 // 모음의 경우 앞에 자음이 오면 무조건 앞글자에 붙이기
-                else if (ind>0 && vowel.indexOf(letter.toLowerCase())!==-1 && consonant.indexOf(msgSplit[ind-1].toLowerCase()) !==-1) {
+                else if (vowel.indexOf(letter.toLowerCase())!==-1 && consonant.indexOf(msgSplit[ind-1].toLowerCase()) !==-1) {
                     temp +=letter;
                 }
                 // 목모음 케이스도 고려해보자
