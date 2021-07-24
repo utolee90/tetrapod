@@ -3,8 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="104ff4eb-fd97-4171-9f6f-14d519183829" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Constants.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/HangulObjects.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Utils.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Utils.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/find2.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/find2.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,6 +23,14 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
   </component>
   <component name="ProjectId" id="1nn2ZoLwdLRCeQQaa9rtLu8lOXn" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -103,7 +111,9 @@
       <workItem from="1626263171191" duration="5971000" />
       <workItem from="1626500949425" duration="594000" />
       <workItem from="1626609986473" duration="1889000" />
-      <workItem from="1626786372431" duration="7073000" />
+      <workItem from="1626786372431" duration="7226000" />
+      <workItem from="1626956862732" duration="1329000" />
+      <workItem from="1626989827785" duration="13502000" />
     </task>
     <task id="LOCAL-00001" summary="modify source">
       <created>1618747573738</created>
@@ -169,7 +179,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/components/Utils.js</url>
-          <line>1110</line>
+          <line>1010</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
