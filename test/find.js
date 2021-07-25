@@ -14,6 +14,9 @@ word = word.join(' ')
 
 
 let initTime = new Date().getTime()
+
+let Tester = new Tetrapod()
+
 Tetrapod.defaultLoad()
 // Tetrapod.loadFile(
 //     './resource/klleon/bad-words.json',
@@ -33,7 +36,7 @@ console.log("\n\n======================")
 // Bias.buildHelper(`kr-badwords`, targetWord, false)
 // console.log(Utils.lengthSplit("아니 정말 긴 메시지가 짜증나게 기네. 에휴...", 10))
 // console.log(Utils.dropDouble("시발 한남충 씨발", true, false))
-console.log(Utils.antispoof("죽을래", true))
+console.log(Utils.antispoof("죽0ㅡㄹ래", true))
 console.log(Tetrapod.fix("죽을래"))
 console.log('\n\n\n\n==========================')
 // console.log(Utils.antispoof("^|발 한남충 씨발", false))
