@@ -6,10 +6,8 @@ import * as HO from './HangulObjects';
 const Utils = {
     ...HO,
 
-
     // 배열/오브젝트 동일성 체크
-    objectEqual: ObjectOperation.objectEqual
-    ,
+    objectEqual: ObjectOperation.objectEqual,
 
     // 배열/오브젝트의 포함관계 체크. a가 b안에 들어갈 때 True
     objectInclude: ObjectOperation.objectInclude,
@@ -40,7 +38,7 @@ const Utils = {
         // isString이 거짓이면 그냥 단어의 첫 위치 리스트로 출력
         if(!isString) return indexes
 
-        // isString이 참이면 단어의 첫 위치와 끝 위치 듀플 형식으로 출력력
+        // isString이 참이면 단어가 차지하는 숫자 위치를 모두 출력한다.
        let stringPoses = []
         for(let wordIndex of indexes){
             if(wordIndex === -1) continue
