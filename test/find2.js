@@ -15,8 +15,7 @@ console.log('isString 옵션 켜기 : ', Utils.getPositionAll('가장 큰 나라
 console.log('isString 옵션 끄기 : ', Utils.getPositionAll('가장 작은 나라는 바티칸', '나라', false)); // 첫 위치만 표시
 console.log('중복 : ', Utils.getPositionAll('가나는 가장 가난 가나', '가나', false));
 console.log('단어 없으면 :', Utils.getPositionAll('문자왔숑', '구')); // 단어 없으면 빈 리스트 출력
-
-
+console.log('lengthSplit 테스트', Utils.lengthSplit('정말 긴 문장을 만들어봤습니다. 숫자로 나누어볼게요.', 10))
 
 // console.log()
 // console.log( Utils.dropDouble("없닶", true))

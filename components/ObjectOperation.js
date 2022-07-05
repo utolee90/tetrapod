@@ -142,8 +142,8 @@ const ObjectOperation = {
                 let res0 = ObjectOperation.productList(list.slice(0,-1));
                 if (res0.length ===0 || list.slice(-1)[0].length===0) return [];
                 else {
-                    for (var fele of res0) {
-                        for (var sele of list.slice(-1)[0]) {
+                    for (fele of res0) {
+                        for (sele of list.slice(-1)[0]) {
                             res.push([...fele, sele]);
                         }
                     }
