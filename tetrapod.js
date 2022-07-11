@@ -3,21 +3,21 @@ import Utils from './components/Utils';
 import fs from 'fs';
 
 // 사전데이터들을 배열형태로 저장해서 보관합니다. (json)
-var badWords = [] // 비속어
-var typeofBadWords = {} // 비속어 타입별로 분류하기
-var normalWords = [] // 정상단어
-var softSearchWords = [] // 저속한 단어
-var exceptWords = [] // 정상단어에서 제외할 단어.
-var badWordMacros = {} // 반복적으로 사용하는 매크로 정의하기.
+let badWords = [] // 비속어
+let typeofBadWords = {} // 비속어 타입별로 분류하기
+let normalWords = [] // 정상단어
+let softSearchWords = [] // 저속한 단어
+let exceptWords = [] // 정상단어에서 제외할 단어.
+let badWordMacros = {} // 반복적으로 사용하는 매크로 정의하기.
 
 // 빠른 비속어단어 확인을 위해 사전에
 // 단어목록을 한글자씩 조각내놓고 사용합니다.
-var parsedBadWords = []
-var parsedSoftSearchWords = []
-var parsedDrugWords = []
-var parsedInsultWords = []
-var parsedSexualityWords = []
-var parsedViolenceWords = []
+let parsedBadWords = []
+let parsedSoftSearchWords = []
+let parsedDrugWords = []
+let parsedInsultWords = []
+let parsedSexualityWords = []
+let parsedViolenceWords = []
 
 // 정상단어/예외처리된 단어들도 파싱해서 처리해보자.
 // var parsedNormalWords = []
@@ -31,6 +31,11 @@ var softSearchWordsMap = {}
 var exceptWordsMap = {}
 var typeofBadWordsMap = {drug:{}, insult:{}, sexuality:{}, violence:{}}
 
+// 기본 경로
+let badWordDefaultPath = './resource/dictionary/bad-words.json'
+let softSearchWordDefaultPath = './resource/dictionary/soft-search-words.json';
+let normalWordDefaultPath = './resource/dictionary/normal-words.json';
+let macroDefaultPath = './resource/dictionary/macros.json';
 
 class Tetrapod {
 
@@ -49,7 +54,6 @@ class Tetrapod {
             this.parse();
             this.sortAll();
             this.mapping();
-
         }
     }
 
@@ -264,21 +268,21 @@ class Tetrapod {
 
     // 기본 데이터 불러오기
     static getDefaultData() {
-        let badWordMacros = require('./resource/dictionary/macros.json')
+        let badWordMacros = require(macroDefaultPath)
         for (var x in badWordMacros) {
             if (typeof badWordMacros[x] === "object") badWordMacros[x] = this.recursiveList(badWordMacros[x])
         }
         console.log("getDefaultData", new Date().getTime())
         return {
-            badWords: this.assembleHangul( this.recursiveList(require('./resource/dictionary/bad-words.json').badwords, badWordMacros) ),
-            normalWords: this.assembleHangul( this.recursiveList(require('./resource/dictionary/normal-words.json').dictionary, badWordMacros) ),
-            exceptWords: this.assembleHangul( this.recursiveList(require('./resource/dictionary/normal-words.json').exception, badWordMacros) ),
-            softSearchWords: this.assembleHangul( this.recursiveList(require('./resource/dictionary/soft-search-words.json').badwords, badWordMacros)),
+            badWords: this.assembleHangul( this.recursiveList(require(badWordDefaultPath).badwords, badWordMacros) ),
+            normalWords: this.assembleHangul( this.recursiveList(require(normalWordDefaultPath).dictionary, badWordMacros) ),
+            exceptWords: this.assembleHangul( this.recursiveList(require(normalWordDefaultPath).exception, badWordMacros) ),
+            softSearchWords: this.assembleHangul( this.recursiveList(require(softSearchWordDefaultPath).badwords, badWordMacros)),
             typeofBadWords: {
-                drug: this.assembleHangul(this.recursiveList(require('./resource/dictionary/bad-words.json').drug, badWordMacros)),
-                insult: this.assembleHangul(this.recursiveList(require('./resource/dictionary/bad-words.json').insult, badWordMacros)),
-                sexuality: this.assembleHangul(this.recursiveList(require('./resource/dictionary/bad-words.json').sexuality, badWordMacros)),
-                violence : this.assembleHangul(this.recursiveList(require('./resource/dictionary/bad-words.json').violence, badWordMacros)),
+                drug: this.assembleHangul(this.recursiveList(require(badWordDefaultPath).drug, badWordMacros)),
+                insult: this.assembleHangul(this.recursiveList(require(badWordDefaultPath).insult, badWordMacros)),
+                sexuality: this.assembleHangul(this.recursiveList(require(badWordDefaultPath).sexuality, badWordMacros)),
+                violence : this.assembleHangul(this.recursiveList(require(badWordDefaultPath).violence, badWordMacros)),
             },
             badWordMacros
         }
@@ -299,7 +303,7 @@ class Tetrapod {
     // 데이터 저장
     static defaultSaveAllData() {
         !fs.existsSync('./resource/dictionary') && fs.mkdirSync('./resource/dictionary');
-        this.saveAllData('./resource/dictionary/bad-words.json', './resource/dictionary/normal-words.json', './resource/dictionary/soft-search-words.json', './resource/dictionary/macros.json', false)
+        this.saveAllData(badWordDefaultPath, normalWordDefaultPath, softSearchWordDefaultPath, macroDefaultPath, false)
     }
 
     static saveAllData(badWordsPath, normalWordsPath, softSearchWordsPath, badWordMacrosPath, isAsync) {

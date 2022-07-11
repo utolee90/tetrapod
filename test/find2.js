@@ -7,18 +7,24 @@ import Hangul from "hangul-js"
 // 비속어 데이터 불러오기
 Tetrapod.defaultLoad();
 // 전체 치환하기 - Utils.replaceAll
-console.log('replaceAll 테스트');
-console.log(Utils.replaceAll('가랑비에, 옷, 젖는 줄도 모르고, 정말', ',', '-'));
-// 단어 포지션 찾아주기 - Utils.getPositionAll(message, search, isString)
-console.log('getPositionAll 테스트');
-console.log('isString 옵션 켜기 : ', Utils.getPositionAll('가장 큰 나라는 러시아', '나라')); // 첫 위치와 끝 위치
-console.log('isString 옵션 끄기 : ', Utils.getPositionAll('가장 작은 나라는 바티칸', '나라', false)); // 첫 위치만 표시
-console.log('중복 : ', Utils.getPositionAll('가나는 가장 가난 가나', '가나', false));
-console.log('단어 없으면 :', Utils.getPositionAll('문자왔숑', '구')); // 단어 없으면 빈 리스트 출력
-console.log('lengthSplit 테스트', Utils.lengthSplit('정말 긴 문장을 만들어봤습니다. 숫자로 나누어볼게요.', 10))
-
-// console.log()
-// console.log( Utils.dropDouble("없닶", true))
+// console.log('replaceAll 테스트');
+// console.log(Utils.replaceAll('가랑비에, 옷, 젖는 줄도 모르고, 정말', ',', '-'));
+// // 단어 포지션 찾아주기 - Utils.getPositionAll(message, search, isString)
+// console.log('getPositionAll 테스트');
+// console.log('isString 옵션 켜기 : ', Utils.getPositionAll('가장 큰 나라는 러시아', '나라')); // 첫 위치와 끝 위치
+// console.log('isString 옵션 끄기 : ', Utils.getPositionAll('가장 작은 나라는 바티칸', '나라', false)); // 첫 위치만 표시
+// console.log('중복 : ', Utils.getPositionAll('가나는 가장 가난 가나', '가나', false));
+// console.log('단어 없으면 :', Utils.getPositionAll('문자왔숑', '구')); // 단어 없으면 빈 리스트 출력
+// console.log('lengthSplit 테스트', Utils.lengthSplit('정말 긴 문장을 만들어봤습니다. 숫자로 나누어볼게요.', 10))
+// console.log(Utils.wordToArray('가+나!다?라'))
+console.log(Utils.parseMap({씨:{value:"시", index:[0]}, 브얼:{value:"벌", index:[1]}}));
+console.log(Utils.qwertyToDubeol("rkskrksk 정말 나빠요", true));
+console.log(Utils.qwertyToDubeol('djqt어요'))
+console.log(Utils.objectEqual(['ㄱ', 'ㄱ'], ['ㄱ', 'ㄱ']), 'TEST')
+console.log(Utils.makeDouble('ㄱ','ㄱ'))
+console.log(Utils.antispoof('ㄱH^H^77|'))
+console.log(Utils.antispoof('ㄱH^H^77ㅗㅣ',true))
+// console.log(Hangul.disassemble('개새끼', true).map(x=>Hangul.assemble(x)).join(''))
 // // Tetrapod.loadFile(
 // //     './resource/sample/bad-words.json',
 // //     './resource/klleon/normal-words.json',
