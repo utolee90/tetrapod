@@ -189,14 +189,18 @@ const Utils = {
 
     // 각 원소를 맵으로 바꿔주는 함수.  여기서 callback은 문자열 단변수를 입력값으로 하는 함수여야 합니다.
     listMap: (elem, callback) => {
+        // elem이 문자열, 숫자, 불리안일 때 -> callback(elem) 반환
         if (typeof elem === "string" || typeof elem === "number" || typeof elem === "boolean") {
             return callback(elem);
         }
         // elem이 리스트일 때
+        // [1,2,3,...] -> [callback(1),callback(2), callback(3),...]
         else if (typeof elem === "object" && Array.isArray(elem)) {
             let res = elem.map(comp => (Utils.listMap(comp, callback)))
             return res;
         }
+        // elem이 오브젝트일 때
+        // {k1:v1, k2:v2, ...} -> {k1:callback(v1), k2:callback(v2), ...}
         else if (typeof elem === "object") {
             let res = {}
             for (let key in elem) {
@@ -207,7 +211,8 @@ const Utils = {
     },
 
 
-    // 2차원 배열 형태로 정의된 것을 풀어쓰기.
+    // 2차원 배열 형태로 정의된 것을 풀어쓰기. 반복적으로 풀어쓰기 가능
+    // [[1,2],[3,4,5]] -> [13,14,15,23,24,25]
     recursiveComponent: (data) => {
 
         // 배열 정의되지 않은 것은 그대로 출력
@@ -235,8 +240,8 @@ const Utils = {
                 data[i] = data[i].filter(x => x !==null );
             }
 
-            // 데이터 리스트 곱 연산 수행.
-            // [[1,2],[3,4,5]] = [[1,3],[1,4],[1,5],[2,3],[2,4],[2,5]]
+            // 데이터 리스트 곱 연산 수행 후 붙여쓰기
+            // [[1,2],[3,4,5]] = [[1,3],[1,4],[1,5],[2,3],[2,4],[2,5]]-> [13, 14, 15, 23, 24, 25]
             let presolvedData = ObjectOperation.productList(data)
             let solvedData = presolvedData.map(x=> x.join(""))
 
@@ -291,7 +296,7 @@ const Utils = {
         }
     },
 
-    // 파싱하기 {씨:{value:시, index:[0]}, 브얼:{value:벌, index:[1]}}
+    // 파싱하기 {씨:{value:시, index:[0]}, 브얼:{value:벌, index:[1]}} ->
     // 매핑형식 - 키: 어구, {value: 해석된 어구
     // => {messageList: 씨브얼, messageIndex: [0,1], parsedMessage: ['시', '벌']}
     // 맵 형식 - qwertyToDubeol map, antispoof map, dropDouble map을 입력으로 한다.
@@ -305,7 +310,6 @@ const Utils = {
         while(search <= Math.max(...maxVal)) {
             for (let val in map) {
                 // index 값이 존재하면
-
                 if (map[val].index.indexOf(search)!==-1) {
                     originalMessageIndex.push(search);
                     originalMessageList.push(val);
@@ -378,18 +382,16 @@ const Utils = {
         // 맵을 만들어야 할 때
         else {
             let msgSplit = msg.split(""); // 단어 낱자로 분리
-            let msgRes = []; // 결과
-            let res = {}; // 결과 맵핑
+            let res = {}; // 한글 치환 가능한 문자셋을 매핑으로 결과 저장
             let temp = ""; // 추가할 글씨에
             // 자음이나 영어 자음에 대응되는 경우
             msgSplit.map( (letter, ind) => {
-                let consonant = [...Utils.charInitials, "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x", "c", "v"];
-                let vowel = [...Utils.charMedials, "y", "u", "i", "o", "p", "h", "j", "k", "l", "b", "n", "m"];
+                let consonant = [...Utils.charInitials, "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x", "c", "v"]; // 자음
+                let vowel = [...Utils.charMedials, "y", "u", "i", "o", "p", "h", "j", "k", "l", "b", "n", "m"]; // 모음
 
-                //
+                // 한글로 치환할 수 있는 문자셋 temp를 res에 입력
                 let resMacro = (letter, val=temp) => {
                     if (val!=="") {
-                        msgRes.push(val);
                         if (!res[val]) res[val] = {value: Utils.qwertyToDubeol(val), index: [ind-val.length]}
                         else { res[val].index.push(ind-val.length);}
                         temp = letter;
@@ -412,7 +414,6 @@ const Utils = {
                             Object.keys(mapping).indexOf(letter)!==-1 ? mapping[letter] : letter
                         ];
                         // 겹자음 실험
-
                         if (Utils.objectIn(mode, Utils.doubleConsonant)) resMacro(letter);
                         else temp += letter;
                     }
@@ -422,7 +423,7 @@ const Utils = {
                 else if (vowel.indexOf(letter.toLowerCase())!==-1 && consonant.indexOf(msgSplit[ind-1].toLowerCase()) !==-1) {
                     temp +=letter;
                 }
-                // 목모음 케이스도 고려해보자
+                // 복모음 케이스도 고려해보자
                 else if (ind>1 && consonant.indexOf(msgSplit[ind-2].toLowerCase())!== -1  && vowel.indexOf(msgSplit[ind-1].toLowerCase())!== -1 && vowel.indexOf(letter.toLowerCase())!== -1) {
                     let tempList = [ qwertyToDubeolMacro(msgSplit[ind-1]), qwertyToDubeolMacro(letter)];
                     if (Utils.objectIn(tempList, Utils.doubleVowel)) {
@@ -436,13 +437,11 @@ const Utils = {
             });
             // 마지막 글자 붙이기
             if (temp!=="") {
-                msgRes.push(temp);
                 if (!res[temp]) res[temp]= {value:Utils.qwertyToDubeol(temp), index: [msg.length-temp.length]}
                 else {res[temp].index.push(msg.length-temp.length);}
                 temp = "";
             }
             return res;
-
         }
 
     },
@@ -456,12 +455,13 @@ const Utils = {
         const korVowel = /[ㅏ-ㅣ]/;
         const korLetter = /[가-힣]/;
         // const singleParts = Object.keys(Utils.singlePronounce);
-        const simConsonant = Object.keys(Utils.similarConsonant);
+        const simConsonant = Object.keys(Utils.similarConsonant); // 자모/자형 오브젝트
         const simVowel = Object.keys(Utils.similarVowel);
 
         const msgAlphabet = msg.split(""); // 낱자별로 나누어 처리하기
-        let msgAlphabetType = []; //타입별로 나누기
+        let msgAlphabetType = []; //타입별로 나누기 - 리스트 사용하지 않고 타입
 
+        // 메시지 알파벳에 유형 추가
         for (var letter of msgAlphabet ) {
             if (["ㄳ", "ㄵ", "ㄶ", "ㄺ", "ㄻ", "ㄼ", "ㄽ", "ㄾ", "ㄿ", "ㅀ", "ㅄ"].indexOf(letter)>-1) {msgAlphabetType.push('f')} // 복모음 받침 전용
             else if (korConsonant.test(letter)) { msgAlphabetType.push('c'); } // 자음
@@ -523,7 +523,6 @@ const Utils = {
             }
 
             switch(msgAlphabetType[i]) {
-
 
                 // 한글이나 공백, 기타문자 -> 그대로 삽입. 한 음절에 하나의 글자만 사용가능하며, 다른 문자 뒤에 붙을 수 없음.
                 case 'h':
@@ -634,13 +633,8 @@ const Utils = {
 
                     }
                     break;
-
-
             }
         }
-
-        // console.log('음절단위분리', preSyllable);
-        // if (isMap) console.log('음절단위 분리 원래 메시지', preSyllableOrigin);
 
         // 결과값
         let res = ""; // 문자열 기록
@@ -720,9 +714,7 @@ const Utils = {
                 }
             }
             if (!isMap) {
-                // console.log(resList2)
                 res = resList2.map(x=> Hangul.assemble(x)).join('')
-                // console.log(res)
             }
             else {
                 for (let keyNum in joinKey) {
@@ -734,8 +726,6 @@ const Utils = {
                     delete resObj[postKey]
                 }
             }
-
-
         }
         return isMap ? resObj : res;
     },
@@ -746,67 +736,72 @@ const Utils = {
     // 메시지는 반드시 한글자모로만 조합.
     dropDouble: (msg, isMap=false, simplify = false) => {
 
-        let msgAlphabet = Hangul.disassemble(msg, false);
-        const varAlphabet = {"ㄲ":'ㄱ', 'ㄸ':'ㄷ', 'ㅃ':'ㅂ','ㅆ':'ㅅ', 'ㅉ':'ㅈ', 'ㅋ':'ㄱ', 'ㅌ':'ㄷ', 'ㅍ':'ㅂ',
-            'ㅒ':'ㅐ','ㅖ':'ㅔ'}; // 된소리 단순화
-        const aspiritedSound = {"ㄱ": "ㅋ", "ㄷ":"ㅌ", "ㅂ":"ㅍ", "ㅅ":"ㅌ", "ㅈ":"ㅌ", "ㅊ":"ㅌ", "ㅋ":"ㅋ", "ㅌ":"ㅌ","ㅍ":"ㅍ", "ㅎ":"ㅎ"} // ㅎ앞 거센소리 연음화
-        const yVowel = {"ㅏ":"ㅑ", "ㅐ":'ㅒ', 'ㅑ':'ㅑ', 'ㅒ':'ㅒ', 'ㅓ':'ㅕ', 'ㅔ':'ㅖ', 'ㅕ':'ㅕ', 'ㅖ':'ㅖ', 'ㅗ':'ㅛ', 'ㅛ':'ㅛ', 'ㅜ':'ㅠ', 'ㅠ':'ㅠ', 'ㅡ':'ㅠ', 'ㅣ':'ㅣ' }
+        let msgAlphabet = Hangul.disassemble(msg, false); // 낱자 단위로 분해
+
+        // 모음 바뀔 때
+        const normalify = {"ㄲ":'ㄱ', 'ㄸ':'ㄷ', 'ㅃ':'ㅂ','ㅆ':'ㅅ', 'ㅉ':'ㅈ',
+            'ㅋ':'ㄱ', 'ㅌ':'ㄷ', 'ㅍ':'ㅂ', 'ㅒ':'ㅐ','ㅖ':'ㅔ'}; // 된소리/거센소리 단순화
+        const aspiritedSound = {"ㄱ": "ㅋ", "ㄷ":"ㅌ", "ㅂ":"ㅍ", "ㅅ":"ㅌ", "ㅈ":"ㅌ",
+            "ㅊ":"ㅌ", "ㅋ":"ㅋ", "ㅌ":"ㅌ","ㅍ":"ㅍ", "ㅎ":"ㅎ"} // ㅎ앞 거센소리 연음화
+        const yVowel = {"ㅏ":"ㅑ", "ㅐ":'ㅒ', 'ㅑ':'ㅑ', 'ㅒ':'ㅒ', 'ㅓ':'ㅕ', 'ㅔ':'ㅖ', 'ㅕ':'ㅕ',
+            'ㅖ':'ㅖ', 'ㅗ':'ㅛ', 'ㅛ':'ㅛ', 'ㅜ':'ㅠ', 'ㅠ':'ㅠ', 'ㅡ':'ㅠ', 'ㅣ':'ㅣ' } // 이어 -> 여 단축을 위한 작업
+
         // 유사모음 축약형으로 잡아내기 위한 조건 갸앙 ->걍
-        const vowelLast = {'ㅏ':['ㅏ'], 'ㅐ':['ㅐ', 'ㅔ'], 'ㅑ': ['ㅏ', 'ㅑ'], 'ㅒ':['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'], 'ㅓ' : ['ㅓ'], 'ㅔ': ['ㅔ', 'ㅐ'], 'ㅕ': ['ㅓ', 'ㅕ'], 'ㅖ':['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'],
+        const vowelLast = {'ㅏ':['ㅏ'], 'ㅐ':['ㅐ', 'ㅔ'], 'ㅑ': ['ㅏ', 'ㅑ'], 'ㅒ':['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'],
+            'ㅓ' : ['ㅓ'], 'ㅔ': ['ㅔ', 'ㅐ'], 'ㅕ': ['ㅓ', 'ㅕ'], 'ㅖ':['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'],
             'ㅗ':['ㅗ'], 'ㅛ':['ㅛ', 'ㅗ'], 'ㅜ':['ㅜ', 'ㅡ'], 'ㅠ':['ㅠ', 'ㅜ', 'ㅡ'], 'ㅡ':['ㅡ'], 'ㅣ':['ㅣ']}
+
         // 유사모음 축약형. 그러나 이 경우는 뒷모음을 따를 때 -> 구아 -> 과, 구에 -> 궤 고언세 -> 권세
-        const vowelPair = [['ㅗ', 'ㅏ'], ['ㅗ', 'ㅐ'], ['ㅗ', 'ㅓ'], ['ㅗ', 'ㅔ'], ['ㅜ', 'ㅏ'], ['ㅜ', 'ㅐ'], ['ㅜ', 'ㅓ'], ['ㅜ', 'ㅔ'], ['ㅜ', 'ㅣ'], ['ㅡ', 'ㅣ']]
+        const vowelPair = [['ㅗ', 'ㅏ'], ['ㅗ', 'ㅐ'], ['ㅗ', 'ㅓ'], ['ㅗ', 'ㅔ'],
+            ['ㅜ', 'ㅏ'], ['ㅜ', 'ㅐ'], ['ㅜ', 'ㅓ'], ['ㅜ', 'ㅔ'], ['ㅜ', 'ㅣ'], ['ㅡ', 'ㅣ']]
         // map일 때 최종결과용
-        let singleSyllable = []; // 음절 단위
+        let singleSyllable = []; // 음절 하나 표시할 때 사용.
         let divideSyllable = []; // 음절단위 나누기
-        let res = {};
+        let res = {}; // 결과 오브젝트
 
         // 상쇄모음 조합 -
 
         if (!isMap) {
-            var i=0;
-
+            let i=0;
             // 문제 해결을 위해 단모음화하는 과정은 자음 축약화 프로세스 다음으로 미루자.
             while ( i <msgAlphabet.length) {
+                // 첫자, 끝자 제외 ㅇ일 때
                 if (1<i<msgAlphabet.length-1 && msgAlphabet[i] === 'ㅇ') {
                     // 자음+모음+ㅇ+모음
                     if (Utils.charInitials.indexOf(msgAlphabet[i-2])!== -1 && Utils.charMedials.indexOf(msgAlphabet[i-1])!== -1 && Utils.charMedials.indexOf(msgAlphabet[i+1])!== -1
                     ) {
-                        // 자음+ㅡ+ㅇ+모음,
+                        // 자음+ㅡ+ㅇ+모음 -> 그아 -> 가
                         if (msgAlphabet[i-1] === 'ㅡ') {
-                            /// ㅢ는 예외처리.
-                            if ( msgAlphabet[i] === "ㅣ") {msgAlphabet.splice(i-1, 1); i++;}
+                            /// ㅢ는 예외처리. 그이 -> 긔
+                            if ( msgAlphabet[i+1] === "ㅣ") {msgAlphabet.splice(i-1, 1); i++;}
                             else  { msgAlphabet.splice(i-1, 2); }
                         }
-                        // 자음+ㅣ+ㅇ+모음. 이중모음이 뒤에 올 때는 예외처리.
+                        // 자음+ㅣ+ㅇ+모음. 이중모음이 뒤에 올 때는 예외처리. 기아 -> 갸
                         else if (msgAlphabet[i-1] === 'ㅣ' && Object.keys(yVowel).indexOf(msgAlphabet[i+1])!==-1 && Utils.charMedials.indexOf(msgAlphabet[i+2])===-1 ) {
                             msgAlphabet.splice(i-1, 3, yVowel[msgAlphabet[i+1]]);
                         }
-                        // 자음+모음+ㅇ+중복모음
+                        // 자음+모음+ㅇ+중복모음 -> 고오 -> 고
                         else if( Object.keys(vowelLast).indexOf(msgAlphabet[i-1])!== -1 && vowelLast[msgAlphabet[i-1]].indexOf(msgAlphabet[i+1])!==-1 ) {
                             msgAlphabet.splice(i, 2);
                         }
-                        // 자음+모음+ㅇ+모음, 복모음 형성 가능한 조합
+                        // 자음+모음+ㅇ+모음, 복모음 형성 가능한 조합. 고아 -> 과
                         else if (Utils.isDouble(msgAlphabet[i-1], msgAlphabet[i+1], vowelPair) ) {
                             // 일부 복모음과 일치하지 않는 부분은 복모음 조합에 맞게 변형하기
                             if (msgAlphabet[i-1] === 'ㅗ' && msgAlphabet[i+1] === 'ㅓ') msgAlphabet[i-1] = 'ㅜ';
                             else if (msgAlphabet[i-1] === 'ㅗ' && msgAlphabet[i+1] === 'ㅔ') msgAlphabet[i+1] = 'ㅣ';
                             else if (msgAlphabet[i-1] === 'ㅜ' && msgAlphabet[i+1] === 'ㅏ') msgAlphabet[i-1] = 'ㅗ';
                             else if (msgAlphabet[i-1] === 'ㅜ' && msgAlphabet[i+1] === 'ㅐ') msgAlphabet[i-1] = 'ㅔ';
-
                             msgAlphabet.splice(i, 1);
                         }
-
                         else i++; // 다음으로 넘기기
-
                     }
-                    // 자음+복모음+ㅇ+뒤모음과 동일함. -> ㅚ+이는 제외.
+                    // 자음+복모음+ㅇ+뒤모음과 동일함. 귀이 -> 귀. 단 ㅚ+이는 제외.
                     else if (i>2 && Utils.charInitials.indexOf(msgAlphabet[i-3])!== -1 && Utils.charMedials.indexOf(msgAlphabet[i-1])!== -1 &&
                         (Utils.isDouble(msgAlphabet[i-2], msgAlphabet[i-1]) === true && !(msgAlphabet[i-2]==='ㅗ' && msgAlphabet[i-1]==='ㅣ') ) && msgAlphabet[i-1] == msgAlphabet[i+1]
                     ) {
                         msgAlphabet.splice(i,2);
                     }
-                    // 자음+ㅇ+모음 -> ㅇ만 지우기. 복자음일 때도 해결 가능. 단 ㅇ일 때는 예외로
+                    // 자음+ㅇ+모음 -> ㄱ오 -> 고. ㅇ만 지우기. 복자음일 때도 해결 가능. 단 ㅇ일 때는 예외로
                     else if (Utils.charInitials.indexOf(msgAlphabet[i-1])!== -1 && msgAlphabet[i-1] !=='ㅇ' && Utils.charMedials.indexOf(msgAlphabet[i+1])!== -1
                     ) msgAlphabet.splice(i, 1);
 
@@ -814,7 +809,7 @@ const Utils = {
                 }
                 // 다른 자음일 때는
                 else if (1<i<msgAlphabet.length-1 && Utils.charInitials.indexOf(msgAlphabet[i]) !== -1) {
-                    // 앞의 받침이 뒤의 자음과 "사실상 중복일 때" 앞 자음 제거. 그 앞에 모음 오는지, 자음 오는지는 상관 없음.
+                    // 앞의 받침이 뒤의 자음과 "사실상 중복일 때" 앞 자음 제거. 그 앞에 모음 오는지, 자음 오는지는 상관 없음. 겆지 -> 거지
                     if (Utils.charInitials.indexOf(msgAlphabet[i-1])!== -1 && (Utils.objectIn(msgAlphabet[i-1], Utils.jointConsonant[msgAlphabet[i]]))
                         && Utils.charMedials.indexOf(msgAlphabet[i+1])!== -1
                     ) msgAlphabet.splice(i-1, 1);
@@ -824,10 +819,9 @@ const Utils = {
                         msgAlphabet[i-1] = aspiritedSound[msgAlphabet[i-1]];
                         msgAlphabet.splice(i, 1);
                     }
-
                     i++; // 다음으로 넘겨주기
                 }
-
+                // 나머지 경우
                 else {
                     // 첫자이지만 자음 뒤에 ㅇ 아닌 자음+모음이 오는 경우 제거.
                     if (i===0 && Utils.charInitials.indexOf(msgAlphabet[0])!== -1 && Utils.charInitials.indexOf(msgAlphabet[1])!== -1 && msgAlphabet[1]!=="ㅇ" && Utils.charMedials.indexOf(msgAlphabet[2])!==-1 ) {
@@ -840,20 +834,21 @@ const Utils = {
                     else i++;
                 }
             }
-            // 단음화 작업 - 뒤로 미루기
+            // 단음화 작업 -> 복모음 단축 다 뽑아낸 이후에 작업
             if (simplify) {
                 i = 0;
                 while (i< msgAlphabet.length) {
-                    if (Object.keys(varAlphabet).indexOf(msgAlphabet[i])!== -1) {
-                        msgAlphabet[i] = varAlphabet[msgAlphabet[i]];
+
+                    if (Object.keys(normalify).indexOf(msgAlphabet[i])!== -1) {
+                        msgAlphabet[i] = normalify[msgAlphabet[i]];
                         i++;
                     }
                     // 모음일 때는 앞의 모음과 복모음을 형성하지 못하는 경우 모음들만 제거하기  - 일단 dropDouble은 완전한 한글에서만 실험할 것.
                     else if (Utils.charMedials.indexOf(msgAlphabet[i])!== -1) {
 
                         // 겹모음 단모음화하기
-                        if ( Object.keys(varAlphabet).indexOf(msgAlphabet[i])!== -1) {
-                            msgAlphabet[i] = varAlphabet[msgAlphabet[i]];
+                        if ( Object.keys(normalify).indexOf(msgAlphabet[i])!== -1) {
+                            msgAlphabet[i] = normalify[msgAlphabet[i]];
                             i++;
                         }
                         // 복모음 단모음화하기
@@ -882,7 +877,7 @@ const Utils = {
         }
         // isMap으로 정의할 경우 음절 단위로 우선 쪼갠 뒤 dropDouble 수행
         else {
-            i =0;
+            let i =0;
             while ( i < msgAlphabet.length ) {
 
                 // 처음일 때는
@@ -1150,52 +1145,39 @@ const Utils = {
                     }
                 }
                 ind += cnt;
-
             }
-
             return res;
         }
-
-
     },
 
     //ㅄ받침, ㄻ받침, ㄺ받침 과잉으로 사용하는 메시지 검출.
-    tooMuchDoubleEnd: (msg) => {
-        const newMsg = msg.split("").filter(x=> (/[가-힣]/.test(x))); // 한글만 추출하는 메시지
-        let cnt = 0;
-        let contCnt =0; // 연속
-        let pos = []; // 위치 찾기
-        for (var i in msg) {
-            // ㅄ, ㄺ, ㄻ 받침이 있는 문자 잡아내기
-            if (
-                msg[i].charCodeAt() >=44032 && msg[i].charCodeAt() <=55203 &&
-                ( [6, 25, 26].indexOf(msg[i].charCodeAt %28) )  //ㅄ 받침 : 나머지6, ㄺ 받침: 나머지 25, ㄻ 받침: 나머지 26
-            ) {
-                cnt++;
-                contCnt++;
-                pos.push(i);
-            }
-            else {
-                contCnt =0;
-            }
+    tooMuchDoubleEnd: (msg, isStrong= false) => {
+        const newMsg = msg.split("").filter(x=> (/[가-힣]/.test(x))); // 한글만 추출해서 리스트 표현
+        const endPos = newMsg.map(x=> x.charCodeAt()%28); // 받침 코드 확인
+        // 받침없음 - 16 -> ㄼ ->27, ㄽ->0, ㅎ->15
+        // isStrong 여부에 따라 포괄적인 받침 - ㄳ, ㄵ, ㄶ, ㄺ, ㄻ, ㄼ, ㄽ, ㄾ, ㄿ, ㅀ, ㅄ  전체 잡을것인가 아님 부정적 받침 ㄳ, ㄺ, ㄻ, ㅄ만 잡을 것인가 확인
+        const doubleEnd = isStrong? [19, 21, 22, 25, 26, 27, 0, 1, 2, 3, 6]: [19,25, 26, 6]
+        let doubleEndPos = []; // 받침 위치
+        // 연속 숫자 확인
+        let tmp = 0;
+        for (let i in endPos) {
+            tmp = doubleEnd.indexOf(endPos[i])>-1 ? tmp+1:0;
+            doubleEndPos.push(tmp)
         }
+        const cnt = doubleEndPos.filter(x=>x>0).length; // 겹받침 총 갯수
+        const contCnt = Math.max(...doubleEndPos); // 겹받침 최대 연속 갯수
+
+        // 연속 3개 이상 또는 겹받침 3개가 있는 경우
         if (contCnt>2 && (newMsg.length/cnt)<=3) {
-            let txt =[]
-            for (i in msg) {
-                if (pos.indexOf(i)>-1)
-                    txt.push(msg[i]);
-            }
-            return {val:true, pos:pos, txt:txt};
+            let posVal = doubleEndPos.map((x,y)=> [x,y]).filter(x=>x[0]>0).map(x=>x[1]); // 겹받침이 있는 경우의 포지션 정보 추출
+            let txtVal = posVal.map(x=> newMsg[x]);
+            return {val:true, pos: posVal, txt: txtVal};
         }
         else {
             return {val:false, pos:[], txt:[]};
         }
     },
 
-    // 영어발음 -> 한글로 치환하기.
-    romanToHangul(msg, isMap =false) {
-
-    }
 }
 
 export default Utils;

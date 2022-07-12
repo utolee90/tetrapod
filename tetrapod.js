@@ -18,10 +18,7 @@ let parsedDrugWords = []
 let parsedInsultWords = []
 let parsedSexualityWords = []
 let parsedViolenceWords = []
-
-// 정상단어/예외처리된 단어들도 파싱해서 처리해보자.
-// var parsedNormalWords = []
-// var parsedExceptWords = []
+let badWordInfo = []; // 비속어 단어 정보. 각 원소에 [랭크, 타입] 형식으로 출력.
 
 // 유동적인 비속어 목록 관리를 위해 이미 배열에
 // 특정 단어가 존재하는지를 확인하기위해 해시맵을 사용합니다.
@@ -160,7 +157,7 @@ class Tetrapod {
             //     !this.testInList( Utils.wordToArray(typeofBadWords.sexuality[index]), parsedSexualityWords )
             //    // && !Utils.objectIn(Utils.wordToArray(typeofBadWords.sexuality[index]), parsedSoftSearchWords)
             //)
-            parsedSexualityWords.push(Utils.wordToArray(typeofBadWords.drug[index]))
+            parsedSexualityWords.push(Utils.wordToArray(typeofBadWords.sexuality[index]))
         }
         for (let index in typeofBadWords.violence) {
             // if (
@@ -681,11 +678,12 @@ class Tetrapod {
     }
 
     // 메시지의 비속어를 콘솔창으로 띄워서 찾기.
+    // message - 메시지(isMap이 false) 혹은 메시지 매핑(isMap이 true). needMultipleCheck
     static nativeFind(message, needMultipleCheck, isMap = false, isReassemble = false, type="") {
 
         // let unsafeMessage = message.toLowerCase()
         // let normalWordPositions = {}
-        let foundBadWords = [];
+        let foundBadWords = []; //
         let foundBadOriginalWords = []; // isMap에서 original 단어
         let foundBadWordPositions = []
         let foundBadWordOriginalPositions = []; // isMap에서 original 단어 위치
@@ -718,7 +716,7 @@ class Tetrapod {
         // 정상단어의 포지션을 찾습니다.
         // 형식 : [1,2,3,...]
         let normalWordPositions = this.findNormalWordPositions(newMessage, false)
-        // console.log(normalWordPositions);
+        console.log(normalWordPositions);
 
 
 
@@ -1030,8 +1028,6 @@ class Tetrapod {
         // 비속어 단어를 한 단어씩 순회합니다.
 
         for (let badWord of typeofBadWordsList) {
-
-
 
             // 단순히 찾는 것으로 정보를 수집하는 것이 아닌 위치를 아예 수집해보자.
             // findCount 형태 : {시: [1,8], 발:[2,7,12]}등

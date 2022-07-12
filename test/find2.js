@@ -24,6 +24,11 @@ console.log(Utils.objectEqual(['ㄱ', 'ㄱ'], ['ㄱ', 'ㄱ']), 'TEST')
 console.log(Utils.makeDouble('ㄱ','ㄱ'))
 console.log(Utils.antispoof('ㄱH^H^77|'))
 console.log(Utils.antispoof('ㄱH^H^77ㅗㅣ',true))
+console.log(Utils.recursiveComponent([[1,2],[3,4,5]]))
+console.log(Utils.dropDouble('빱브오쮜', true, true))
+let testMsg = '삵얽릸 살어릿았닶'
+console.log(testMsg, Utils.tooMuchDoubleEnd(testMsg))
+console.log(Tetrapod.find('정말 값삾핪닚다'))
 // console.log(Hangul.disassemble('개새끼', true).map(x=>Hangul.assemble(x)).join(''))
 // // Tetrapod.loadFile(
 // //     './resource/sample/bad-words.json',
