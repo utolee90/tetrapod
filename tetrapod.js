@@ -124,10 +124,9 @@ class Tetrapod {
 
     // 리스트 형식으로 된 BadWord 단어들을 wordToArray 이용해서 단어 조각낸 2차원배열로 풀어쓰기 [['시','발'], ...]
     parse() {
-
         console.log("Parsing Start", new Date().getTime() - this.startTime)
 
-        for (let index in this.badWords) { // badWords 매핑은 {0: [], 1: [], 2:[]}
+        for (let index in this.badWords) { // badWords 매핑은 {0: [], 1: [], 2:[], 3:[], 4:[]}
             for (let wid in this.badWords[index]) {
                 this.parsedBadWords.push([Utils.wordToArray(this.badWords[index][wid]), this.badWords[index][wid], index, 'etc']) // parsedBadWords에 단어 추가
             }
@@ -182,19 +181,19 @@ class Tetrapod {
             switch(this.parsedBadWords[ind][3]) {
                 case 'drug':
                     this.typeofBadWords['drug'].push(word);
-                    if(this.badWordsMap[word]) this.badWordsMap[word] = 'drug';
+                    if(this.badWordsMap[word] && this.typeCheck.indexOf('drug')>-1) this.badWordsMap[word] = 'drug';
                     break;
                 case 'insult':
                     this.typeofBadWords['insult'].push(word);
-                    if(this.badWordsMap[word]) this.badWordsMap[word] = 'insult';
+                    if(this.badWordsMap[word] && this.typeCheck.indexOf('insult')>-1) this.badWordsMap[word] = 'insult';
                     break;
                 case 'sexuality':
                     this.typeofBadWords['sexuality'].push(word);
-                    if(this.badWordsMap[word]) this.badWordsMap[word] = 'sexuality';
+                    if(this.badWordsMap[word] && this.typeCheck.indexOf('sexuality')>-1) this.badWordsMap[word] = 'sexuality';
                     break;
                 case 'violence':
                     this.typeofBadWords['violence'].push(word);
-                    if(this.badWordsMap[word]) this.badWordsMap[word] = 'violence';
+                    if(this.badWordsMap[word] && this.typeCheck.indexOf('violence')>-1) this.badWordsMap[word] = 'violence';
                     break;
             }
         }
@@ -223,6 +222,7 @@ class Tetrapod {
     adjustFilter(level = this.badWordLevel, type = this.typeCheck) {
         this.badWordLevel = level;
         this.typeCheck = type
+        this.parse(); // 다시 파싱을 해서 조절한다.
         console.log('Level of Bad Word', level);
         console.log('Types of Expressed Bad Words', type);
     }
@@ -293,7 +293,6 @@ class Tetrapod {
         if (fromList === undefined) {
             if (includeSoft === true)
                 return (this.nativeFind(message, false).found.length >0 ||
-                    this.nativeFind(message, false).softSearchFound.length >0 ||
                     this.nativeFind(message, false).tooMuchDoubleEnd.val
                 );
             else
@@ -302,7 +301,7 @@ class Tetrapod {
             // fromList가 리스트 형식으로 주어지면 includeSoft와 무관하게 fromList 안에 있는 함수만 검출
         // fromList는 단어 리스트 또는 파싱된 단어 리스트 중 하나 입력 가능.
         else if (Array.isArray(fromList)) {
-            return (this.nativeFindFromList(message, fromList, false).found.length > 0)
+            return (this.nativeFind(message, false, false, false, fromList).found.length > 0)
         }
     }
 
@@ -348,14 +347,11 @@ class Tetrapod {
      find(message, needMultipleCheck=false, splitCheck=15, qwertyToDubeol=false, isStrong=false) {
         // 욕설 결과 집합
         let totalResult = []
-        let softResult = []
         let tooMuchEnds = []
         let originalTotalResult = []; // isStrong을 참으로 했을 때 결과 수집
-        let originalSoftResult = []; // isStrong을 참으로 했을 때 결과 수집
 
         //보조 메시지
         let message2Map = {};
-        // let message2 = ''
         let message3Map = {}
         let message3 = ''
         let message4Map = {}
@@ -363,7 +359,6 @@ class Tetrapod {
 
         if (qwertyToDubeol === true && isStrong === false) { // 만약 한영 검사가 필요하면...
             message2Map = Utils.qwertyToDubeol(message, true);
-            // message2 = Utils.qwertyToDubeol(message, false); // 2차 점검용
         }
         if (isStrong === true) { // 문자열을 악용한 것까지 잡아보자.
             message3Map = Utils.antispoof(message, true);
@@ -374,24 +369,12 @@ class Tetrapod {
         if (splitCheck === undefined) splitCheck = 15
         var messages = (splitCheck != 0) ? Utils.lengthSplit(message, splitCheck) : [message];
 
-        // 일단 한영전환은 나누어서 검사하는 기능 제거. 추후 구현 예정.
-        // var messages2 = (splitCheck != 0) ? Utils.lengthSplit(message2, splitCheck) : [message2];
-
-        // 정밀 검사 때에는 메시지 나누어서 검사하지 말자.
-        // if (message3.length>0) var messages3 =  [message3]
-        // if (message4.length>0) var messages4 =  [message4]
-        // if (message5.length>0) var messages5 =  [message5]
-
 
         // 메시지 나누어서 확인하기.
 
         if (!isStrong) {
             for (var index1 = 0; index1 <= messages.length - 1; index1++) {
                 let currentResult = this.nativeFind(messages[index1], needMultipleCheck)
-                let currentResultDrug = this.nativeFind(messages[index1], needMultipleCheck, false, false, "drug")
-                let currentResultInsult = this.nativeFind(messages[index1], needMultipleCheck, false, false, "insult")
-                let currentResultSexuality = this.nativeFind(messages[index1], needMultipleCheck, false, false, "sexuality")
-                let currentResultViolence = this.nativeFind(messages[index1], needMultipleCheck, false, false, "violence")
                 tooMuchEnds.push(currentResult.tooMuchDoubleEnd);
 
                 // 중복체크가 포함될 때에는 각 단어를 모두 추가해준다.
@@ -400,52 +383,15 @@ class Tetrapod {
                         if (currentResult.found !== [] && totalResult.map(v=>v.value).indexOf(currentResult.found[index2])===-1)
                             totalResult = [...totalResult, {value:currentResult.found[index2], positions:currentResult.positions[index2]}];
                     }
-                    for (index2 = 0; index2 <= currentResult.softSearchFound.length - 1; index2++) {
-                        if (currentResult.softSearchFound !== [] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFound[index2])===-1)
-                            softResult = [...softResult, {value:currentResult.softSearchFound[index2], positions:currentResult.softSearchPositions[index2]}];
-                    }
-                    for (index2 = 0; index2 <= currentResultDrug.found.length - 1; index2++) {
-                        if (currentResultDrug.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultDrug.found[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResultDrug.found[index2], positions:currentResultDrug.positions[index2], type:"drug"}];
-                    }
-                    for (index2 = 0; index2 <= currentResultInsult.found.length - 1; index2++) {
-                        if (currentResultInsult.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultInsult.found[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResultInsult.found[index2], positions:currentResultInsult.positions[index2], type:"insult"}];
-                    }
-                    for (index2 = 0; index2 <= currentResultSexuality.found.length - 1; index2++) {
-                        if (currentResultSexuality.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultSexuality.found[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResultSexuality.found[index2], positions:currentResultSexuality.positions[index2], type:"sexuality"}];
-                    }
-                    for (index2 = 0; index2 <= currentResultViolence.found.length - 1; index2++) {
-                        if (currentResultViolence.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultViolence.found[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResultViolence.found[index2], positions:currentResultViolence.positions[index2], type:"violence"}];
-                    }
                 } else {
                     if (currentResult !== null){
                         totalResult = [...totalResult, currentResult.found];
-                        softResult = [...softResult, currentResult.softSearchFound];
-                    }
-                    if (currentResultDrug !== null) {
-                        totalResult = [...totalResult, currentResultDrug.found];
-                    }
-                    if (currentResultInsult !== null) {
-                        totalResult = [...totalResult, currentResultInsult.found];
-                    }
-                    if (currentResultSexuality !== null) {
-                        totalResult = [...totalResult, currentResultSexuality.found];
-                    }
-                    if (currentResultViolence !== null) {
-                        totalResult = [...totalResult, currentResultViolence.found];
                     }
                 }
             }
             // qwertyToDubeol를 잡을 때
             if (totalResult.length ===0 && qwertyToDubeol === true) {
                 let currentResult = this.nativeFind(message2Map, needMultipleCheck, true);
-                let currentResultDrug = this.nativeFind(message2Map,needMultipleCheck, true, false, "drug")
-                let currentResultInsult = this.nativeFind(message2Map, needMultipleCheck,true, false, "insult")
-                let currentResultSexuality = this.nativeFind(message2Map,needMultipleCheck, true, false, "sexuality")
-                let currentResultViolence = this.nativeFind(message2Map,needMultipleCheck, true, false, "violence")
                 tooMuchEnds.push(currentResult.tooMuchDoubleEnd);
 
                 if (needMultipleCheck) {
@@ -454,60 +400,16 @@ class Tetrapod {
                         if (currentResult.found !== [] && totalResult.map(v=>v.value).indexOf(currentResult.found[index])===-1)
                             totalResult = [...totalResult, {value:currentResult.found[index], positions:currentResult.positions[index]}  ];
                     }
-                    for (index = 0; index <= currentResult.softSearchFound.length - 1; index++) {
-                        if (currentResult.softSearchFound !== [] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFound[index])===-1)
-                            softResult = [...softResult, {value:currentResult.softSearchFound[index], positions:currentResult.softSearchPositions[index]}];
-                    }
-                    for (index = 0; index <= currentResultDrug.found.length - 1; index++) {
-                        if (currentResultDrug.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultDrug.found[index])===-1)
-                            totalResult = [...totalResult, {value:currentResultDrug.found[index], positions:currentResultDrug.positions[index], type:"drug"}  ];
-                    }
-                    for (index = 0; index <= currentResultInsult.found.length - 1; index++) {
-                        if (currentResultInsult.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultInsult.found[index])===-1)
-                            totalResult = [...totalResult, {value:currentResultInsult.found[index], positions:currentResultInsult.positions[index], type:"insult"}  ];
-                    }
-                    for (index = 0; index <= currentResultSexuality.found.length - 1; index++) {
-                        if (currentResultSexuality.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultSexuality.found[index])===-1)
-                            totalResult = [...totalResult, {value:currentResultSexuality.found[index], positions:currentResultSexuality.positions[index], type:"sexuality"}  ];
-                    }
-                    for (index = 0; index <= currentResultViolence.found.length - 1; index++) {
-                        if (currentResultViolence.found !== [] && totalResult.map(v=>v.value).indexOf(currentResultViolence.found[index])===-1)
-                            totalResult = [...totalResult, {value:currentResultViolence.found[index], positions:currentResultViolence.positions[index], type:"violence"}  ];
-                    }
                 } else {
                     if (currentResult !== null){
                         totalResult = [...totalResult, currentResult.found];
-                        softResult = [...softResult, currentResult.softSearchFound];
-                    }
-                    if (currentResultDrug !== null) {
-                        totalResult = [...totalResult, currentResultDrug.found];
-                    }
-                    if (currentResultInsult !== null) {
-                        totalResult = [...totalResult, currentResultInsult.found];
-                    }
-                    if (currentResultSexuality !== null) {
-                        totalResult = [...totalResult, currentResultSexuality.found];
-                    }
-                    if (currentResultViolence !== null) {
-                        totalResult = [...totalResult, currentResultViolence.found];
                     }
                 }
-
             }
-
         }
         else {
             let currentResult = this.nativeFind(message3Map, needMultipleCheck, true);
-            let currentResultDrug = this.nativeFind(message3Map, needMultipleCheck, true, false, "drug")
-            let currentResultInsult = this.nativeFind(message3Map, needMultipleCheck, true, false, "insult")
-            let currentResultSexuality = this.nativeFind(message3Map, needMultipleCheck, true, false, "sexuality")
-            let currentResultViolence = this.nativeFind(message3Map, needMultipleCheck, true, false, "violence")
-
             let currentResult2 = this.nativeFind(message4Map, needMultipleCheck, true, true);
-            let currentResultDrug2 = this.nativeFind(message4Map,needMultipleCheck, true, true, "drug")
-            let currentResultInsult2 = this.nativeFind(message4Map, needMultipleCheck, true, true, "insult")
-            let currentResultSexuality2 = this.nativeFind(message4Map, needMultipleCheck, true, true, "sexuality")
-            let currentResultViolence2 = this.nativeFind(message4Map, needMultipleCheck, true, true, "violence")
             tooMuchEnds.push(currentResult.tooMuchDoubleEnd);
 
             if (needMultipleCheck) {
@@ -515,74 +417,18 @@ class Tetrapod {
                     if (currentResult.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResult.found[index]) ===-1)
                         originalTotalResult = [...originalTotalResult, {value:currentResult.found[index], positions:currentResult.positions[index]}];
                 }
-                for (index =0; index< currentResult.softSearchFound.length; index++) {
-                    if (currentResult.softSearchFound!==[] && softResult.map(v=>v.value).indexOf(currentResult.softSearchFound[index]===-1)) {
-                        originalSoftResult = [...originalSoftResult, {value:currentResult.softSearchFound[index], positions: currentResult.softSearchPositions[index]}]
-                    }
-                }
-                for (index =0; index<currentResultDrug.found.length; index++) {
-                    if (currentResultDrug.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultDrug.found[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResultDrug.found[index], positions:currentResultDrug.positions[index], type:"drug"}];
-                }
-                for (index =0; index<currentResultInsult.found.length; index++) {
-                    if (currentResultInsult.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultInsult.found[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResultInsult.found[index], positions:currentResultInsult.positions[index], type:"insult"}];
-                }
-                for (index =0; index<currentResultSexuality.found.length; index++) {
-                    if (currentResultSexuality.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultSexuality.found[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResultSexuality.found[index], positions:currentResultSexuality.positions[index], type:"sexuality"}];
-                }
-                for (index =0; index<currentResultViolence.found.length; index++) {
-                    if (currentResultViolence.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResultViolence.found[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResultViolence.found[index], positions:currentResultViolence.positions[index], type:"violence"}];
-                }
-
                 for (index =0; index<currentResult2.found.length; index++) {
                     if (currentResult2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResult2.found[index]) ===-1)
                         totalResult = [...totalResult, {value:currentResult2.found[index], positions:currentResult2.positions[index]}];
                 }
-                for (index =0; index< currentResult2.softSearchFound.length; index++) {
-                    if (currentResult2.softSearchFound!==[] && softResult.map(v=>v.value).indexOf(currentResult2.softSearchFound[index]===-1)) {
-                        softResult = [...softResult, {value:currentResult2.softSearchFound[index], positions: currentResult2.softSearchPositions[index]}]
-                    }
-                }
-                for (index =0; index<currentResultDrug2.found.length; index++) {
-                    if (currentResultDrug2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResultDrug2.found[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResultDrug2.found[index], positions:currentResultDrug.positions[index], type:"drug"}];
-                }
-                for (index =0; index<currentResultInsult2.found.length; index++) {
-                    if (currentResultInsult2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResultInsult2.found[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResultInsult2.found[index], positions:currentResultInsult2.positions[index], type:"insult"}];
-                }
-                for (index =0; index<currentResultSexuality2.found.length; index++) {
-                    if (currentResultSexuality2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResultSexuality2.found[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResultSexuality2.found[index], positions:currentResultSexuality2.positions[index], type:"sexuality"}];
-                }
-                for (index =0; index<currentResultViolence2.found.length; index++) {
-                    if (currentResultViolence2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResultViolence2.found[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResultViolence2.found[index], positions:currentResultViolence2.positions[index], type:"violence"}];
-                }
-
             }
             else {
                 if (currentResult !== null){
                     originalTotalResult = [...originalTotalResult, currentResult.found];
-                    originalSoftResult = [...originalSoftResult, currentResult.softSearchFound];
                 }
-                if (currentResultDrug !==null) originalTotalResult = [...originalTotalResult, currentResultDrug.found];
-                if (currentResultInsult !==null) originalTotalResult = [...originalTotalResult, currentResultInsult.found];
-                if (currentResultSexuality !==null) originalTotalResult = [...originalTotalResult, currentResultSexuality.found];
-                if (currentResultViolence !==null) originalTotalResult = [...originalTotalResult, currentResultViolence.found];
-
                 if (currentResult2 !== null){
                     totalResult = [...totalResult, currentResult2.found];
-                    softResult = [...softResult, currentResult2.softSearchFound];
                 }
-                if (currentResultDrug2 !==null) totalResult = [...originalTotalResult, currentResultDrug.found];
-                if (currentResultInsult2 !==null) originalTotalResult = [...originalTotalResult, currentResultInsult.found];
-                if (currentResultSexuality2 !==null) originalTotalResult = [...originalTotalResult, currentResultSexuality.found];
-                if (currentResultViolence2 !==null) originalTotalResult = [...originalTotalResult, currentResultViolence.found];
-
             }
 
         }
@@ -603,14 +449,18 @@ class Tetrapod {
             }
         }
 
-        if (isStrong) originalResult = {originalTotalResult, originalSoftResult};
+        if (isStrong) originalResult = {originalTotalResult};
 
-        return {totalResult, softResult, endResult, ...originalResult};
+        return {totalResult, endResult, ...originalResult};
     }
 
     // 메시지의 비속어를 콘솔창으로 띄워서 찾기.
     // message - 메시지(isMap이 false) 혹은 메시지 매핑(isMap이 true). needMultipleCheck
-    nativeFind(message, needMultipleCheck, isMap = false, isReassemble = false) {
+    nativeFind(message, needMultipleCheck, isMap = false, isReassemble = false, parsedWordsList=null) {
+
+        const wordTypeValue = {
+            drug: "약물", etc:"", insult:"모욕적 표현", sexuality:"성적인 표현", violence:"폭력적 표현"
+        }
 
         let foundBadWords = []; // 찾은 비속어 단어 결과.
         let foundBadWordPositions = [] // 찾은 비속어 단어의 원래 위치
@@ -641,80 +491,84 @@ class Tetrapod {
         // 형식 : [[1,2,3], [4,5,6],...]
         let normalWordPositions = this.findNormalWordPositions(newMessage, false)
 
+        // 매핑 사용하기
+        let parsedBadWords;
+        let parsedBadWordsMap = {};
 
-        // 비속어 단어를 한 단어씩 순회합니다.
-        // badWords의 idx를 사용해보자.
+        // 단순 단어 리스트일 때 -> wordArray 사용
+        if (Array.isArray(parsedWordsList) && typeof parsedWordsList[0] === "string") {
+            parsedBadWords = parsedWordsList.map(x=> Utils.wordToArray(x));
+            for(var word of parsedWordsList) {
+                parsedBadWordsMap[word] = 'etc';
+            }
+        }
+        // 낱자로 구별된 리스트일 때
+        else if (Array.isArray(parsedWordsList) && Array.isArray(parsedWordsList[0]) && typeof parsedWordsList[0][0]==="string") {
+            parsedBadWords = parsedWordsList;
+            let parsedBadWordValues = parsedWordsList.map(x=> x.join(""));
+            for (var word of parsedBadWordValues) {
+                parsedBadWordsMap[word] = 'etc';
+            }
+        }
+        // 나머지 경우 -
+        else {
+            parsedBadWords = this.parsedBadWords;
+            parsedBadWordsMap = this.badWordsMap;
+        }
 
-        for (let idx in this.parsedBadWords) {
+        // 비속어 단어를 한 단어씩 순회합니다. parsedBadWords의 idx를 사용해 보자.
+        for (let idx in parsedBadWords) {
 
-            let badWord = this.parsedBadWords[idx]; // badWord -> parsedBadWords 기준
-            let badWordValue = badWord.join("");
-
+            let badWord = parsedBadWords[idx]; // badWord -> parsedBadWords 기준
+            let badWordValue = badWord.join(""); // badWordValue -> 단어 붙이기.
 
             // 단순히 찾는 것으로 정보를 수집하는 것이 아닌 위치를 아예 수집해보자.
-            // findLetterPosition 형태 : {시: [1,8], 발:[2,7,12]}등
-            let findLetterPosition = {}
-            // 나쁜 단어 수집 형태. 이 경우는 [[1,2], [8,7]]로 수집된다.
-            let badWordPositions = []
-            // 별 갯수 관련
-            let parserLength = 0;
 
-            let isSkip = false;
-            // 이미 더 긴 단어에서 욕설을 찾았다면 그냥 넘어가보자.
-            for (let alreadyFound of foundBadWords) {
-                // console.log(badWord, alreadyFound.split(""))
-                if (Utils.objectInclude(badWord, alreadyFound.split(""))) {
+            let findLetterPosition = {}; // findLetterPosition 형태 : {시: [1,8], 발:[2,7,12]}등
+            let badWordPositions = []; // 나쁜 단어 수집 형태. 이 경우는 [[1,2], [8,7]]로 수집된다.
+            // let parserLength = 0; // ? 갯수. 우선 수집하지 않는 것으로
+            let wordType = parsedBadWordsMap[badWordValue]; // 단어 타입.
+            if(!wordType) continue; // 단어 체크가 안될 때는 넘어간다.
 
-                    isSkip = true; break;
-                }
-            }
-
-            if(isSkip) continue;
-
-            // 비속어 단어를 한글자씩
-            // 순회하며 존재여부를 검사합니다.
+            // 비속어 단어를 한 글자씩 순회하며 존재여부를 검사합니다.
             for (let character of badWord) {
 
-                let mainCharacter = character[0]
-                let parserCharacter = character[1] // ! 또는 ?
-
-                parserLength = (parserCharacter === "!" || parserCharacter === "+") ? character.length -2 : character.length-1; // ? 개수 추정.
+                let mainCharacter = character[0] // 핵심 글자
+                let parserCharacter = ['!', '+'].indexOf(character[1])>-1 ? character[1]: '' // ! 또는 +
+                // parserLength = (['!', '+'].indexOf(parserCharacter)>-1) ? character.length -2 : character.length-1; // ? 개수 추정.
 
                 // 뒤의 낱자 수집
-                let nextCharacter = (parserLength===0 && badWord.indexOf(character)<badWord.length-1)
+                let nextCharacter = (/* parserLength===0 && */ badWord.indexOf(character) < badWord.length-1)
                     ? badWord[ badWord.indexOf(character)+1 ][0].toLowerCase(): "" // 뒤의 낱자 수집.
 
-                let badOneCharacter = String(mainCharacter).toLowerCase();
+                let badOneCharacter = String(mainCharacter).toLowerCase(); // 소문자로 통일합니다.
 
                 // 일단 비속어 단어의 리스트를 정의해서 수집한다.
-                findLetterPosition[badOneCharacter] = []
-                findLetterPosition[badOneCharacter+"?"] = parserLength;
+                findLetterPosition[badOneCharacter] = [] // 리스트
+                // findLetterPosition[badOneCharacter+"?"] = parserLength; // 시? -> ?개수 수집.
 
                 // 비속어 단어의 글자위치를 수집합니다.
 
                 // 메시지 글자를 모두 반복합니다.
                 for (let index in newMessage) {
 
-                    // 정상적인 단어의 글자일경우 검사하지 않습니다.
-                    if (Utils.objectIn(index, normalWordPositions)) continue
-
-                    // 단어 한글자라도 들어가 있으면
-                    // 찾은 글자를 기록합니다.
+                    // 단어 한글자라도 들어가 있으면 찾은 글자를 기록합니다.
                     let unsafeOneCharacter = String(newMessage[index]).toLowerCase()
 
+
+                    // parserCharacter가 !이면 유사문자를 활용하는 함수인 isKindChar 활용
                     if (parserCharacter==="!") {
-                        // isKindChar 함수 활용
-
                         if (this.isKindChar(unsafeOneCharacter, badOneCharacter, nextCharacter)) {
-                            findLetterPosition[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
+                            findLetterPosition[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문장에서 전부 수집한다.
                         }
-
                     }
+                    // parserCharacter가 +이면 unsafeOneCharacter가 badOneCharacter의 자모를 모두 포함하는지 확인.
                     else if (parserCharacter === "+") {
                         if ( Utils.objectInclude( Hangul.disassemble(badOneCharacter), Hangul.disassemble(unsafeOneCharacter), true) ) {
-                            findLetterPosition[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
+                            findLetterPosition[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문장에서 전부 수집한다.
                         }
                     }
+                    // 나머지 경우 - 문자가 동일할 때에만 수집.
                     else {
                         if (badOneCharacter === unsafeOneCharacter) {
                             findLetterPosition[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
@@ -727,92 +581,81 @@ class Tetrapod {
 
             // 이제 badWord를 찾아보자. 어떻게? findCount에서...
 
-            // let countLetter = []
-            // for (let letter in findCount) {
-            //     countLetter.push(findCount[letter].length);
-            // }
-            // // 비속어를 구성하는 단어글자 중 최소 글자 갯수
-            // let minCount = Math.min(...countLetter)
-
-            // 단어 포지션 리스트
+            // 단어 포지션 - 키값이 단글자로 된 애들만 수집.
             let positionsList = Utils.filterList(Object.values(findLetterPosition), "object");
-            // 단어 뒤의 ? 갯수
-            let numberOfQs = Utils.filterList(Object.values(findLetterPosition), "number")
-            // 낱자 포지션 맵
+            // // 문자별 ?개수 수집 - 키값이 단글자+?로된 애들만 수집. 우선 구현하지 않기로
+            // let numberOfQs = Utils.filterList(Object.values(findLetterPosition), "number")
+            // 낱자 포지션 맵 - 리스트 곱으로 표현. 즉 {시:[0,7], 발:[1,9,18]} -> [[0,1], [0,9], [0,18], [7,1], [7,9], [7,18]]
             let possibleWordPositions = Utils.productList(positionsList);
 
             // badWord의 원래 포지션 찾기
             let badWordOriginalPositions = [];
             let originalBadWords = [];
-            // let tempBadWordPositions = []; // 임시 Bad Word Position. 여기에 대해서 수행한다
-            //
 
-
-            // j개수만큼 반복하기
+            // 비속어에서 가능한 글자조합 모두 검사하기
             for (let wordPosition of possibleWordPositions) {
 
                 // console.log('wordPosition', wordPosition)
                 // 단어 첫글자의 위치 잡기
-
-                let tempBadWordPositions = [...wordPosition];
+                let tempBadWordPositions = [...wordPosition]; // 복사. 다만 wordPosition과 안 겹치게
 
                 // 넘어갈 필요가 있는지 확인해보기
                 let isNeedToPass = false;
                 // 순서가 바뀌었는지도 체크해보자.
                 let isShuffled = false
 
+                // 정상단어와 체크. wordPosition이 정상단어 리스트 안에 들어가면 패스
+                for (var normalList of normalWordPositions) {
+                    if (Utils.objectInclude(wordPosition, normalList, false)) {
+                        isNeedToPass = true; break;
+                    }
+                }
+
                 // 포지션 체크. 단어에서 뒤에 올 글자가 앞에 올 글자보다 3글자 이상 앞에 오면 isNeedToPass를 띄운다.
-                for (pos =0; pos<wordPosition.length; pos++) {
-                    for (pos1 =0; pos1<pos; pos1++) {
+                for (var pos =0; pos<wordPosition.length; pos++) {
+                    for (var pos1 =0; pos1<pos; pos1++) {
                         if (wordPosition[pos1] - wordPosition[pos]<-3) {
                             isNeedToPass = true; break;
                         }
                     }
                 }
 
-                // 포지션을 순서대로 정렬했는데
-                // 순서가 달라진다면 글자가 섞여있는 것으로 간주합니다.
+                // 포지션을 순서대로 정렬했는데 순서가 달라진다면 글자가 섞여있는 것으로 간주합니다.
                 let sortedPosition = tempBadWordPositions.slice().sort((a, b) => a - b)
                 if( !Utils.objectEqual(sortedPosition, tempBadWordPositions) ){
-                    isShuffled = true
-                    tempBadWordPositions = sortedPosition
+                    isShuffled = true;
+                    tempBadWordPositions = sortedPosition; // 순서대로 정렬한 값을 추출한다.
                 }
 
                 // TODO
-                // 발견된 각 문자 사이의 거리 및
-                // 사람이 인식할 가능성 거리의 계산
-
+                // 발견된 각 문자 사이의 거리 및 사람이 인식할 가능성 거리의 계산
                 // (3글자가 각각 떨어져 있을 수도 있음)
+                // 글자간 사이들을 순회하여서 해당 비속어가 사람이 인식하지 못할 정도로 퍼져있다거나 섞여있는지를 확인합니다.
 
-
-                // 글자간 사이들을 순회하여서
-                // 해당 비속어가 사람이 인식하지 못할 정도로
-                // 퍼져있다거나 섞여있는지를 확인합니다.
-
-                let positionInterval = Utils.grabCouple(tempBadWordPositions);
+                let positionInterval = Utils.grabCouple(tempBadWordPositions); // [1,3,4]-> [[1,3], [3,4]]
                 let collectionTempQList = {}; // 사이 번호 삽입용
 
+                // 각 글자 인덱스 구간을 수집한다.
                 for(let diffRangeIndex in positionInterval){
 
-                    let tempCnt = numberOfQs[diffRangeIndex];
-                    let tempQList = []; // ?에 해당하는 문자의 위치 찾기.
+                    // let tempCnt = numberOfQs[diffRangeIndex];
+                    // let tempQList = []; // ?에 해당하는 문자의 위치 찾기.
 
                     // 글자간 사이에 있는 모든 글자를 순회합니다.
                     let diff = ''
                     for(let diffi = positionInterval[diffRangeIndex][0]+1; diffi <= (positionInterval[diffRangeIndex][1]-1); diffi++){
-                        if (tempCnt>0) {
-                            if (/[가-힣]/.test(newMessage[diffi])) {tempCnt--; tempQList.push(diffi);}
-                            else if (newMessage[diffi]=== " ") {tempCnt = 0; diffi +=newMessage[diffi];}
-                            else diff += newMessage[diffi]
-                        }
-                        else {
+                        // if (tempCnt>0) {
+                        //     if (/[가-힣]/.test(newMessage[diffi])) {tempCnt--; tempQList.push(diffi);}
+                        //     else if (newMessage[diffi]=== " ") {tempCnt = 0; diffi +=newMessage[diffi];}
+                        //     else diff += newMessage[diffi]
+                        // }
+                        // else {
                             diff += newMessage[diffi]
-                        }
+                        // }
                     }
 
                     if(isShuffled && !isNeedToPass){
-                        // 뒤집힌 단어의 경우엔 자음과 모음이
-                        // 한글글자가 글자사이에 쓰인 경우 비속어에서 배제합니다.
+                        // 뒤집힌 단어의 경우엔 자음과 모음이 한글글자가 글자사이에 쓰인 경우 비속어에서 배제합니다.
                         if(!this.shuffledMessageFilter(diff, false, true))
                             isNeedToPass = true
                     }
@@ -820,16 +663,16 @@ class Tetrapod {
                         // 순서가 뒤집히지 않았을 때는 한글의 길이가 충분히 길거나 정상단어가 글자 사이에 쓰인 경우 비속어에서 배제합니다.
                         if (this.shuffledMessageFilter(diff,true, true)>3) isNeedToPass = true;
                         else {
-                            for (let index in normalWords) {
+                            for (let index in this.normalWords) {
                                 if (diff.length === 0) break
-                                let diffSearchedPositions = Utils.getPositionAll(diff, normalWords[index])
+                                let diffSearchedPositions = Utils.getPositionAll(diff, this.normalWords[index])
                                 if (diffSearchedPositions.length > 1) {
                                     isNeedToPass = true;
                                 }
                             }
                         }
                     }
-                    collectionTempQList[diffRangeIndex] = tempQList
+                    // collectionTempQList[diffRangeIndex] = tempQList
 
                 }
                 // if (Object.keys(collectionTempQList).length !==0 ) console.log(collectionTempQList);
@@ -841,13 +684,13 @@ class Tetrapod {
                     }
                 }
 
-                // 이제 낱자가 안 겹치면 tempBadWordPosition을 확장해서 잡아보자.
-                for (let ind =0; ind<wordPosition.length-1; ind++) {
-                    if ( collectionTempQList[ (wordPosition.length-1-ind).toString() ] && collectionTempQList[ (wordPosition.length-1-ind).toString() ].length>0) {
-                        // 인덱스 꼬이는 일이 안 생기게 뒤에서부터 추가해보자.
-                        tempBadWordPositions.splice( (wordPosition.length-1-ind), 0, collectionTempQList[ (wordPosition.length-1-ind).toString() ] )
-                    }
-                }
+                // // 이제 낱자가 안 겹치면 tempBadWordPosition을 확장해서 잡아보자.
+                // for (let ind =0; ind<wordPosition.length-1; ind++) {
+                //     if ( collectionTempQList[ (wordPosition.length-1-ind).toString() ] && collectionTempQList[ (wordPosition.length-1-ind).toString() ].length>0) {
+                //         // 인덱스 꼬이는 일이 안 생기게 뒤에서부터 추가해보자.
+                //         tempBadWordPositions.splice( (wordPosition.length-1-ind), 0, collectionTempQList[ (wordPosition.length-1-ind).toString() ] )
+                //     }
+                // }
 
                 // 해당 비속어를 발견은 하였지만,
                 // 사람이 인지하지 못할 것으로 간주되는 경우
@@ -855,7 +698,7 @@ class Tetrapod {
                 if(isNeedToPass) continue
 
                 // 중복 비속어 체크하기.
-                tmpTF = true;
+                var tmpTF = true;
                 for (let positions of foundBadWordPositions) {
                     // 다른 비속어와 포지션이 일치할 때 강제 종료
                     for (let badPosition of positions) {
@@ -881,8 +724,7 @@ class Tetrapod {
                             if (isReassemble) {
                                 originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
                             }
-
-                            for (k =0; k <originalCount; k++) {
+                            for (let k =0; k <originalCount; k++) {
                                 tempBadWordOriginalPositions.push( originalMessageSyllablePositions[pos] + k);
                             }
                         }
@@ -906,6 +748,7 @@ class Tetrapod {
                     console.log(`원문: ${originalMessage}`);
                     console.log(`변환된 문장: ${newMessage}`);
                     console.log(`발견된 비속어: [${badWord.join()}]`)
+                    console.log(`발견된 비속어 유형: ${wordTypeValue[wordType]}`)
                     console.log(`발견된 비속어 원문: [${originalBadWords}]`)
                     console.log(`발견된 비속어 위치: [${badWordPositions}]`)
                     console.log(`발견된 비속어 원래 위치: [${badWordOriginalPositions}]`)
@@ -918,6 +761,7 @@ class Tetrapod {
                 else {
                     console.log(`원문: ${newMessage}`)
                     console.log(`발견된 비속어: [${badWord.join()}]`)
+                    console.log(`발견된 비속어 유형: ${wordTypeValue[wordType]}`)
                     console.log(`발견된 비속어 위치: [${badWordPositions}]`)
                     console.log('\n')
                     foundBadWords.push(badWord.join(''))
@@ -956,323 +800,6 @@ class Tetrapod {
             tooMuchDoubleEnd: tooMuchDouble,
             ...isMapAdded
         }
-    }
-
-    // 비속어 리스트가 주어졌을 때 비속어 리스트 안에서 검사하기.
-    // 옵션 추가 - parsedWordList 대신 wordList를 입력해도 자동으로 parsedWordList로 변환해서 처리 가능.
-     nativeFindFromList(message, parsedWordsList, needMultipleCheck=false, isMap=false, isReassemble=false) {
-
-        // check whether wordList is parsed or not
-        if (typeof parsedWordsList[0] === "string" ) {
-            parsedWordsList = this.parseFromList(parsedWordsList)
-        }
-
-        // let normalWordPositions = {}
-        let foundBadWords = []
-        let foundBadOriginalWords = []
-        let foundBadWordPositions = []
-        let foundBadWordOriginalPositions = []; // isMap에서 original 단어 위치
-        let originalMessageList = [];
-        let originalMessageSyllablePositions = []; // 원래 음가 위치
-
-        // Map으로 주어지면 newMessage에 대해 찾는다.
-        let originalMessage = "";
-        let newMessage ="";
-        if (isMap) {
-            // 맵을 파싱해서 찾아보자.
-            originalMessageList = Utils.parseMap(message).messageList;
-            // console.log(message);
-            originalMessage = originalMessageList.join("");
-            // dropDouble일 때에는 바ㅂ오 ->밥오로 환원하기 위해 originalMessage를 한글 조합으로
-            originalMessage = isReassemble ? Hangul.assemble(Hangul.disassemble(originalMessage)): originalMessage;
-            originalMessageSyllablePositions =  Utils.parseMap(message).messageIndex;
-            newMessage = Utils.parseMap(message).parsedMessage.join("");
-        }
-        else {
-            newMessage = message;
-        }
-
-        // 정상단어의 포지션을 찾습니다.
-        // 형식 : [1,2,3,...]
-        let normalWordPositions = this.findNormalWordPositions(newMessage, false)
-
-        // 주어진 파싱된 비속어 리스트에서 한 단어식 순회합니다.
-        for (let badWord of parsedWordsList) {
-
-            // 단순히 찾는 것으로 정보를 수집하는 것이 아닌 위치를 아예 수집해보자.
-            // findCount 형태 : {바: [1,8], 보:[2,7,12]}등
-            let findCount = {}
-            // 저속한 단어 수집 형태. 이 경우는 [[1,2], [8,7]]로 수집된다.
-            let badWordPositions = []
-            // 별 갯수 세기
-            let parserLength = 0;
-
-            let isSkip = false;
-            // 이미 더 긴 단어에서 욕설을 찾았다면 그냥 넘어가보자.
-            for (let alreadyFound of foundBadWords) {
-                if (Utils.objectInclude(badWord, alreadyFound.split(""))) {
-                    isSkip = true; break;
-                }
-            }
-
-            if(isSkip) continue;
-
-
-            // 저속한 단어들을 한 단어씩
-            // 순회하며 존재여부를 검사합니다.
-            for (let character of badWord) {
-
-                let mainCharacter = character[0]
-                let parserCharacter = character[1] // !, ?, + 또는 undefined
-                parserLength =  (parserCharacter==="!" || parserCharacter === "+") ? character.length-2 : character.length-1
-                let badOneCharacter = String(mainCharacter).toLowerCase();
-                // 뒤의 낱자 수집
-                let nextCharacter = (parserLength===0 && badWord.indexOf(character)<badWord.length-1)
-                    ? badWord[ badWord.indexOf(character)+1 ][0].toLowerCase(): "" // 뒤의 낱자 수집.
-
-                // 일단 저속한 단어의 리스트를 정의해서 수집한다.
-                findCount[badOneCharacter] = []
-                findCount[badOneCharacter+"?"] = parserLength
-
-                // 저속한 단어의 글자위치를 수집합니다.
-
-                // 메시지 글자를 모두 반복합니다.
-                for (let index in newMessage) {
-
-                    // 정상적인 단어의 글자일경우 검사하지 않습니다.
-                    // 적발된 단어가 모두 정상포지션에 자리잡힌 경우 잡지 않는다.
-                    if (Utils.objectIn(index, normalWordPositions)) continue
-
-                    // 단어 한글자라도 들어가 있으면
-                    // 찾은 글자를 기록합니다.
-                    let unsafeOneCharacter = String(newMessage[index]).toLowerCase()
-                    if (parserCharacter==="!") {
-                        // isKindChar 함수 활용
-                        if (this.isKindChar(unsafeOneCharacter, badOneCharacter, nextCharacter)) {
-                            findCount[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
-                        }
-                    }
-                    else if (parserCharacter === "+") {
-                        if ( Utils.objectInclude( Hangul.disassemble(badOneCharacter), Hangul.disassemble(unsafeOneCharacter), true) ) {
-                            findCount[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
-                        }
-                    }
-                    else {
-                        if (badOneCharacter === unsafeOneCharacter) {
-                            findCount[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문단에서 전부 수집한다.
-                        }
-                    }
-
-                }
-            }
-
-
-            // 단어 포지션 리스트
-            let positionsList = Utils.filterList(Object.values(findCount), "object");
-            // 단어 뒤의 ? 갯수
-            let numberOfQs = Utils.filterList(Object.values(findCount), "number")
-            // 낱자 포지션 맵
-            let possibleWordPositions = Utils.productList(positionsList);
-
-            // badWord의 원래 포지션 찾기
-            let badWordOriginalPositions = [];
-            let originalBadWords = [];
-
-
-            // 단어 포지션 리스트에서 for문을 돌려보자.
-            for (let wordPosition of possibleWordPositions) {
-
-                let tempBadWordPositions = [...wordPosition];
-
-                // 넘어갈 필요가 있는지 확인해보기
-                let isNeedToPass = false
-                // 순서가 바뀌었는지도 체크해보자.
-                let isShuffled = false
-
-                // 포지션 체크. 단어에서 뒤에 올 글자가 앞에 올 글자보다 3글자 이상 앞에 오면 isNeedToPass를 띄운다.
-                for (var pos =0; pos<wordPosition.length; pos++) {
-                    for (var pos1 =0; pos1<pos; pos1++) {
-                        if (wordPosition[pos1] - wordPosition[pos]<-3) {
-                            isNeedToPass = true; break;
-                        }
-                    }
-                }
-
-                // 포지션을 순서대로 정렬했는데
-                // 순서가 달라진다면 글자가 섞여있는 것으로 간주합니다.
-                let sortedPosition = tempBadWordPositions.slice().sort((a, b) => a - b)
-                if( !Utils.objectEqual(sortedPosition, tempBadWordPositions) ){
-                    isShuffled = true
-                    tempBadWordPositions = sortedPosition
-                }
-
-
-                // TODO
-                // 발견된 각 문자 사이의 거리 및
-                // 사람이 인식할 가능성 거리의 계산
-                // (3글자가 각각 떨어져 있을 수도 있음)
-                // 글자간 사이들을 순회하여서
-                // 해당 비속어가 사람이 인식하지 못할 정도로
-                // 퍼져있다거나 섞여있는지를 확인합니다.
-                let positionInterval = Utils.grabCouple(tempBadWordPositions)
-                let collectionTempQList = {}; // 사이 번호 삽입용.
-
-                for(let diffRangeIndex in positionInterval){
-
-                    let tempCnt = numberOfQs[diffRangeIndex]
-                    let tempQlist = []; // ?에 해당하는 문자의 위치 찾기.
-
-                    // 글자간 사이에 있는 모든 글자를 순회합니다.
-                    let diff = ''
-                    for(let diffi =positionInterval[diffRangeIndex][0]+1; diffi <= (positionInterval[diffRangeIndex][1]-1); diffi++){
-                        if (tempCnt>0 && /[가-힣]/.test(newMessage[diffi])) {tempCnt--; tempQlist.push(diffi);}
-                        else if (newMessage[diffi]=== " ") {tempCnt = 0; diffi +=newMessage[diffi];}
-                        else diff += newMessage[diffi];
-                    }
-
-                    if(isShuffled && !isNeedToPass){
-                        // 뒤집힌 단어의 경우엔 자음과 모음이
-                        // 한글글자가 글자사이에 쓰인 경우 비속어에서 배제합니다.
-                        if(!this.shuffledMessageFilter(diff, false, true))
-                            isNeedToPass = true
-                    }
-                    else {
-                        // 순서가 뒤집히지 않았을 때는 한글의 길이가 충분히 길거나 정상단어가 글자 사이에 쓰인 경우 비속어에서 배제합니다.
-                        if (this.shuffledMessageFilter(diff,true, true)>3) isNeedToPass = true;
-                        else {
-                            for (let index in normalWords) {
-                                if (diff.length === 0) break
-                                let diffSearchedPositions = Utils.getPositionAll(diff, normalWords[index])
-                                if (diffSearchedPositions.length > 1) {
-                                    isNeedToPass = true;
-                                }
-                            }
-                        }
-                    }
-
-                    collectionTempQList[diffRangeIndex] = tempQlist
-                }
-
-
-
-                // 기존에 발견돤 단어와 낱자가 겹쳐면 pass
-                for (let usedBadWordPositions of badWordPositions) {
-                    if ( !Utils.isDisjoint(usedBadWordPositions, tempBadWordPositions) ) {
-                        isNeedToPass = true; break;
-                    }
-                }
-
-                // 이제 낱자가 안 겹치면 tempBadWordPosition을 확장해서 잡아보자.
-                for (let ind =0; ind<wordPosition.length-1; ind++) {
-                    if ( collectionTempQList[ (wordPosition.length-1-ind).toString() ] && collectionTempQList[ (wordPosition.length-1-ind).toString() ].length>0) {
-                        // 인덱스 꼬이는 일이 안 생기게 뒤에서부터 추가해보자.
-                        tempBadWordPositions.splice( (wordPosition.length-1-ind), 0, collectionTempQList[ (wordPosition.length-1-ind).toString() ] )
-                    }
-                }
-
-
-
-                // 해당 저속한 표현을 발견은 하였지만,
-                // 사람이 인지하지 못할 것으로 간주되는 경우
-                // 해당 발견된 비속어를 무시합니다.
-                if(isNeedToPass) continue
-
-                // 중복 비속어 체크하기.
-                var tmpTF = true;
-                for (let positions of foundBadWordPositions) {
-                    // 다른 비속어와 포지션이 일치할 때 강제 종료
-                    for (let badPosition of positions) {
-                        if (Utils.objectInclude(tempBadWordPositions, badPosition)) {
-                            tmpTF =false; break;
-                        }
-                    }
-                }
-
-
-                // 만약 중첩 테스트 통과되면 badWordPosition에 추가
-                if (tmpTF) {
-                    let tempBadWordOriginalPositions = [];
-                    badWordPositions.push(tempBadWordPositions);
-
-                    if (isMap) {
-
-                        // 갯수 세기. isReassemble일 때에는 한글 낱자의 갯수만 센다.
-                        let originalCount = originalMessageList[Number(pos)].length;
-                        if (isReassemble) {
-                            originalCount = originalMessageList[Number(pos)].split("").filter(x=>/[가-힣]/.test(x)).length
-                        }
-
-                        for (pos of tempBadWordPositions) {
-                            for (var k =0; k <originalCount; k++) {
-
-                                tempBadWordOriginalPositions.push(originalMessageSyllablePositions[pos] + k);
-                            }
-                        }
-                        // 원문 찾기
-                        let originalBadWord = "";
-                        for (var l of tempBadWordOriginalPositions) {
-                            originalBadWord +=originalMessage[l];
-                        }
-
-                        // 나쁜단어 위치 삽입, 원운 위치,
-
-                        badWordOriginalPositions.push(tempBadWordOriginalPositions);
-                        originalBadWords.push(originalBadWord);
-
-                    }
-
-                }
-
-
-            }
-            if (badWordPositions.length>0) {
-
-                if (isMap) {
-                    // isReassemble 옵션은 dropDouble에서 받침을 뒷 글자에 강제로 붙이는 경우에 대비해서 조합해준다.
-                    console.log(`원문: ${originalMessage}`);
-                    console.log(`변환된 문장: ${newMessage}`);
-                    console.log(`발견된 비속어: [${badWord.join()}]`)
-                    console.log(`발견된 비속어 원문: [${originalBadWords}]`)
-                    console.log(`발견된 비속어 위치: [${badWordPositions}]`)
-                    console.log(`발견된 비속어 원래 위치: [${badWordOriginalPositions}]`)
-                    console.log('\n')
-                    foundBadWords.push(badWord.join(''))
-                    foundBadWordPositions.push(badWordPositions)
-                    foundBadOriginalWords.push(originalBadWords);
-                    foundBadWordOriginalPositions.push(badWordOriginalPositions);
-                }
-                else {
-                    console.log(`원문: ${newMessage}`)
-                    console.log(`발견된 비속어: [${badWord.join()}]`)
-                    console.log(`발견된 비속어 위치: [${badWordPositions}]`)
-                    console.log('\n')
-                    foundBadWords.push(badWord.join(''))
-                    foundBadWordPositions.push(badWordPositions)
-                }
-
-            }
-
-
-            // 반복 줄이기 위해 강제 탈출.
-            if (needMultipleCheck === false && foundBadWords.length>0) break;
-
-        }
-
-        let isMapAdded = {};
-        if (isMap) {
-            isMapAdded = {
-                originalFound: needMultipleCheck ? foundBadOriginalWords : foundBadOriginalWords.slice(0).slice(0),
-                originalPositions: needMultipleCheck ? foundBadWordOriginalPositions : foundBadWordOriginalPositions.slice(0).slice(0),
-            };
-        }
-
-        // 결과 출력
-        return {
-            found: needMultipleCheck? foundBadWords : foundBadWords.slice(0),
-            positions: needMultipleCheck? foundBadWordPositions : foundBadWordPositions.slice(0).slice(0),
-            ...isMapAdded
-        }
-
     }
 
     // 비속어를 결자처리하는 함수

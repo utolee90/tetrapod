@@ -11,6 +11,7 @@ import fs from 'fs';
 let obj = new Tetrapod();
 obj.loadFile()
 console.log(obj.findNormalWordPositions('흰색 옷은 아름답다', false))
+console.log(obj.nativeFind("지랄 마라 정말 귀찮게 굴지마라"))
 // // 전체 치환하기 - Utils.replaceAll
 // // console.log('replaceAll 테스트');
 // // console.log(Utils.replaceAll('가랑비에, 옷, 젖는 줄도 모르고, 정말', ',', '-'));

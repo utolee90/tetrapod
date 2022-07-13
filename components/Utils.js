@@ -51,12 +51,12 @@ const Utils = {
     },
 
     // 단어 -> 낱자로 분리하는 함수. 매크로를 이용한 처리
-    // 수정 - 매크로 ., !, +, ?
-    // . 이스케이프 문자. .? -> ?기호 사용, .. -> .기호, .+ -> +기호 입력
-    // 바! -> [바, 뱌, 빠,... ].
-    // 바? -> 한글 ? 개수까지 완전 무시...
-    // 바+ -> [바, 박, 밖,...]. 받침 포함.
-    // wordToarray -
+    // 수정 - 매크로 ., !, +
+    // . 이스케이프 문자.  .. -> .기호, .+ -> +기호 입력
+    // 바! -> [바, 뱌, 빠,... ] -유사 문자까지 모두 포함
+    // 바? -> 한글 ? 개수까지 완전 무시... -> 220713 구현 기능에서 일단 제거. nativeFind의 shuffle 관련 기능과 상충되는 부분 있어서 제외
+    // 바+ -> [바, 박, 밖,...]. 받침 또는 중복자음 포함. 고 -> [괴, 괘, 공]
+    // wordToarray -> 바?꾸 -> ['바?', '꾸']
     wordToArray: word => {
         let wordArray = []
         for (let i = 0; i <= word.length - 1; i++) {
@@ -64,10 +64,10 @@ const Utils = {
             if ((i===1 || i>1 && word[i-2]!== "." )&& word[i-1] === ".") {
                 wordArray.splice(-1, 1, word[i])
             }
-            // .뒤에 오지 않는 경우 ? 기호는 뒷 문자에 붙여서 밀어넣기
-            else if (word[i] === "?") {
-                wordArray.splice(-1, 1, wordArray.slice(-1)[0]+word[i])
-            }
+            // // .뒤에 오지 않는 경우 ? 기호는 뒷 문자에 붙여서 밀어넣기. shuffle과 충돌하는 부분이 있어서 일단 구현하지 않는 것으로
+            // else if (word[i] === "?") {
+            //     wordArray.splice(-1, 1, wordArray.slice(-1)[0]+word[i])
+            // }
             // !, + 기호 관련. 한글 뒤에 오는 경우 앞 문자에 붙이기.
             else if (i>0 && /[가-힣]/.test(word[i-1]) && (word[i] === "!" || word[i] === "+") ) {
                 wordArray.splice(-1, 1, wordArray.slice(-1)[0]+word[i])
