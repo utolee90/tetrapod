@@ -1,7 +1,11 @@
 {
-    "badwords": [
+    "badWords": [
         "시발"
     ],
+    "badWordsOne": [],
+    "badWordsTwo": [],
+    "badWordsThree": [],
+    "badWordsFour": [],
     "kind of words": "약물, 모욕, 성적, 폭력",
     "drug": [],
     "insult": [ "썩을"],

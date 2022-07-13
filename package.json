@@ -1,10 +1,10 @@
 {
   "name": "tetrapod-klleon",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "😊 Improved swear word detection module, made by hmmhmmhmm, arranged by utolee90",
-  "homepage": "https://github.com/klleon/tetrapod/",
+  "homepage": "https://github.com/utolee90/tetrapod/",
   "bugs": {
-    "url": "https://github.com/klleon/tetrapod/"
+    "url": "https://github.com/utolee90/tetrapod/"
   },
   "main": "tetrapod.js",
   "scripts": {
@@ -34,12 +34,13 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "fs": "0.0.1-security",
     "hangul-js": "^0.2.5",
     "package.json": "^2.0.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/klleon/tetrapod.git"
+    "url": "https://github.com/utolee90/tetrapod.git"
   },
   "keywords": [
     "node",

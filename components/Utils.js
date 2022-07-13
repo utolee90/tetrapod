@@ -298,12 +298,12 @@ const Utils = {
 
     // 파싱하기 {씨:{value:시, index:[0]}, 브얼:{value:벌, index:[1]}} ->
     // 매핑형식 - 키: 어구, {value: 해석된 어구
-    // => {messageList: 씨브얼, messageIndex: [0,1], parsedMessage: ['시', '벌']}
+    // => {messageList: ['씨', '브얼'], messageIndex: [0,1], parsedMessage: ['시', '벌']}
     // 맵 형식 - qwertyToDubeol map, antispoof map, dropDouble map을 입력으로 한다.
     parseMap: (map) => {
-        let originalMessageList = [];
-        let originalMessageIndex = [];
-        let parsedMessage = [];
+        let originalMessageList = []; // 원문의 리스트
+        let originalMessageIndex = []; // 메시지의 원무의 위치 표시
+        let parsedMessage = []; // 파싱된 메시지 리스트
         let search = 0;
         let maxVal = Object.values(map).map(x=> (Math.max(...x.index)));
 
