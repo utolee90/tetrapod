@@ -446,7 +446,7 @@ const Utils = {
 
     },
 
-    //자모조합을 악용한 비속어 걸러내기 ㄱH^H77| 검출 가능. isMap 사용시 오브젝트 형태로 결과물 도출.
+    // 자모조합을 악용한 비속어 걸러내기 ㄱH^H77| 검출 가능. isMap 사용시 오브젝트 형태로 결과물 도출.
     // isMap이 거짓일 때 : ㄱH^H77| -> 개색기
     // isMap이 참일 때: ㄱH^H77ㅣ -> {ㄱH: {value:개, index: [0]}, ^H7: {value: 색, index:[2]}, 7ㅣ: {value:기, index:[5]}}
     antispoof: (msg, isMap = false) => {
@@ -1177,6 +1177,7 @@ const Utils = {
             return {val:false, pos:[], txt:[]};
         }
     },
+
 
 }
 

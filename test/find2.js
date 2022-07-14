@@ -10,8 +10,30 @@ import fs from 'fs';
 // 비속어 데이터 불러오기
 let obj = new Tetrapod();
 obj.loadFile()
-console.log(obj.findNormalWordPositions('흰색 옷은 아름답다', false))
-console.log(obj.nativeFind("지랄 마라 정말 귀찮게 굴지마라"))
+
+// console.log(obj.findNormalWordPositions('흰색 옷은 아름답다', false))
+let newTime = new Date().getTime()
+// console.log('시발 정발 나쁘게 구네 ::: TEST:::\n', JSON.stringify(obj.nativeFind("시발 정말 나쁘게 구네")))
+// console.log("걸린시간:::", new Date().getTime() - newTime)
+newTime = new Date().getTime()
+// console.log(obj.find("시발 정말 나쁘게 구네", true))
+// console.log('nativeFind obj 테스트')
+// console.log(obj.nativeFind(Utils.dropDouble("시브알놈아", true), true, true, true))
+// console.log("걸린시간:::", new Date().getTime() - newTime)
+console.log('oneWordFind 테스트')
+console.log('test!!!', Utils.objectIn(['시', '발!'], obj.parsedBadWords))
+console.log(obj.oneWordFind(['시', '발!'], Utils.dropDouble("시파알놈아", true), obj.badWordsMap, true, true, true, true))
+// console.log(obj.isExistBadWord('시발!'))
+// console.log("걸린시간:::", new Date().getTime() - newTime)
+console.log(Utils.parseMap(Utils.dropDouble('고아테이마알라', true)))
+console.log(obj.getOriginalPosition(Utils.dropDouble('고아테이마알라', true), [0,2,4]))
+obj.adjustFilter([],[],['qwerty'],false);
+console.log('engBadWordsCheck 테스트!!!')
+console.log('몽땅 사라졌나???', obj.parsedBadWords.length, Object.keys(obj.badWordsMap).length, obj.badWords[0].length)
+console.log(obj.engBadWordsCheck(['시', '발!'], 'tlvkfshadk'))
+obj.adjustFilter([],[],['antispoof'],false);
+console.log(obj.engBadWordsCheck(['시', '발!'], '^l발롬'))
+// console.log(obj.parseFromList(['구라', '괴!물!정', '곳간', '미창고']))
 // // 전체 치환하기 - Utils.replaceAll
 // // console.log('replaceAll 테스트');
 // // console.log(Utils.replaceAll('가랑비에, 옷, 젖는 줄도 모르고, 정말', ',', '-'));
@@ -32,17 +54,10 @@ console.log(obj.nativeFind("지랄 마라 정말 귀찮게 굴지마라"))
 // console.log(Utils.antispoof('ㄱH^H^77ㅗㅣ',true))
 // console.log(Utils.recursiveComponent([[1,2],[3,4,5]]))
 // console.log(Utils.dropDouble('빱브오쮜', true, true))
+
 // let testMsg = '삵얽릸 살어릿았닶'
 // console.log(testMsg, Utils.tooMuchDoubleEnd(testMsg))
-// console.log(Tetrapod.find('정말 값삾핪닚다'))
-// // console.log(Hangul.disassemble('개새끼', true).map(x=>Hangul.assemble(x)).join(''))
-// // // Tetrapod.loadFile(
-// // //     './resource/sample/bad-words.json',
-// // //     './resource/klleon/normal-words.json',
-// // //     './resource/klleon/soft-search-words.json',
-// // //     './resource/klleon/macros.json',
-// // // )
-//
+// console.log(obj.find('정말 값삾핪닚다'))
 // // console.log("\n\n======================")
 // // console.log(Tetrapod.findNormalWordPositions("십발 정말 값삾핪닚닶"))
 // // console.log("\n\n======================")
