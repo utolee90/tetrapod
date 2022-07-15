@@ -10,6 +10,7 @@ import * as HO from "../components/HangulObjects";
 
 // console.log(Utils.engToKo('구라da drga C팔'))
 // console.log(Utils.engToKo('구라da drga C팔', true))
+
 // 비속어 데이터 불러오기
 let obj = new Tetrapod();
 obj.loadFile()
@@ -20,7 +21,7 @@ let newTime = new Date().getTime()
 // console.log("걸린시간:::", new Date().getTime() - newTime)
 // console.log(obj.find("시발 정말 나쁘게 구네", true))
 // console.log('nativeFind obj 테스트')
-console.log(obj.nativeFind(Utils.qwertyToDubeol("wlfkfgkwl 마라고 정말 짱나네", true), true, true, true))
+console.log(obj.nativeFind(Utils.msgToMap("아주 짜즚잆 낪닚다 상쾌핪짒 앉넶"), true, true, true))
 console.log("걸린시간:::", new Date().getTime() - newTime)
 // console.log('oneWordFind 테스트')
 // console.log('test!!!', Utils.objectIn(['시', '발!'], obj.parsedBadWords))

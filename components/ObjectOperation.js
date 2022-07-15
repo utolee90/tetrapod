@@ -118,6 +118,35 @@ const ObjectOperation = {
         }
     },
 
+    // 리스트 그냥 더하기. 원소 형태는 모두 같아야 한다. [[1,2,3],[2,4,5]]=> [1,2,3,2,4,5]
+    addList: (...list) => {
+        // 숫자
+        if (typeof list[0] === 'number') {
+            let res =0;
+            for (var x of list) {
+                res += Number(x);
+            }
+            return res;
+        }
+        // 문자
+        else if (typeof list[0] === 'string') {
+            let res ='';
+            for (var x of list) {
+                res += x;
+            }
+            return res;
+        }
+        // 리스트
+        else if (Array.isArray(list[0])) {
+            let res = [];
+            for (var x of list) {
+                res = res.concat(x);
+            }
+            return res
+        }
+
+    },
+
     // 리스트를 곱하기. 예시  [[1,2,3],[4,5,6]] => [[1,4], [1,5], [1,6], [2,4], [2,5], [2,6], [3,4], [3,5], [3,6]]
     productList : (list) => {
         if (Array.isArray(list)) {

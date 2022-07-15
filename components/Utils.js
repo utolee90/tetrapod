@@ -143,6 +143,9 @@ const Utils = {
         return sortedMap
     },
 
+    // 리스트 더하기
+    addList: ObjectOperation.addList,
+
     // 리스트/함수 합성 등 여러 상황에서 합성할 때 사용함.
     joinMap: ObjectOperation.joinMap,
 

@@ -329,25 +329,87 @@ class Tetrapod {
         }
         else {
             return {
-                bad: this.find(message, true, 0).totalResult.length,
-                end: this.find(message, true, 0).endResult.length,
+                bad: this.find(message, true, 0).found.length,
+                end: this.find(message, true, 0).doubleEnd.length,
             };
         }
 
     }
 
     // 메시지에 비속어 찾기 - 배열로 처리함.
+    // 20220715 수정 - nativeFind와 유사한 형태로 결과 출력.
      find(message, needMultipleCheck=false, splitCheck=15, qwertyToDubeol=false, isStrong=false) {
+
+        // 결과 출력 방식
+        let res = {
+            found: [], position: [], doubleEnd: [], doubleEndPosition: []
+        }
+
         // 욕설 결과 집합
         let totalResult = [] // 전체 추가
         let tooMuchEnds = [] // 비속어 받침 체크
         let originalTotalResult = []; // isStrong을 참으로 했을 때 dropDouble, dropDouble+simplify 결과 추가
 
+
+         // 편의상 메시지를 나누어서 처리하기. 15개 단위로 처리
+         if (splitCheck === undefined) splitCheck = 15
+         let messages = (splitCheck != 0) ? Utils.lengthSplit(message, splitCheck) : [message];
+
+         const fullLimit = splitCheck!==0? splitCheck: message.length; // 메시지 길이
+         const halfLimit = splitCheck !==0? Math.floor(splitCheck/2): 0; // 절반 메시지 길이.
+
+         // strong이 없다는 것은 message에서만 체크한다.
+         if (!isStrong) {
+             // lengthSplit 자체가 길이의 반 단위로 잘라서 검사한다.
+             // 따라서 쪼갤 때 비속어가 2번 검출하는 오류를 잡기 위해 체크하는 값 추가.
+             let adjustment = 0; // 보정 포지션 체크
+             for (let idx =0; idx<messages.length; idx++) {
+                 adjustment = Math.floor(idx/2)*fullLimit + (idx%2)* halfLimit; // 문장 내 x의 보정 포지션 지정하기
+                 // 같은 비속어 키워드여도 여러 개 비속어 대응이 가능하므로 msgToMap을 이용해서 여러 개 찾아준다.
+                 let curResult = this.nativeFind(Utils.msgToMap(messages[idx]), needMultipleCheck, true);
+                 let tempFound = Utils.addList(...curResult.originalFound); // 이중 리스트를 풀어서 처리
+                 let tempPosition = Utils.addList(...curResult.positions).map(x=> (x.map(r=> r+adjustment))); // 포지션 벡터를 풀어서 처리
+                 let tempDoubleEndFound = curResult.tooMuchDoubleEnd.txt;
+                 let tempDoubleEndPosition = curResult.tooMuchDoubleEnd.pos.map(x=> x+adjustment);
+                 for (let idx1 in tempPosition) {
+                     if (!Utils.objectIn(tempPosition[idx1], res.position)) {
+                         res.found.push(tempFound[idx]);
+                         res.position.push(tempPosition[idx]);
+                     }
+                 }
+
+                 for (let idx2 in tempDoubleEndPosition) {
+                     if (res.doubleEndPosition.indexOf(tempDoubleEndPosition[idx2]) === -1) {
+                         res.doubleEnd.push(tempDoubleEndFound[idx2]);
+                         res.doubleEndPosition.push(tempDoubleEndPosition[idx2]);
+                     }
+                 }
+             }
+
+
+
+
+         }
+         else {
+
+         }
+
+
+
+
+
          if (this.checkOptions.indexOf('qwerty')>-1) {
              let qwertyMap = Utils.qwertyToDubeol(message, true);
+             let newMessage= Utils.parseMap(qwertyMap).parsedMessage.join("");
+
          }
          if (this.checkOptions.indexOf('antispoof')>-1) {
              let antispoofMap = Utils.antispoof(message, true);
+             let newMessage= Utils.parseMap(antispoofMap).parsedMessage.join("");
+         }
+         if (this.checkOptions.indexOf('pronounce')>-1) {
+             let engToKoMap = Utils.engToKo(message, true);
+             let newMessage= Utils.parseMap(engToKoMap).parsedMessage.join("");
          }
 
         // 보조 메시지
@@ -366,8 +428,7 @@ class Tetrapod {
             message4Map = Utils.dropDouble(message3, true, false);
         }
 
-        if (splitCheck === undefined) splitCheck = 15
-        var messages = (splitCheck != 0) ? Utils.lengthSplit(message, splitCheck) : [message];
+
 
 
         // 메시지 나누어서 확인하기.
