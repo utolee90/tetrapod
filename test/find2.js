@@ -4,9 +4,12 @@ import Utils from "../components/Utils";
 import Tetrapod from "../tetrapod";
 import Hangul from "hangul-js"
 import fs from 'fs';
+import * as HO from "../components/HangulObjects";
 
 // fs.writeFile('./TEST.txt', 'TESTING', 'utf-8', function() {console.log("WRITTEN!")})
 
+// console.log(Utils.engToKo('구라da drga C팔'))
+// console.log(Utils.engToKo('구라da drga C팔', true))
 // 비속어 데이터 불러오기
 let obj = new Tetrapod();
 obj.loadFile()
@@ -15,21 +18,20 @@ obj.loadFile()
 let newTime = new Date().getTime()
 // console.log('시발 정발 나쁘게 구네 ::: TEST:::\n', JSON.stringify(obj.nativeFind("시발 정말 나쁘게 구네")))
 // console.log("걸린시간:::", new Date().getTime() - newTime)
-newTime = new Date().getTime()
 // console.log(obj.find("시발 정말 나쁘게 구네", true))
 // console.log('nativeFind obj 테스트')
-// console.log(obj.nativeFind(Utils.dropDouble("시브알놈아", true), true, true, true))
-// console.log("걸린시간:::", new Date().getTime() - newTime)
-console.log('oneWordFind 테스트')
-console.log('test!!!', Utils.objectIn(['시', '발!'], obj.parsedBadWords))
-console.log(obj.oneWordFind(['시', '발!'], Utils.dropDouble("시파알놈아", true), obj.badWordsMap, true, true, true, true))
+console.log(obj.nativeFind(Utils.qwertyToDubeol("wlfkfgkwl 마라고 정말 짱나네", true), true, true, true))
+console.log("걸린시간:::", new Date().getTime() - newTime)
+// console.log('oneWordFind 테스트')
+// console.log('test!!!', Utils.objectIn(['시', '발!'], obj.parsedBadWords))
+// console.log(obj.oneWordFind(['시', '발!'], Utils.dropDouble("시파알놈아", true), obj.badWordsMap, true, true, true, true))
 // console.log(obj.isExistBadWord('시발!'))
 // console.log("걸린시간:::", new Date().getTime() - newTime)
-console.log(Utils.parseMap(Utils.dropDouble('고아테이마알라', true)))
-console.log(obj.getOriginalPosition(Utils.dropDouble('고아테이마알라', true), [0,2,4]))
+// console.log(Utils.parseMap(Utils.dropDouble('고아테이마알라', true)))
+// console.log(obj.getOriginalPosition(Utils.dropDouble('고아테이마알라', true), [0,2,4]))
 obj.adjustFilter([],[],['qwerty'],false);
 console.log('engBadWordsCheck 테스트!!!')
-console.log('몽땅 사라졌나???', obj.parsedBadWords.length, Object.keys(obj.badWordsMap).length, obj.badWords[0].length)
+// console.log('몽땅 사라졌나???', obj.parsedBadWords.length, Object.keys(obj.badWordsMap).length, obj.badWords[0].length)
 console.log(obj.engBadWordsCheck(['시', '발!'], 'tlvkfshadk'))
 obj.adjustFilter([],[],['antispoof'],false);
 console.log(obj.engBadWordsCheck(['시', '발!'], '^l발롬'))

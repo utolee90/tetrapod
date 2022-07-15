@@ -296,8 +296,8 @@ const Utils = {
         }
     },
 
-    // 파싱하기 {씨:{value:시, index:[0]}, 브얼:{value:벌, index:[1]}} ->
     // 매핑형식 - 키: 어구, {value: 해석된 어구
+    // 파싱하기 {씨:{value:시, index:[0]}, 브얼:{value:벌, index:[1]}} ->
     // => {messageList: ['씨', '브얼'], messageIndex: [0,1], parsedMessage: ['시', '벌']}
     // 맵 형식 - qwertyToDubeol map, antispoof map, dropDouble map을 입력으로 한다.
     parseMap: (map) => {
@@ -325,6 +325,25 @@ const Utils = {
             messageIndex: originalMessageIndex,
             parsedMessage: parsedMessage
         }
+    },
+
+    // reserveMap - parseMap의 역함수. parsed된 내용을 이용해서 맵 복구
+    // {messageList: ['씨', '브얼'], messageIndex: [0,1], parsedMessage: ['시', '벌']}
+    // =>
+    reserveMap: (parsed) => {
+        const messageList = parsed.messageList;
+        const messageIndex = parsed.messageIndex;
+        const parsedMessage= parsed.parsedMessage;
+        let res = {}
+        for (let i in messageList) {
+            if (res[messageList[i]]) {
+                res[messageList[i]].index.push(messageIndex[i])
+            }
+            else {
+                res[messageList[i]] = {value: parsedMessage[i], index: [messageIndex[i]]}
+            }
+        }
+        return res;
     },
 
     // 한글 낱자를 초성중성종성으로 분리하기
@@ -674,14 +693,14 @@ const Utils = {
                     skipElement = true;
                     if (isMap) {
                         for (let key in resObj) {
-                            console.log(key, resObj[key].value, resList[ind], resList[parseInt(ind)+1])
+                            // console.log(key, resObj[key].value, resList[ind], resList[parseInt(ind)+1])
                             if (resObj[key].value === Hangul.assemble(resList[ind])) {
                                 preKey = key;
-                                console.log(preKey)
+                                // console.log(preKey)
                             }
                             else if (resObj[key].value == Hangul.assemble(resList[parseInt(ind)+1])) {
                                 postKey = key;
-                                console.log(postKey, 'ENDDDD')
+                                // console.log(postKey, 'ENDDDD')
                             }
                         }
                         joinKey[resList2.length-1] = [preKey, postKey];
@@ -718,7 +737,7 @@ const Utils = {
             }
             else {
                 for (let keyNum in joinKey) {
-                    console.log(keyNum, joinKey[keyNum])
+                    // console.log(keyNum, joinKey[keyNum])
                     preKey = joinKey[keyNum][0]
                     postKey = joinKey[keyNum][1]
                     resObj[preKey+postKey] = {value: Hangul.assemble(resList2[keyNum]), index: resObj[preKey].index}
@@ -871,7 +890,6 @@ const Utils = {
                 }
             }
 
-            // console.log("RESULT_", msgAlphabet)
             return Hangul.assemble(msgAlphabet);
 
         }
@@ -1178,6 +1196,320 @@ const Utils = {
         }
     },
 
+    // 단문자타입 확인하는 함수
+    checkCharType: (char, antispoof=false) => {
+        if (/^[가-힣]$/.test(char)) return 'h'; // 한글 낱자
+        else if (['ㄸ', 'ㅃ', 'ㅉ'].indexOf(char)>-1) return 'i'; // 초성 전용
+        else if (HO.charInitials.indexOf(char)>-1)  return 'c'; // 초성/종성 공용
+        else if (/^[ㄱ-ㅎ]$/.test(char)) return 'f'; // 종성전용
+        else if (/^[ㅏ-ㅣ]$/.test(char)) return 'v'; // 모음
+        else {
+            // antispoof 있으면 antispoof 기준으로 캐릭터 분류
+            if (antispoof) {
+                if (Object.keys(Utils.similarConsonant).indexOf(char)>-1) return 'd'; // 유사자음
+                else if (Object.keys(Utils.similarVowel).indexOf(char)>-1) return 'w'; // 유사모음
+                else if (/^\s+/.test(char)) return 's';
+                else return 'e';
+            }
+            // antispoof 없으면 발음 기준 적용
+            else {
+                if (/^[aeiou]+$/.test(char)) return 'ev';
+                else if (/^[yw]$/.test(char)) return 'eh';
+                else if (/^[bcdfghjklmnpqrstvxz]+$/.test(char)) return 'ec';
+                else if (/^\s+/.test(char)) return 's';
+                else return 'e';
+            }
+        }
+            },
+
+    // 영어변환 한글로 하기. 최대한 일대일 대응으로만 잡아보자.
+    engToKo: (msg, isMap=false) => {
+        let msgSplit = msg.toLowerCase().split('');
+        let i = 0;
+        let korTypeObj = {} // 키 타입 확인
+        for (let key in HO.alphabetPronounceMapping) {
+            let partObj = HO.alphabetPronounceMapping[key]
+            let partRes = []
+            for (let key2 in partObj) {
+                partRes = partRes.concat(partObj[key2])
+            }
+            korTypeObj[key] = partRes
+        }
+
+        let newMsgSplit = []; // 원소 형식은 [(발음),(조건), (원음)], 조건은 '초', '중', '종', '낱', '기'
+        // msgSplit 영어한글 합치기 원칙.
+        while (i < msgSplit.length) {
+            let letter = msgSplit[i]; // 단어 체크
+            // 반모음-> 이중모음 체크
+            if (['y', 'w'].indexOf(letter) > -1) {
+                let seq = i < msgSplit.length - 1 ? msgSplit[i + 1] : '';
+                //
+                if (['a', 'e', 'i', 'o', 'u'].indexOf(seq) > -1) {
+                    let joined = msgSplit[i] + msgSplit[i + 1];
+                    let secondJoined = i < msgSplit.length - 2 ? joined + msgSplit[i + 2] : 'xxx'; // yae 같은 모음 찾기 위해서
+                    if (korTypeObj.doubleVowels.indexOf(secondJoined) > -1) {
+                        newMsgSplit.push([secondJoined, '중']);
+                        i += 3;
+                    } else {
+                        newMsgSplit.push([joined, '중']);
+                        i += 2;
+                    }
+                } else {
+                    if (letter === 'y') {
+                        newMsgSplit.push(['y', '중']);
+                        i++;
+                    } else { // w 다
+                        // 음에 모음 아닌 것이 오면 w는 무시한다.
+                        i++;
+                    }
+                }
+            }
+            // 모음 체크
+            else if (['a', 'e', 'i', 'o', 'u'].indexOf(letter) > -1 || /[ㅏ-ㅣ]/.test(letter)) {
+                // eui 경우
+                if (i < msgSplit.length - 2 && msgSplit.slice(i, i + 3).join("") === 'eui') {
+                    newMsgSplit.push(['eui', '중']);
+                    i += 3;
+                } else {
+                    let seq = i < msgSplit.length - 1 ? msgSplit[i + 1] : '';
+                    // 알파벳 2개 모음
+                    if (korTypeObj.vowels.indexOf(letter + seq) > -1) {
+                        newMsgSplit.push([letter + seq, '중']);
+                        i += 2;
+                    }
+                    // 나머지- 단모음.
+                    else {
+                        newMsgSplit.push([letter, '중']);
+                        i++;
+                    }
+                }
+            }
+            // 자음 알파벳 또는 자음 낱자 체크 - 받침 확인이 필요함.
+            else if (/^[a-z]$/.test(letter) || /[ㄱ-ㅎ]/.test(letter)) {
+                // 받침이 올 때는 반드시 모음 뒤에 온다.
+                if (newMsgSplit.length > 0 && newMsgSplit[newMsgSplit.length - 1][1] === '중') {
+                    let seq = i < msgSplit.length - 1 ? msgSplit[i + 1] : ''; // 뒤의 낱자
+                    let nextSeq = i < msgSplit.length - 2 ? msgSplit[i + 2] : ''; // 뒤의 뒤의 낱자
+                    // seq가 모음 -> 초성으로 처리
+                    if (/[aeiouy]/.test(seq) || (seq === 'w' && /[aeiou]/.test(nextSeq))) {
+                        // 중성+x+중성은 ㄱ받침 + ㅅ음가를 차지하기에 특수하게 처리
+                        if (letter === 'x') {
+                            newMsgSplit.push(['x', '종']);
+                            newMsgSplit.push(['x', '초']);
+                            i++;
+                        } else {
+                            newMsgSplit.push([letter, '초']);
+                            i++;
+                        }
+                    }
+                    // seq가 자음, nextSeq가 모음 - 예외적인 몇몇 자음 빼고는 letter는 종성, seq는 초성처리
+                    else if (/[a-z]/.test(seq) && /[^aeiouyw]/.test(seq) && /[aeiouyw]/.test(nextSeq)) {
+                        let joined = letter + seq;
+                        if (['ch', 'zh', 'sh', 'th'].indexOf(joined) > -1) {
+                            newMsgSplit.push([joined, '초']);
+                        } else {
+                            newMsgSplit.push([letter, '종']);
+                            newMsgSplit.push([seq, '초']);
+                        }
+                        i += 2;
+                    }
+                    // 나머지 seq가 자음일 때
+                    else if (/[a-z]/.test(seq) && /[^aeiouyw]/.test(seq)) {
+                        // letter+seq가 받침자음 형성 가능하면 받침처리
+                        if (korTypeObj.endConsonants.indexOf(letter + seq) > -1) {
+                            newMsgSplit.push([letter + seq, '종']);
+                            i += 2;
+                        }
+                        // 나머지는 그냥 letter만 받침처리
+                        else {
+                            if (korTypeObj.endConsonants.indexOf(letter) > -1) {
+                                newMsgSplit.push([letter, '종']);
+                            }
+                            i++; // 받침 여부와 무관하게
+                        }
+                    }
+                    // 나머지 - seq가 자음도 모음도 아님 - 받침일 때에는 처리. 받침 아닐 때에는 무시
+                    else {
+                        if (korTypeObj.endConsonants.indexOf(letter) > -1) {
+                            newMsgSplit.push([letter, '종']);
+                        }
+                        i++; // 받침 여부와 무관하게
+                    }
+                }
+                // 중성 뒤에 오지 않으면 초성임.
+                else {
+                    let seq = i < msgSplit.length - 1 ? msgSplit[i + 1] : '';  // 다음 문자
+                    if (korTypeObj.consonants.indexOf(letter + seq) > -1) {
+                        newMsgSplit.push([letter + seq, '초']);
+                        i += 2;
+                    } else {
+                        newMsgSplit.push([letter, '초']);
+                        i++;
+                    }
+                }
+            }
+            // 낱자 처리 확인.
+            else if (/[가-힣]/.test(letter)) {
+                newMsgSplit.push([letter, '낱']);
+                i++;
+            }
+            // 나머지 - 기타
+            else {
+                newMsgSplit.push([letter, '기']);
+                i++;
+            }
+
+        }
+
+        // 메시지 조작.
+        i = 0;
+        while (i<newMsgSplit.length) {
+            // 초성 다음에 초성이 오면 중성 ['', '중'] 끼워넣기
+            if (i<newMsgSplit.length-1 && newMsgSplit[i][1]==='초' && newMsgSplit[i+1][1]==='초') {
+                newMsgSplit.splice(i+1, 0, ['', '중']);
+                i+=2;
+            }
+            // 초성 아닌 것 다음에 중성이 오면 초성 ['', '초'] 끼워넣기
+            else if (i<newMsgSplit.length-1 && newMsgSplit[i][1]!=='초' && newMsgSplit[i+1][1] ==='중') {
+                newMsgSplit.splice(i+1, 0, ['', '초']);
+                i+=2;
+            }
+            // 초성 b,c,d,g,l,m,n,p,q,r,t,x,z 바로 다음에 한글 낱자가 올 경우 지정된 낱자로 대체
+            else if (i<newMsgSplit.length-1 && newMsgSplit[i][1] ==='초' && Object.keys(Utils.singlePronounce).indexOf(newMsgSplit[i][0])>-1 && newMsgSplit[i+1][1]==='낱') {
+                newMsgSplit[i] = [Utils.singlePronounce[newMsgSplit[i][0]], '낱', newMsgSplit[i][0]]; // 3번째 리스트에 원본 보존
+                i++
+            }
+            // 특수한 낱자들 다음에 한글 낱자나 기타가 올 경우 낱자로 대체
+            else if (i<newMsgSplit.length-1&& newMsgSplit[i][1] === '기' && Object.keys(Utils.singlePronounce).indexOf(newMsgSplit[i][0])>-1 && ['낱', '기'].indexOf(newMsgSplit[i+1][1])>-1 ) {
+                newMsgSplit[i] = [Utils.singlePronounce[newMsgSplit[i][0]], '낱', newMsgSplit[i][0]]; // 3번째 리스트에 원본 보존
+                i++
+            }
+            // 나머지는 건드리지 않기
+            else {
+                i++;
+            }
+        }
+
+        // 마지막으로 newMsgSplit을 이용해서 결과 메시지 유도하기
+        newMsgSplit = newMsgSplit.map((x, idx)=> {
+            // 영어 초중종, 혹은 아무것도 없는 것만 바꾸어보자.
+            if (/[a-z]/.test(x[0]) || x[0]==='') {
+                switch(x[1]) {
+                    case '초':
+                        let cObj = Utils.alphabetPronounceMapping.consonants;
+                        // x[1]이 c일 때는 다음 모음에 따라 발음 결정
+                        if (x[1]==='c') {
+                            let seq = idx<newMsgSplit.length-1? newMsgSplit[idx+1][0]: '';
+                            if (['e', 'i'].indexOf(seq)>-1) {
+                                return ['ㅅ', '초', 'c'];
+                            }
+                            else {
+                                return ['ㅋ', '초', 'c'];
+                            }
+                        }
+                        else {
+                            for (let key in cObj) {
+                                if (cObj[key].indexOf(x[0])>-1) {
+                                    return [key, '초', x[0]];
+                                }
+                            }
+                            return x;
+                        }
+                        break;
+                    case '중':
+                        let vObj = Utils.alphabetPronounceMapping.vowels;
+                        let dObj = Utils.alphabetPronounceMapping.doubleVowels;
+                        for (let key in vObj) {
+                            if (vObj[key].indexOf(x[0])>-1) {
+                                return [key, '중', x[0]];
+                            }
+                        }
+                        for (let key in dObj) {
+                            if (dObj[key].indexOf(x[0])>-1) {
+                                return [key, '중', x[0]];
+                            }
+                        }
+                        return x;
+                        break;
+                    case '종':
+                        let eObj = Utils.alphabetPronounceMapping.endConsonants;
+                        for (let key in eObj) {
+                            if (eObj[key].indexOf(x[0])>-1) {
+                                return [key, '종', x[0]];
+                            }
+                        }
+                        return x;
+                        break;
+                    default:
+                        return x;
+                }
+            }
+            return x;
+        })
+
+        // newMsgSplit을 이용해서 메시지 합성
+        if (isMap) {
+            let resObj = {}; // 결과 추가
+            let j = 0; // 위치 추가
+            let key='', val='', valList=[]; // 키, 값, 값 리스트 추가
+            for (let k=0; k<newMsgSplit.length; k++) {
+                let partList = newMsgSplit[k];
+                switch(partList[1]) {
+                    // 낱자거낙 기타면 정직하게 글자 추가
+                    case '낱':
+                    case '기':
+                        key = partList.length===3? partList[2]: partList[0];
+                        val = partList[0];
+                        if (resObj[key]) {
+                            resObj[key].index.push(j);
+                        }
+                        else {
+                            resObj[key] = {value: val, index: [j]}
+                        }
+                        j+=key.length;
+                        break;
+                    // 초성일 때는 그냥 키값이랑 추가
+                    case '초':
+                        key = partList.length ===3? partList[2]: partList[0];
+                        valList = [partList[0]]; // 우선 리스트로 처리
+                        break;
+                    // 중성일 때는 다음이 종성이 아닐 때는 추가. 종성일 때는 넘어가자
+                    case '중':
+                        key = partList.length ===3 ? key+partList[2]: key+partList[0];
+                        valList.push(partList[0]);
+                        // 종성이 바로 뒤에 안 올 때는 오브젝트 처리
+                        if (k === newMsgSplit.length-1 || newMsgSplit[k+1][1] !== '종') {
+                            if (resObj[key]) {
+                                resObj[key].index.push(j);
+                            }
+                            else {
+                                resObj[key] = {value: Hangul.assemble(valList), index: [j]}
+                            }
+                            j +=key.length;
+                        }
+                        break;
+                    // 종성일 때는 바로 조립
+                    case '종':
+                        key = partList.length ===3 ? key+partList[2]: key+partList[0];
+                        valList.push(partList[0]);
+                        if (resObj[key]) {
+                            resObj[key].index.push(j);
+                        }
+                        else {
+                            resObj[key] = {value: Hangul.assemble(valList), index: [j]}
+                        }
+                        j +=key.length;
+                        break;
+                }
+            }
+            return resObj;
+
+        }
+        else {
+            return Hangul.assemble(newMsgSplit.map(x=>x[0])); // newMsgSplit의 자, 모, 낱자만 모은 뒤 assemble 함수로 메시지 조합.
+        }
+
+    },
 
 }
 

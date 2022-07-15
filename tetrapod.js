@@ -45,9 +45,8 @@ class Tetrapod {
         // 리스트 유형 확인
         this.badWordLevel = [] // [1,2,3,4]의 부분집합으로 선택. 기본값은 0번만 활성화
         this.typeCheck = [] // 비속여의 출력할 유형 확인. drug(약물), insult(모욕), sexuality(성적표현), violence(폭력) 중 선택 가능.
-        this.checkOptions = [] // 비속어 추가 찾기 옵션 확인. qwerty(영자판 섞기), antispoof(문자섞기), engtoko(한글발음) 옵션 추가.
+        this.checkOptions = [] // 비속어 추가 찾기 옵션 확인. qwerty(영자판 섞기), antispoof(문자섞기), pronounce(발음) 옵션 추가.
         this.dropDoubleCheck = false; // dropDouble로 축약화시킨 메시지도 검사하기 여부. 체크시 dd, dd+simplify된 메시지도 같이 검사.
-
     }
 
 
@@ -340,11 +339,18 @@ class Tetrapod {
     // 메시지에 비속어 찾기 - 배열로 처리함.
      find(message, needMultipleCheck=false, splitCheck=15, qwertyToDubeol=false, isStrong=false) {
         // 욕설 결과 집합
-        let totalResult = []
-        let tooMuchEnds = []
-        let originalTotalResult = []; // isStrong을 참으로 했을 때 결과 수집
+        let totalResult = [] // 전체 추가
+        let tooMuchEnds = [] // 비속어 받침 체크
+        let originalTotalResult = []; // isStrong을 참으로 했을 때 dropDouble, dropDouble+simplify 결과 추가
 
-        //보조 메시지
+         if (this.checkOptions.indexOf('qwerty')>-1) {
+             let qwertyMap = Utils.qwertyToDubeol(message, true);
+         }
+         if (this.checkOptions.indexOf('antispoof')>-1) {
+             let antispoofMap = Utils.antispoof(message, true);
+         }
+
+        // 보조 메시지
         let message2Map = {};
         let message3Map = {}
         let message3 = ''
@@ -458,7 +464,6 @@ class Tetrapod {
 
         let foundBadWords = []; // 찾은 비속어 단어 결과.
         let foundBadWordPositions = [] // 찾은 비속어 단어의 원래 위치
-        // let joinedFoundBadWordPositions = [] // 찾은 비속어 단어의 위치의 합집합.
         let originalFoundBadWords = []; // map으로 주어졌을 때 원래 단어.
         let originalFoundBadWordPositions = []; // isMap에서 original 단어 위치
         let originalMessageList = []; // isMap 사용시 원래 메시지에서 parseMap으로 유도되는 메시지 목록
@@ -515,26 +520,6 @@ class Tetrapod {
 
         // 비속어 단어를 한 단어씩 순회합니다. parsedBadWords의 idx를 사용해 보자.
         for (let idx in parsedBadWords) {
-
-            // // oneWordFind 함수를 이용해서 결과값 확인. 현재 효율이 안 좋고 오류가 있어서 일단 미사용.
-            // let resObj = this.oneWordFind(parsedBadWords[idx], message, parsedBadWordsMap, needMultipleCheck, true, isMap, isReassemble);
-            //
-            // // 만약 비속어 찾은 포지션 위치가 다른 비속어들의 포지션 벡터 안에 들어가있으면 목록에 넣지 않는다.
-            // for (let objectPosIdx in resObj.position) {
-            //     if (!Utils.objectInclude(resObj.position[objectPosIdx], joinedFoundBadWordPositions, false)) {
-            //         delete resObj.position[objectPosIdx];
-            //         if (isMap) delete resObj.originalPosition[objectPosIdx];
-            //     }
-            // }
-            //
-            // // 단어가 남아 있을 때 리스트에 추가
-            // if (resObj.position.length>0) {
-            //     foundBadWords.push(resObj.found);
-            //     foundBadWordPositions.push(resObj.position);
-            //     originalFoundBadWords.push(resObj.originalFound);
-            //     originalFoundBadWordPositions.push(resObj.originalPosition);
-            //     joinedFoundBadWordPositions = Utils.listUnion(joinedFoundBadWordPositions, Utils.listUnion(resObj.position));
-            // }
 
             let badWord = parsedBadWords[idx]; // badWord -> parsedBadWords 기준
             let badWordValue = badWord.join(""); // badWordValue -> 단어 붙이기.
@@ -866,7 +851,7 @@ class Tetrapod {
             let nextCharacter = (wordList.indexOf(character) < wordList.length-1)
                 ? wordList[ wordList.indexOf(character)+1 ][0].toLowerCase(): "" // 뒤의 낱자 수집.
 
-            let badOneCharacter = String(mainCharacter).toLowerCase(); // 소문자로 통일합니다.
+            let badOneCharacter = String(mainCharacter).toLowerCase(); // 소문자로 통일. 리스트에 있는 비교대상
 
             // 일단 비속어 단어의 리스트를 정의해서 수집한다.
             findLetterPosition[badOneCharacter] = [] // 리스트
@@ -876,10 +861,10 @@ class Tetrapod {
             for (let index in newMessage) {
 
                 // 단어 한글자라도 들어가 있으면 찾은 글자를 기록합니다.
-                let unsafeOneCharacter = String(newMessage[index]).toLowerCase()
-
+                let unsafeOneCharacter = String(newMessage[index]).toLowerCase() // 원문에 있는 글자.
 
                 // parserCharacter가 !이면 유사문자를 활용하는 함수인 isKindChar 활용
+                // 원문의 unsafeOneCharacter가 비속어 필터의 키워드 글자 badOneCharacter의
                 if (parserCharacter==="!") {
                     if (this.isKindChar(unsafeOneCharacter, badOneCharacter, nextCharacter)) {
                         findLetterPosition[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문장에서 전부 수집한다.
@@ -900,9 +885,6 @@ class Tetrapod {
 
             }
         }
-
-
-        // 이제 findCount 오브젝트를 이용해서
 
         // 단어 포지션 - 키값이 단글자로 된 애들만 수집.
         let positionsList = Utils.filterList(Object.values(findLetterPosition), "object");
@@ -1024,25 +1006,29 @@ class Tetrapod {
         if (wordPositions.length>0) {
 
             if (isMap) {
-                console.log(`원문: ${originalMessage}`);
-                console.log(`변환된 문장: ${newMessage}`);
-                console.log(`발견된 비속어: [${wordList.join('')}]`)
-                console.log(`발견된 비속어 유형: ${wordTypeValue[wordType]}`)
-                console.log(`발견된 비속어 원문: [${originalWords}]`)
-                console.log(`발견된 비속어 위치: [${wordPositions}]`)
-                console.log(`발견된 비속어 원래 위치: [${originalPositions}]`)
-                console.log('\n')
+                if (print) {
+                    console.log(`원문: ${originalMessage}`);
+                    console.log(`변환된 문장: ${newMessage}`);
+                    console.log(`발견된 비속어: [${wordList.join('')}]`)
+                    console.log(`발견된 비속어 유형: ${wordTypeValue[wordType]}`)
+                    console.log(`발견된 비속어 원문: [${originalWords}]`)
+                    console.log(`발견된 비속어 위치: [${wordPositions}]`)
+                    console.log(`발견된 비속어 원래 위치: [${originalPositions}]`)
+                    console.log('\n')
+                }
                 res.found = wordList.join('');
                 res.position = wordPositions;
                 res.originalFound = originalWords;
                 res.originalPosition = originalPositions
             }
             else {
-                console.log(`원문: ${newMessage}`)
-                console.log(`발견된 비속어: [${wordList.join()}]`)
-                console.log(`발견된 비속어 유형: ${wordTypeValue[wordType]}`)
-                console.log(`발견된 비속어 위치: [${wordPositions}]`)
-                console.log('\n')
+                if (print) {
+                    console.log(`원문: ${newMessage}`)
+                    console.log(`발견된 비속어: [${wordList.join()}]`)
+                    console.log(`발견된 비속어 유형: ${wordTypeValue[wordType]}`)
+                    console.log(`발견된 비속어 위치: [${wordPositions}]`)
+                    console.log('\n')
+                }
                 res.found = wordList.join('');
                 res.position = wordPositions;
             }
@@ -1050,7 +1036,7 @@ class Tetrapod {
         return res;
     }
 
-    // 비속어를 결자처리하는 함수
+    // 비속어를 결자처리하는 함수. isMap을 통해 유도해보자.
     fix(message, replaceCharacter, condition= {qwertyToDubeol:false, antispoof:false, dropDouble:false, fixSoft:false, isOriginal:false}) {
 
         let fixedMessage = "";
@@ -1264,6 +1250,7 @@ class Tetrapod {
     // char : 낱자
     // comp : 낱자. comp!에 char가 포함되는 경우 true, 아닌 경우 false를 반환한다.
     // following : !뒤에 오는 낱자. 없으면 ""
+    // 추가- this.strongerCheck가 true일 때에는 영어, 유사자형도 체크한다.
     isKindChar(char, comp, following="") {
         // 초성중성종성 분리 데이터 이용하기
         let charDisassemble = Utils.choJungJong(char)
@@ -1431,9 +1418,10 @@ class Tetrapod {
     }
 
     // 비속어 검사시 영어표현의 위치를 잡아내는 함수
-    // 예시 : ([[지!,'랄'], ziral) =>[0,2] )
+    // 예시 : ([[지!,'랄'], ziral) =>[0,1,2,3,4] )
     // isMap일 때에는 {position: [], originalPosition: []} 형태로 출력
-    engBadWordsCheck(wordList, message, isMap = false) {
+    // type :
+    engBadWordsCheck(wordList, message, isMap = false, type) {
         let res = [] // 리스트 형태로 출력. 각 원소는 [1,2,4] 형식으로 출력함.
         let originalRes = [] // 원문의 위치 리스트 형태로 출력. isMap이 참일 때만 사용 가능
         let messageParse = isMap ? Utils.parseMap(message) : {messageList:[], messageIndex: [], parsedMessage:[]}
@@ -1455,24 +1443,25 @@ class Tetrapod {
             }
         }
 
-        // qwertyToDobeol 체크
-        if (this.checkOptions.indexOf('qwerty')>-1) {
-            console.log('qwertytest');
-            msgMap = Utils.qwertyToDubeol(newMessage, true);
-            console.log(JSON.stringify(msgMap))
-            joinProcess(msgMap);
-        }
-        // antispoof 체크
-        if (this.checkOptions.indexOf('antispoof')>-1) {
-            console.log('antispoof test');
-            msgMap = Utils.antispoof(newMessage, true);
-            console.log(JSON.stringify(msgMap))
-            joinProcess(msgMap);
-        }
-        // engToKo 체크
-        if (this.checkOptions.indexOf('engToKo')>-1) {
-            console.log('engtoko test');
-
+        // 타입에 따라 작업 달라짐
+        switch(type) {
+            // 한영자 타입 섞기 테스트
+            case 'qwerty':
+                // console.log('qwertytest');
+                msgMap = Utils.qwertyToDubeol(newMessage, true);
+                joinProcess(msgMap);
+                break;
+            //
+            case 'antispoof':
+                // console.log('antispoof test');
+                msgMap = Utils.antispoof(newMessage, true);
+                joinProcess(msgMap);
+                break;
+            case 'pronounce':
+                // console.log('engtoko test');
+                msgMap = Utils.engToKo(newMessage, true);
+                joinProcess(msgMap);
+                break;
         }
 
         return isMap? {position: res, originalPosition: originalRes}: res;
