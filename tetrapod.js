@@ -58,7 +58,7 @@ class Tetrapod {
         this.preParsed = false; // 재파싱 필요 여부 결정.
         this.startTime = new Date().getTime(); // 시작시점 재지정
         console.log("LOADING...");
-        if (disableAutoParse != false) {
+        if (disableAutoParse !== false) {
             this.parse();
         }
     }
@@ -135,8 +135,6 @@ class Tetrapod {
         }
 
         console.log("before Sorting Words", new Date().getTime() - this.startTime)
-        // parsedBadWords 단어 순서 정리한 후 badWordInfo  정보 추가
-        console.log('valueTEST', this.parsedBadWords[0])
         this.parsedBadWords.sort((a, b) => a[1].length - b[1].length).reverse();
 
 
@@ -293,231 +291,312 @@ class Tetrapod {
     }
 
     // 메시지에 비속어가 들어갔는지 검사.
-     isBad(message, includeSoft=false, fromList = undefined) {
-        if (fromList === undefined) {
-            if (includeSoft === true)
-                return (this.nativeFind(message, false).found.length >0 ||
-                    this.nativeFind(message, false).tooMuchDoubleEnd.val
-                );
-            else
-                return this.nativeFind(message, false).found.length>0;
+     isBad(message) {
+        let resObj = this.find(message,false, 20);
+        for (let key in resObj) {
+            // 하나라도 비어있지 않은 오브젝트가 발견되면 True.
+            if (Array.isArray(resObj[key]) && resObj[key].length>0) {
+                return true;
+            }
         }
-            // fromList가 리스트 형식으로 주어지면 includeSoft와 무관하게 fromList 안에 있는 함수만 검출
-        // fromList는 단어 리스트 또는 파싱된 단어 리스트 중 하나 입력 가능.
-        else if (Array.isArray(fromList)) {
-            return (this.nativeFind(message, false, false, false, fromList).found.length > 0)
-        }
+        return false;
     }
 
     // 메시지에 비속어가 몇 개 있는지 검사.
      countBad(message) {
 
+        let res, dropDoubleChecked = {};
+
         if (this.dropDoubleCheck) {
-            let searchResult = this.find(message, true, 0);
-            // totalResult
-            let bad = 0;
-            // originalTotalResult
-            let bad2 = 0;
-            for (var x of searchResult.totalResult) {
-                bad += x.positions.length
+            dropDoubleChecked = {
+                ddBad: this.find(message, true, 0).ddFound.length,
+                ddsBad: this.find(message, true, 0).ddsFound.length
             }
-            for (x of searchResult.originalTotalResult) {
-                bad2 += x.positions.length
-            }
-
-            return {bad: Math.max(bad, bad2), end:searchResult.endResult.length};
         }
-        else {
-            return {
-                bad: this.find(message, true, 0).found.length,
-                end: this.find(message, true, 0).doubleEnd.length,
-            };
-        }
+        res = {
+            bad: this.find(message, true, 0).found.length,
+            end: this.find(message, true, 0).doubleEnd.length,
+            ...dropDoubleChecked
+        };
 
+        // qwertyTest
+         if (this.checkOptions.indexOf('qwerty')>-1) {
+             dropDoubleChecked ={};
+             if (this.dropDoubleCheck) {
+                 dropDoubleChecked = {
+                     qwertyDdBad: this.find(message, true, 0).qwertyDdFound.length,
+                     qwertyDdsBad: this.find(message, true, 0).qwertyDdsFound.length
+                 }
+             }
+             res = {
+                 ...res,
+                 qwertyBad: this.find(message, true, 0).qwertyFound.length,
+                 qwertyEnd: this.find(message, true, 0).qwertyDoubleEnd.length,
+                 ...dropDoubleChecked
+             };
+         }
+
+         // antispoof
+         if (this.checkOptions.indexOf('antispoof')>-1) {
+             dropDoubleChecked ={};
+             if (this.dropDoubleCheck) {
+                 dropDoubleChecked = {
+                     antispoofDdBad: this.find(message, true, 0).antispoofDdFound.length,
+                     antispoofDdsBad: this.find(message, true, 0).antispoofDdsFound.length
+                 }
+             }
+             res = {
+                 ...res,
+                 antispoofBad: this.find(message, true, 0).antispoofFound.length,
+                 antispoofEnd: this.find(message, true, 0).antispoofDoubleEnd.length,
+                 ...dropDoubleChecked
+             };
+         }
+
+         // pronounce
+         if (this.checkOptions.indexOf('pronounce')>-1) {
+             dropDoubleChecked ={};
+             if (this.dropDoubleCheck) {
+                 dropDoubleChecked = {
+                     pronounceDdBad: this.find(message, true, 0).pronounceDdFound.length,
+                     pronounceDdsBad: this.find(message, true, 0).pronounceDdsFound.length
+                 }
+             }
+             res = {
+                 ...res,
+                 pronounceBad: this.find(message, true, 0).pronounceFound.length,
+                 pronounceEnd: this.find(message, true, 0).pronounceDoubleEnd.length,
+                 ...dropDoubleChecked
+             };
+         }
+
+        return res;
     }
 
     // 메시지에 비속어 찾기 - 배열로 처리함.
     // 20220715 수정 - nativeFind와 유사한 형태로 결과 출력.
-     find(message, needMultipleCheck=false, splitCheck=15, qwertyToDubeol=false, isStrong=false) {
+     find(message, needMultipleCheck=true, splitCheck=20, isStrong=this.dropDoubleCheck, recursive = true ) {
 
         // 결과 출력 방식
         let res = {
-            found: [], position: [], doubleEnd: [], doubleEndPosition: []
+            message: message, found: [], position: [], doubleEnd: [], doubleEndPosition: []
         }
 
-        // 욕설 결과 집합
-        let totalResult = [] // 전체 추가
-        let tooMuchEnds = [] // 비속어 받침 체크
-        let originalTotalResult = []; // isStrong을 참으로 했을 때 dropDouble, dropDouble+simplify 결과 추가
-
+        let offset = ['qwerty', 'antispoof', 'pronounce']; // 재귀 실행시에 무한반복 방지용 변수
 
          // 편의상 메시지를 나누어서 처리하기. 15개 단위로 처리
-         if (splitCheck === undefined) splitCheck = 15
-         let messages = (splitCheck != 0) ? Utils.lengthSplit(message, splitCheck) : [message];
+         if (splitCheck === undefined) splitCheck = 20
+         let messages = (splitCheck !== 0) ? Utils.lengthSplit(message, splitCheck) : [message];
 
          const fullLimit = splitCheck!==0? splitCheck: message.length; // 메시지 길이
          const halfLimit = splitCheck !==0? Math.floor(splitCheck/2): 0; // 절반 메시지 길이.
 
-         // strong이 없다는 것은 message에서만 체크한다.
-         if (!isStrong) {
-             // lengthSplit 자체가 길이의 반 단위로 잘라서 검사한다.
-             // 따라서 쪼갤 때 비속어가 2번 검출하는 오류를 잡기 위해 체크하는 값 추가.
-             let adjustment = 0; // 보정 포지션 체크
-             for (let idx =0; idx<messages.length; idx++) {
-                 adjustment = Math.floor(idx/2)*fullLimit + (idx%2)* halfLimit; // 문장 내 x의 보정 포지션 지정하기
-                 // 같은 비속어 키워드여도 여러 개 비속어 대응이 가능하므로 msgToMap을 이용해서 여러 개 찾아준다.
-                 let curResult = this.nativeFind(Utils.msgToMap(messages[idx]), needMultipleCheck, true);
+         // lengthSplit 자체가 길이의 반 단위로 잘라서 검사한다.
+         // 따라서 쪼갤 때 비속어가 2번 검출하는 오류를 잡기 위해 체크하는 값 추가.
+         let adjustment = 0; // 보정 포지션 체크
+         for (let idx =0; idx<messages.length; idx++) {
+             adjustment = Math.floor(idx/2)*fullLimit + (idx%2)* halfLimit; // 문장 내 x의 보정 포지션 지정하기
+             // 같은 비속어 키워드여도 여러 개 비속어 대응이 가능하므로 msgToMap을 이용해서 여러 개 찾아준다.
+             let curResult = this.nativeFind(Utils.msgToMap(messages[idx]), needMultipleCheck, true,false, null, false);
+
+             // 비어있지 않을 때에만 처리하기
+             if (curResult.originalFound.length>0) {
                  let tempFound = Utils.addList(...curResult.originalFound); // 이중 리스트를 풀어서 처리
                  let tempPosition = Utils.addList(...curResult.positions).map(x=> (x.map(r=> r+adjustment))); // 포지션 벡터를 풀어서 처리
                  let tempDoubleEndFound = curResult.tooMuchDoubleEnd.txt;
                  let tempDoubleEndPosition = curResult.tooMuchDoubleEnd.pos.map(x=> x+adjustment);
-                 for (let idx1 in tempPosition) {
-                     if (!Utils.objectIn(tempPosition[idx1], res.position)) {
-                         res.found.push(tempFound[idx]);
-                         res.position.push(tempPosition[idx]);
+                 for (var idx1 in tempPosition) {
+                     if (!Utils.objectIn(tempPosition[idx1], res.position) && (needMultipleCheck || res.position.length ===0)) {
+                         res.found.push(tempFound[idx1]);
+                         res.position.push(tempPosition[idx1]);
                      }
                  }
-
-                 for (let idx2 in tempDoubleEndPosition) {
+                 for (var idx2 in tempDoubleEndPosition) {
                      if (res.doubleEndPosition.indexOf(tempDoubleEndPosition[idx2]) === -1) {
                          res.doubleEnd.push(tempDoubleEndFound[idx2]);
                          res.doubleEndPosition.push(tempDoubleEndPosition[idx2]);
                      }
                  }
+                 // needMultipleCheck가 거짓이면 잡아냈을 때 작업 중단합시다.
+                 if (!needMultipleCheck && res.position.length>0) {
+                     res.found = res.found.slice(0,1); // 결과 하나만 추출
+                     res.position = res.position.slice(0,1); // 결과 하나만 추출
+                 }
+             }
+         }
+
+         // isStrong 옵션이 있을 때에는 dropDouble한 메시지도 같이 검사한다.
+         if(isStrong) {
+             // 결과 추가
+             let resPlus = {
+                 ddMessage: Utils.dropDouble(message, false), ddFound: [], ddPosition: [],
+                 ddsMessage: Utils.dropDouble(message, false, true),ddsFound: [], ddsPosition: []
+             }
+             adjustment = 0; // 보정 포지션 재지정
+             for (let idx =0; idx<messages.length; idx++) {
+                 adjustment = Math.floor(idx/2)*fullLimit + (idx%2)* halfLimit; // 문장 내 x의 보정 포지션 지정하기
+                 // 같은 비속어 키워드여도 여러 개 비속어 대응이 가능하므로 msgToMap을 이용해서 여러 개 찾아준다.
+                 let ddResult = this.nativeFind(Utils.dropDouble(messages[idx], true), needMultipleCheck, true, true, null, false);
+                 let ddsResult = this.nativeFind(Utils.dropDouble(messages[idx], true, true), needMultipleCheck, true, true, null, false);
+
+                 if(ddResult.found.length>0) {
+                     let ddFound = Utils.addList(...ddResult.originalFound); // 이중 리스트를 풀어서 처리
+                     let ddPosition = Utils.addList(...ddResult.positions).map(x=> (x.map(r=> r+adjustment))); // 포지션 벡터를 풀어서 처리
+                     let ddOriginalPosition = Utils.addList(...ddResult.originalPositions).map(x=> (x.map(r=> r+adjustment))); // 포지션 벡터의 원래 위치
+                     for (var idx1 in ddPosition) {
+                         if (!Utils.objectIn(ddPosition[idx1], resPlus.ddPosition) && (needMultipleCheck || resPlus.ddPosition.length ===0)) {
+                             // 맵 축약하기 전에도 원본에서 찾을 수 있었는지 확인할 것.
+                             if (!Utils.objectIn(Utils.originalPosition(Utils.dropDouble(messages[idx], true), ddPosition[idx1]), res.position)) {
+                                 resPlus.ddFound.push(ddFound[idx1]);
+                                 resPlus.ddPosition.push(ddOriginalPosition[idx1]);
+                             }
+                         }
+                     }
+                     // needMultipleCheck가 거짓이면 잡아냈을 때 작업 중단합시다.
+                     if (!needMultipleCheck && resPlus.ddPosition.length>0) {
+                         resPlus.ddFound = resPlus.ddFound.slice(0,1); // 결과 하나만 추출
+                         resPlus.ddPosition = resPlus.ddPosition.slice(0,1); // 결과 하나만 추출
+                     }
+                 }
+
+                 if (ddsResult.found.length>0) {
+                     let ddsFound = Utils.addList(...ddsResult.originalFound); // 이중 리스트를 풀어서 처리
+                     let ddsPosition = Utils.addList(...ddsResult.positions).map(x=> (x.map(r=> r+adjustment))); // 포지션 벡터를 풀어서 처리
+                     let ddsOriginalPosition = Utils.addList(...ddsResult.originalPositions).map(x=> (x.map(r=> r+adjustment))); // 포지션 벡터의 원래 위치
+
+                     for (var idx2 in ddsPosition) {
+                         if (!Utils.objectIn(ddsPosition[idx2], resPlus.ddsPosition) && (needMultipleCheck || resPlus.ddsPosition.length ===0)) {
+                             // 맵 축약하기 전에도 원본에서 찾을 수 있었는지 확인할 것.
+                             if (!Utils.objectIn(Utils.originalPosition(Utils.dropDouble(messages[idx], true, true), ddsPosition[idx2]), res.position)) {
+                                 resPlus.ddsFound.push(ddsFound[idx2]);
+                                 resPlus.ddsPosition.push(ddsOriginalPosition[idx2]);
+                             }
+                         }
+                     }
+                     // needMultipleCheck가 거짓이면 잡아냈을 때 작업 중단합시다.
+                     if (!needMultipleCheck && resPlus.ddsPosition.length>0) {
+                         resPlus.ddsFound = resPlus.ddsFound.slice(0,1); // 결과 하나만 추출
+                         resPlus.ddsPosition = resPlus.ddsPosition.slice(0,1); // 결과 하나만 추출
+                     }
+                 }
              }
 
-
-
-
-         }
-         else {
-
+             res = {...res, ...resPlus}; //
          }
 
-
-
-
-
-         if (this.checkOptions.indexOf('qwerty')>-1) {
+         if (this.checkOptions.indexOf('qwerty')>-1 && recursive) {
              let qwertyMap = Utils.qwertyToDubeol(message, true);
-             let newMessage= Utils.parseMap(qwertyMap).parsedMessage.join("");
-
+             let originalMessage= Utils.parseMap(qwertyMap).joinedMessage;
+             let newMessage= Utils.parseMap(qwertyMap).joinedParsedMessage;
+             let qwertyObject = this.find(newMessage, needMultipleCheck, splitCheck, isStrong, false); // 무한반복 방지를 위해 recursive 변수 추가
+             let qwertyPosition = qwertyObject.position.map(x=> (Utils.originalPosition(qwertyMap, x)));
+             let qwertyFound = qwertyPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) )
+             let qwertyDoubleEndPosition = qwertyObject.doubleEndPosition.map(x=> (Utils.originalPosition(qwertyMap, x)));
+             let qwertyDoubleEndFound = qwertyDoubleEndPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) )
+             let resObject = {
+                 qwertyMessage: newMessage,
+                 qwertyFound : qwertyFound,
+                 qwertyPosition: qwertyPosition,
+                 qwertyDoubleEnd: qwertyDoubleEndFound,
+                 qwertyDoubleEndPosition: qwertyDoubleEndPosition
+             }
+             if (isStrong) {
+                 let qwertyDdMessage = qwertyObject.ddMessage;
+                 let qwertyDdsMessage= qwertyObject.ddsMessage;
+                 let qwertyDdPosition = qwertyObject.ddPosition.map(x=> (Utils.originalPosition(qwertyMap, x)));
+                 let qwertyDdFound = qwertyDdPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) );
+                 let qwertyDdsPosition = qwertyObject.ddsPosition.map(x=> (Utils.originalPosition(qwertyMap, x)));
+                 let qwertyDdsFound = qwertyDdsPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) );
+                 let resDdObject = {
+                     qwertyDdMessage: qwertyDdMessage,
+                     qwertyDdFound: qwertyDdFound,
+                     qwertyDdPosition: qwertyDdPosition,
+                     qwertyDdsMessage: qwertyDdsMessage,
+                     qwertyDdsFound: qwertyDdsFound,
+                     qwertyDdsPosition: qwertyDdsPosition
+                 }
+                 resObject = {...resObject, ...resDdObject};
+             }
+             res = {...res, ...resObject}
          }
-         if (this.checkOptions.indexOf('antispoof')>-1) {
+         if (this.checkOptions.indexOf('antispoof')>-1 && recursive) {
              let antispoofMap = Utils.antispoof(message, true);
-             let newMessage= Utils.parseMap(antispoofMap).parsedMessage.join("");
+             let originalMessage= Utils.parseMap(antispoofMap).joinedMessage;
+             let newMessage= Utils.parseMap(antispoofMap).joinedParsedMessage;
+             let antispoofObject = this.find(newMessage, needMultipleCheck, splitCheck, isStrong, false);
+             let antispoofPosition = antispoofObject.position.map(x=> (Utils.originalPosition(antispoofMap, x)));
+             let antispoofFound = antispoofPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) )
+             let antispoofDoubleEndPosition = antispoofObject.doubleEndPosition.map(x=> (Utils.originalPosition(antispoofMap, x)));
+             let antispoofDoubleEndFound = antispoofDoubleEndPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) )
+             let resObject = {
+                 antispoofMessage: newMessage,
+                 antispoofFound : antispoofFound,
+                 antispoofPosition: antispoofPosition,
+                 antispoofDoubleEnd: antispoofDoubleEndFound,
+                 antispoofDoubleEndPosition: antispoofDoubleEndPosition
+             }
+             if (isStrong) {
+                 let antispoofDdMessage = antispoofObject.ddMessage;
+                 let antispoofDdsMessage= antispoofObject.ddsMessage;
+                 let antispoofDdPosition = antispoofObject.ddPosition.map(x=> (Utils.originalPosition(antispoofMap, x)));
+                 let antispoofDdFound = antispoofDdPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) );
+                 let antispoofDdsPosition = antispoofObject.ddsPosition.map(x=> (Utils.originalPosition(antispoofMap, x)));
+                 let antispoofDdsFound = antispoofDdsPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) );
+                 let resDdObject = {
+                     antispoofDdMessage: antispoofDdMessage,
+                     antispoofDdFound: antispoofDdFound,
+                     antispoofDdPosition: antispoofDdPosition,
+                     antispoofDdsMessage: antispoofDdsMessage,
+                     antispoofDdsFound: antispoofDdsFound,
+                     antispoofDdsPosition: antispoofDdsPosition
+                 }
+                 resObject = {...resObject, ...resDdObject};
+             }
+             res = {...res, ...resObject}
          }
-         if (this.checkOptions.indexOf('pronounce')>-1) {
-             let engToKoMap = Utils.engToKo(message, true);
-             let newMessage= Utils.parseMap(engToKoMap).parsedMessage.join("");
+         if (this.checkOptions.indexOf('pronounce')>-1 && recursive) {
+             let pronounceMap = Utils.engToKo(message, true);
+             let originalMessage= Utils.parseMap(pronounceMap).joinedMessage;
+             let newMessage= Utils.parseMap(pronounceMap).joinedParsedMessage;
+             let pronounceObject = this.find(newMessage, needMultipleCheck, splitCheck, isStrong, false);
+             let pronouncePosition = pronounceObject.position.map(x=> (Utils.originalPosition(pronounceMap, x)));
+             let pronounceFound = pronouncePosition.map(x=> (x.map(y=> originalMessage[y]).join("")) )
+             let pronounceDoubleEndPosition = pronounceObject.doubleEndPosition.map(x=> (Utils.originalPosition(pronounceMap, x)));
+             let pronounceDoubleEndFound = pronounceDoubleEndPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) )
+             let resObject = {
+                 pronounceMessage: newMessage,
+                 pronounceFound : pronounceFound,
+                 pronouncePosition: pronouncePosition,
+                 pronounceDoubleEnd: pronounceDoubleEndFound,
+                 pronounceDoubleEndPosition: pronounceDoubleEndPosition
+             }
+             if (isStrong) {
+                 let pronounceDdMessage = pronounceObject.ddMessage;
+                 let pronounceDdsMessage= pronounceObject.ddsMessage;
+                 let pronounceDdPosition = pronounceObject.ddPosition.map(x=> (Utils.originalPosition(pronounceMap, x)));
+                 let pronounceDdFound = pronounceDdPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) );
+                 let pronounceDdsPosition = pronounceObject.ddsPosition.map(x=> (Utils.originalPosition(pronounceMap, x)));
+                 let pronounceDdsFound = pronounceDdsPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) );
+                 let resDdObject = {
+                     pronounceDdMessage: pronounceDdMessage,
+                     pronounceDdFound: pronounceDdFound,
+                     pronounceDdPosition: pronounceDdPosition,
+                     pronounceDdsMessage: pronounceDdsMessage,
+                     pronounceDdsFound: pronounceDdsFound,
+                     pronounceDdsPosition: pronounceDdsPosition
+                 }
+                 resObject = {...resObject, ...resDdObject};
+             }
+             res = {...res, ...resObject}
          }
 
-        // 보조 메시지
-        let message2Map = {};
-        let message3Map = {}
-        let message3 = ''
-        let message4Map = {}
+         return res;
 
-
-        if (qwertyToDubeol === true && isStrong === false) { // 만약 한영 검사가 필요하면...
-            message2Map = Utils.qwertyToDubeol(message, true);
-        }
-        if (isStrong === true) { // 문자열을 악용한 것까지 잡아보자.
-            message3Map = Utils.antispoof(message, true);
-            message3 = Utils.antispoof(message, false);
-            message4Map = Utils.dropDouble(message3, true, false);
-        }
-
-
-
-
-        // 메시지 나누어서 확인하기.
-
-        if (!isStrong) {
-            for (var index1 = 0; index1 <= messages.length - 1; index1++) {
-                let currentResult = this.nativeFind(messages[index1], needMultipleCheck)
-                tooMuchEnds.push(currentResult.tooMuchDoubleEnd);
-
-                // 중복체크가 포함될 때에는 각 단어를 모두 추가해준다.
-                if (needMultipleCheck) {
-                    for (var index2 = 0; index2 <= currentResult.found.length - 1; index2++) {
-                        if (currentResult.found !== [] && totalResult.map(v=>v.value).indexOf(currentResult.found[index2])===-1)
-                            totalResult = [...totalResult, {value:currentResult.found[index2], positions:currentResult.positions[index2]}];
-                    }
-                } else {
-                    if (currentResult !== null){
-                        totalResult = [...totalResult, currentResult.found];
-                    }
-                }
-            }
-            // qwertyToDubeol를 잡을 때
-            if (totalResult.length ===0 && qwertyToDubeol === true) {
-                let currentResult = this.nativeFind(message2Map, needMultipleCheck, true);
-                tooMuchEnds.push(currentResult.tooMuchDoubleEnd);
-
-                if (needMultipleCheck) {
-
-                    for (var index = 0; index <= currentResult.found.length - 1; index++) {
-                        if (currentResult.found !== [] && totalResult.map(v=>v.value).indexOf(currentResult.found[index])===-1)
-                            totalResult = [...totalResult, {value:currentResult.found[index], positions:currentResult.positions[index]}  ];
-                    }
-                } else {
-                    if (currentResult !== null){
-                        totalResult = [...totalResult, currentResult.found];
-                    }
-                }
-            }
-        }
-        else {
-            let currentResult = this.nativeFind(message3Map, needMultipleCheck, true);
-            let currentResult2 = this.nativeFind(message4Map, needMultipleCheck, true, true);
-            tooMuchEnds.push(currentResult.tooMuchDoubleEnd);
-
-            if (needMultipleCheck) {
-                for (index =0; index<currentResult.found.length; index++) {
-                    if (currentResult.found !==[] && originalTotalResult.map(v=>v.value).indexOf(currentResult.found[index]) ===-1)
-                        originalTotalResult = [...originalTotalResult, {value:currentResult.found[index], positions:currentResult.positions[index]}];
-                }
-                for (index =0; index<currentResult2.found.length; index++) {
-                    if (currentResult2.found !==[] && totalResult.map(v=>v.value).indexOf(currentResult2.found[index]) ===-1)
-                        totalResult = [...totalResult, {value:currentResult2.found[index], positions:currentResult2.positions[index]}];
-                }
-            }
-            else {
-                if (currentResult !== null){
-                    originalTotalResult = [...originalTotalResult, currentResult.found];
-                }
-                if (currentResult2 !== null){
-                    totalResult = [...totalResult, currentResult2.found];
-                }
-            }
-
-        }
-        // 결과값 - 보기 좋게 출력.
-        let endResult = [];
-        let originalResult = {};
-
-        for (let tooMuchEnd of tooMuchEnds) {
-            let posN = tooMuchEnd.pos.map(val=>parseInt(val));
-            let endTxt = tooMuchEnd.txt;
-            for (var i in posN) {
-                if (endResult.length ==0 || posN[i]-posN[i-1]>1) {
-                    endResult.push(endTxt[i]);
-                }
-                else {
-                    endResult[endResult.length-1] += endTxt[i];
-                }
-            }
-        }
-
-        if (isStrong) originalResult = {originalTotalResult};
-
-        return {totalResult, endResult, ...originalResult};
     }
 
     // 메시지의 비속어를 콘솔창으로 띄워서 찾기.
     // message - 메시지(isMap이 false) 혹은 메시지 매핑(isMap이 true). needMultipleCheck
-    nativeFind(message, needMultipleCheck, isMap = false, isReassemble = false, parsedWordsList=null) {
+    nativeFind(message, needMultipleCheck, isMap = false, isReassemble = false, parsedWordsList=null, print=true) {
 
         const wordTypeValue = {
             drug: "약물", etc:"", insult:"모욕적 표현", sexuality:"성적인 표현", violence:"폭력적 표현"
@@ -537,11 +616,11 @@ class Tetrapod {
         if (isMap) {
             // 맵을 파싱해서 찾아보자.
             originalMessageList = Utils.parseMap(message).messageList;
-            originalMessage = originalMessageList.join("");
+            originalMessage = Utils.parseMap(message).joinedMessage;
             // dropDouble일 때에는 바ㅂ오 ->밥오로 환원하기 위해 originalMessage를 한글 조합으로
             originalMessage = isReassemble ? this.assembleHangul(originalMessage, false): originalMessage;
             originalMessageSyllablePositions =  Utils.parseMap(message).messageIndex;
-            newMessage = Utils.parseMap(message).parsedMessage.join("");
+            newMessage = Utils.parseMap(message).joinedParsedMessage;
         }
         else {
             newMessage = message;
@@ -622,7 +701,7 @@ class Tetrapod {
                     }
                     // parserCharacter가 +이면 unsafeOneCharacter가 badOneCharacter의 자모를 모두 포함하는지 확인.
                     else if (parserCharacter === "+") {
-                        if ( Utils.objectInclude( Hangul.disassemble(badOneCharacter), Hangul.disassemble(unsafeOneCharacter), true) ) {
+                        if ( this.isInChar(unsafeOneCharacter, badOneCharacter) ) {
                             findLetterPosition[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문장에서 전부 수집한다.
                         }
                     }
@@ -650,7 +729,7 @@ class Tetrapod {
             for (let position of possiblePositions) {
 
                 // 단어 첫글자의 위치 잡기
-                let tempBadWordPositions = [...position]; // 복사. 다만 wordPosition과 안 겹치게
+                let tempBadWordPositions = JSON.parse(JSON.stringify(position)); // 복사. 다만 wordPosition과 안 겹치게
 
                 // 넘어갈 필요가 있는지 확인해보기
                 let isNeedToPass = false;
@@ -771,7 +850,7 @@ class Tetrapod {
 
             }
 
-            if (badWordPositions.length>0) {
+            if (badWordPositions.length>0 && print) {
 
                 if (isMap) {
                     console.log(`원문: ${originalMessage}`);
@@ -804,10 +883,9 @@ class Tetrapod {
 
         //부적절하게 겹받침 많이 사용했는지 여부 확인하기
 
-        let tooMuchDouble ={val:false, pos:[], txt:[]};
+        let tooMuchDouble ={pos:[], txt:[]};
 
         tooMuchDouble = {
-            val: tooMuchDouble.val || Utils.tooMuchDoubleEnd(newMessage).val,
             pos: [...tooMuchDouble.pos, ...Utils.tooMuchDoubleEnd(newMessage).pos],
             txt: [...tooMuchDouble.txt, ...Utils.tooMuchDoubleEnd(newMessage).txt]
         }
@@ -816,22 +894,26 @@ class Tetrapod {
         let delIndex = []; // 지울 인덱스 찾기
         for (var idx in foundBadWordPositions) {
             let isSkip = false;
-            for (var jdx =idx+1; jdx < foundBadWordPositions.length; jdx++) {
+            for (var jdx = Number(idx)+1; jdx < foundBadWordPositions.length; jdx++) {
                 if (Utils.objectInclude(foundBadWordPositions[idx], foundBadWordPositions[jdx], false)) {
-                    delIndex.push(idx);
+                    delIndex.push(Number(idx));
                     isSkip = true;
                     break;
                 }
             }
             if (isSkip) continue;
         }
+
+        // delIndex로 지정된 원소들 삭제
+        let fix = 0; // 보정수치
         for (var idx in delIndex) {
-            delete foundBadWords[idx]
-            delete foundBadWordPositions[idx]
+            foundBadWords.splice(Number(idx)-fix,1)
+            foundBadWordPositions.splice(Number(idx)-fix, 1)
             if (isMap) {
-                delete originalFoundBadWords[idx]
-                delete originalFoundBadWordPositions[idx]
+                originalFoundBadWords.splice(Number(idx)-fix, 1)
+                originalFoundBadWordPositions.splice(Number(idx)-fix, 1)
             }
+            fix++; // splice될 때마다 각 리스트의 index는 1씩 줄어든다. 따라서 보정값도 1씩 늘려준다.
         }
 
 
@@ -879,11 +961,11 @@ class Tetrapod {
         if (isMap) {
             // 맵을 파싱해서 찾아보자.
             originalMessageList = Utils.parseMap(message).messageList;
-            originalMessage = Utils.parseMap(message).messageList.join("");
+            originalMessage = Utils.parseMap(message).joinedMessage;
             // dropDouble일 때에는 바ㅂ오 ->밥오로 환원하기 위해 originalMessage를 한글 조합으로
             originalMessage = isReassemble ? this.assembleHangul(originalMessage, false): originalMessage;
             originalMessageSyllablePositions =  Utils.parseMap(message).messageIndex;
-            newMessage = Utils.parseMap(message).parsedMessage.join("");
+            newMessage = Utils.parseMap(message).joinedParsedMessage;
         }
         else {
             newMessage = message;
@@ -900,7 +982,7 @@ class Tetrapod {
         let wordPositions = []; // 나쁜 단어 수집 형태. 이 경우는 [[1,2], [8,7]]로 수집된다.
         let wordType = parsedBadWordsMap[wordValue]; // 단어 타입.
         // 단어 체크가 안될 때는 무시하고 빈 결과 출력
-        if(!wordType) {console.log('NOOOOOO!'); return res;}
+        if(!wordType) { return res;}
 
         // 비속어 단어를 한 글자씩 순회하며 존재여부를 검사합니다.
         for (let character of wordList) {
@@ -933,7 +1015,7 @@ class Tetrapod {
                 }
                 // parserCharacter가 +이면 unsafeOneCharacter가 badOneCharacter의 자모를 모두 포함하는지 확인.
                 else if (parserCharacter === "+") {
-                    if ( Utils.objectInclude( Hangul.disassemble(badOneCharacter), Hangul.disassemble(unsafeOneCharacter), true) ) {
+                    if ( this.isInChar(unsafeOneCharacter, badOneCharacter) ) {
                         findLetterPosition[badOneCharacter].push(Number(index)) // 하나만 수집하지 않고 문장에서 전부 수집한다.
                     }
                 }
@@ -955,7 +1037,7 @@ class Tetrapod {
         for (let position of possiblePositions) {
 
             // 단어 첫글자의 위치 잡기
-            let tempWordPositions = [...position]; // 복사. 다만 wordPosition과 안 겹치게
+            let tempWordPositions = JSON.parse(JSON.stringify(position)); // 복사. 다만 wordPosition과 안 겹치게
 
             // 넘어갈 필요가 있는지 확인해보기
             let isNeedToPass = false;
@@ -1044,12 +1126,12 @@ class Tetrapod {
 
                 // 원문 위치 찾기
                 for (var pos of tempWordPositions) {
-                    console.log('t', pos, originalMessageList[Number(pos)])
+                    // console.log('t', pos, originalMessageList[Number(pos)])
                     let originalCount = originalMessageList[Number(pos)].length;
                     if (isReassemble) {
                         originalCount = originalMessageList[Number(pos)].split("").filter(x=> /[^ㄱ-ㅎㅏ-ㅣ]/.test(x)).length;
                     }
-                    console.log('then', originalCount)
+                    // console.log('then', originalCount)
                     // 원문의 위치 추가
                     for (let k=0; k<originalCount; k++) {
                         tempOriginalPosition.push(originalMessageSyllablePositions[pos]+k);
@@ -1098,95 +1180,73 @@ class Tetrapod {
     }
 
     // 비속어를 결자처리하는 함수. isMap을 통해 유도해보자.
-    fix(message, replaceCharacter, condition= {qwertyToDubeol:false, antispoof:false, dropDouble:false, fixSoft:false, isOriginal:false}) {
+    // isMap 옵션 추가 -> message가 Map으로 주어질 경우 원문에서 출력함.
+    fix(message, replaceCharacter='*', isMap=false) {
 
-        let fixedMessage = "";
-        let fixedMessageList = [];
-        // let fixedMessageIndex = []
-        let fixedMessageObject = {}
-        // condition
-        if (condition.qwertyToDubeol === true) {
-            fixedMessageObject = this.nativeFind(Utils.qwertyToDubeol(message, true), true, true)
-            fixedMessageList = condition.isOriginal ? Utils.parseMap(Utils.qwertyToDubeol(message, true)).messageList : Utils.parseMap(Utils.qwertyToDubeol(message, true)).parsedMessage
-            // fixedMessageIndex = Utils.parseMap(Utils.qwertyToDubeol(message, true)).messageIndex;
-            // fixedMessage = fixedMessageList.join("")
+        let newMessage = isMap ? Utils.parseMap(message).joinedParsedMessage : message; // 오류 찾아낼 메시지
+        let fixedMessageList = isMap ? JSON.parse(JSON.stringify(Utils.parseMap(message).messageList)) : message.split(""); // 고칠 메시지 리스트.
+
+        let fixedMessageObject = this.find(newMessage, true, 20, this.dropDoubleCheck);
+        let allPositions = this.dropDoubleCheck
+            ? [...fixedMessageObject.position, ...fixedMessageObject.ddPosition, ...fixedMessageObject.ddsPosition, fixedMessageObject.doubleEndPosition]
+            : [...fixedMessageObject.position, fixedMessageObject.doubleEndPosition];
+        allPositions = allPositions.slice(-1)[0].length === 0 ? allPositions.slice(0, -1) : allPositions; // 마지막 열 길이가 0이면 비우기;
+
+        // qwerty가 있을 때
+        if (this.checkOptions.indexOf('qwerty') > -1) {
+            allPositions = this.dropDoubleCheck
+                ? [...allPositions, ...fixedMessageObject.qwertyPosition, ...fixedMessageObject.qwertyDdPosition, ...fixedMessageObject.qwertyDdsPosition, fixedMessageObject.qwertyDoubleEndPosition]
+                : [...allPositions, ...fixedMessageObject.qwertyPosition, fixedMessageObject.qwertyDoubleEndPosition];
+            allPositions = allPositions.slice(-1)[0].length === 0 ? allPositions.slice(0, -1) : allPositions; // 마지막 열 길이가 0이면 비우기;
         }
-        else if (condition.dropDouble=== true) {
-            fixedMessageObject = this.nativeFind(Utils.dropDouble(message, true), true, true, true)
-            fixedMessageList = condition.isOriginal? Utils.parseMap(Utils.dropDouble(message, true)).messageList:Utils.parseMap(Utils.dropDouble(message, true)).parsedMessage
-            // fixedMessageIndex = Utils.parseMap(Utils.dropDouble(message, true)).messageIndex;
-            // fixedMessage = fixedMessageList.join("")
+        // antispoof가 있을 때
+        if (this.checkOptions.indexOf('antispoof') > -1) {
+            allPositions = this.dropDoubleCheck
+                ? [...allPositions, ...fixedMessageObject.antispoofPosition, ...fixedMessageObject.antispoofDdPosition, ...fixedMessageObject.antispoofDdsPosition, fixedMessageObject.antispoofDoubleEndPosition]
+                : [...allPositions, ...fixedMessageObject.antispoofPosition, fixedMessageObject.antispoofDoubleEndPosition];
+            allPositions = allPositions.slice(-1)[0].length === 0 ? allPositions.slice(0, -1) : allPositions; // 마지막 열 길이가 0이면 비우기;
         }
-        else if (condition.antispoof === true) {
-            fixedMessageObject = this.nativeFind(Utils.antispoof(message, true), true, true)
-            fixedMessageList = condition.isOriginal? Utils.parseMap(Utils.antispoof(message, true)).messageList: Utils.parseMap(Utils.antispoof(message, true)).parsedMessage
-            // fixedMessageIndex = Utils.parseMap(Utils.antispoof(message, true)).messageIndex;
-            // fixedMessage = fixedMessageList.join("")
-        }
-        else {
-            fixedMessageObject = this.nativeFind(Utils.msgToMap(message), true, true)
-            fixedMessageList = Utils.parseMap(Utils.msgToMap(message)).parsedMessage
+        // pronounce가 있을 때
+        if (this.checkOptions.indexOf('pronounce') > -1) {
+            allPositions = this.dropDoubleCheck
+                ? [...allPositions, ...fixedMessageObject.pronouncePosition, ...fixedMessageObject.pronounceDdPosition, ...fixedMessageObject.pronounceDdsPosition, fixedMessageObject.pronounceDoubleEndPosition]
+                : [...allPositions, ...fixedMessageObject.pronouncePosition, fixedMessageObject.pronounceDoubleEndPosition];
+            allPositions = allPositions.slice(-1)[0].length === 0 ? allPositions.slice(0, -1) : allPositions; // 마지막 열 길이가 0이면 비우기;
         }
 
-        // console.log(fixedMessageObject)
-        // console.log(fixedMessageList)
-
+        // 대체문자
         replaceCharacter = (replaceCharacter === undefined) ? '*' : replaceCharacter
 
-        // 원본 메시지가 아닌 변환된 메시지의 욕설을 숨김자 처리하려고 할 때
-        if (!condition.isOriginal) {
-            for (let index in fixedMessageList) {
-                for (let positions of fixedMessageObject.positions) {
-                    // object에서 position이 발견되는 경우 대체한다.
-                    for (let position of positions)
-                    {
+        // fixedMessage에서 찾기
+        for (let index in fixedMessageList) {
 
-                        if (position.indexOf(parseInt(index))!==-1) fixedMessageList[index] = replaceCharacter
+            for (let positions of allPositions) {
+                // object에서 position이 발견되는 경우 대체한다.
+                if (positions.indexOf(parseInt(index)) !== -1) {
+                    let curChar = fixedMessageList[index];
+                    let preChar = index >0 ?fixedMessageList[Number(index)-1] : ''; // 앞 부분
+                    if (/[ㄱ-ㅎ]/.test(curChar[0]) && this.assembleHangul(preChar+curChar).length === (preChar+curChar).length) {
+                        fixedMessageList[index] = fixedMessageList[index].slice(1); // 자음으로 시작하면서 앞글자와 한글 조합시 길이가 보존되는 경우
                     }
-
-                }
-                if (condition.fixSoft) {
-                    for (let positions of fixedMessageObject.positions) {
-                        // object에서 position이 발견되는 경우 대체한다.
-                        for (let position of positions)
-                        {
-                            if (position.indexOf(parseInt(index))!==-1) fixedMessageList[index] = replaceCharacter
-                        }
-
-                    }
-                    if (fixedMessageObject.tooMuchDoubleEnd.pos.indexOf(index) !== -1)
-                        fixedMessageList[index] = replaceCharacter
-                }
-            }
-        }
-        // 원본 메시지의 욕설을 숨김처리하려고 할 때
-        else {
-            for (let index in fixedMessageList) {
-                for (let positions of fixedMessageObject.positions) {
-                    // object에서 position이 발견되는 경우 대체한다.
-                    for (let position of positions) {
-                        if (position.indexOf(parseInt(index))!==-1) fixedMessageList[index] = replaceCharacter
-                    }
-
-                }
-                if (condition.fixSoft) {
-                    for (let positions of fixedMessageObject.positions) {
-                        // object에서 position이 발견되는 경우 대체한다.
-                        for (let position of positions) {
-
-                            if (position.indexOf(parseInt(index))!==-1) fixedMessageList[index] = replaceCharacter
-                        }
-                    }
-                    if (fixedMessageObject.tooMuchDoubleEnd.pos.indexOf(index.toString()) !== -1)
-                        fixedMessageList[index] = replaceCharacter
+                    fixedMessageList[index] = fixedMessageList[index].replace(/\S/g, replaceCharacter);
+                    break;
                 }
             }
         }
 
-        fixedMessage = fixedMessageList.join("")
-
-        return fixedMessage
+        if (isMap) {
+            let newMessage = ''
+            for (var idx in fixedMessageList) {
+                // 앞의 글자가 한글이 아닐 경우 자음+한글 패턴의 앞 자음을 지운다.
+                if (Number(idx) > 0 && !/[가-힣]/.test(fixedMessageList[Number(idx) - 1].slice(-1)[0])) {
+                    fixedMessageList[idx] = fixedMessageList[idx].replace(/^([ㄱ-ㅎ])?(.*)$/, '$2');
+                }
+                newMessage = Hangul.assemble(Hangul.disassemble(newMessage + fixedMessageList[idx]));
+            }
+            return newMessage;
+        } else return fixedMessageList.join("");
     }
+
 
     // 메시지에서 정상단어 위치 찾는 맵
     // isMap 형식일 경우 {정상단어: [[정상단어포지션1], [정상단어포지션2],...],... } 형식으로 출력
@@ -1244,28 +1304,32 @@ class Tetrapod {
         return (typeof(this.normalWordsMap[word]) != 'undefined')
     }
 
-    // 리스트 안에 있는지 판단하는 함수
+    // 단어 word가 comp 표현 안에 있는지 확인하는 함수
     // 예시 : (봡보 => 바!보! True)
      wordIncludeType(word, comp) {
-        let wordDisassemble = Utils.wordToArray(word), compDisassemble = Utils.wordToArray(comp);
+        let wordDisassemble = Array.isArray(word)? Utils.wordToArray(word.join("")) : Utils.wordToArray(word);
+         let compDisassemble = Array.isArray(comp)? Utils.wordToArray(comp.join("")) : Utils.wordToArray(comp);
 
-        let res = true;
+        let res = true; // 참일 때 확인.
         if (wordDisassemble.length !== compDisassemble.length ) return false;
         else {
-            // console.log(compDisassemble)
             for (let ind in compDisassemble) {
-                // let wordType = wordDisassemble[ind][1]
-                let compType = compDisassemble[ind][1]
+                let wordChar = wordDisassemble[ind][0] // word의 낱자
+                let compChar = compDisassemble[ind][0] // comp의 낱자
+                let wordType = wordDisassemble[ind][1] // wordType
+                let compType = compDisassemble[ind][1] // compType
                 let nextChar = ""
-                // console.log(compDisassemble.length, ind)
                 if (ind < compDisassemble.length-1) nextChar = compDisassemble[Number(ind)+1].slice(0)[0]
-                if (compType!=="!") {
-                    if (wordDisassemble[Number(ind)][0] !== compDisassemble[Number(ind)][0]) res =false;
+
+                if (wordType && wordType !== compType) return false;
+                else if (wordType === compType) res = res && (wordChar === compChar)
+                else if (!wordType && compType ==="!") {
+                    res = res && (this.isKindChar(wordChar, compChar, nextChar))
                 }
-                else {
-                    if (! this.isKindChar(wordDisassemble[Number(ind)][0], compDisassemble[Number(ind)][0], nextChar)) res = false;
+                else if (!wordType && compType === "+") {
+                    res = res && (this.isInChar(wordChar, compChar))
                 }
-                if (res === false) {return res;}
+                if (!res) return false;
             }
             return true;
         }
@@ -1307,8 +1371,8 @@ class Tetrapod {
 
 
 
-    // 유사 낱자 검사. 낱자에 가! 형태로 표현되었을 경우 가뿐 아니라 각, 간 등 다 포함.
-    // char : 낱자
+    // 유사 낱자 검사. 낱자에 가! 형태로 표현되었을 때 갸 같은 글자도 포함되게 함
+    // char : 유사한지 비교할 낱자
     // comp : 낱자. comp!에 char가 포함되는 경우 true, 아닌 경우 false를 반환한다.
     // following : !뒤에 오는 낱자. 없으면 ""
     // 추가- this.strongerCheck가 true일 때에는 영어, 유사자형도 체크한다.
@@ -1316,13 +1380,12 @@ class Tetrapod {
         // 초성중성종성 분리 데이터 이용하기
         let charDisassemble = Utils.choJungJong(char)
         let compDisassemble = Utils.choJungJong(comp)
-        let followDisassemble = following===""?{cho:[], jung:[], jong:[]}:Utils.choJungJong(following)
+        let followDisassemble = !(/^[가-힣]$/.test(following))?{cho:[], jung:[], jong:[]}:Utils.choJungJong(following);// 다음 자모 분해
         let resi = false; // 초성 유사음
         let resm = false; // 중성 유사음
         let rese = false; // 종성 유사음
 
-        // console.log(charDisassemble, compDisassemble, followDisassemble)
-
+        // 치음-> 다, 자,짜, 차 등
         const toothConsonant = Utils.toothConsonant;
 
         // 유사초성. 가 -> 까, 카
@@ -1386,62 +1449,41 @@ class Tetrapod {
         return resi && resm && rese;
     }
 
+    // wordToArray 매크로 중 +기호와 관련된 대상에 대한 포함 여부
+    // 간(char) -> 가+(comp)에 속해 있으므로 true.
+    isInChar(char, comp) {
+        let charPart= Utils.disassemble(char, 'sound'); //그룹에 포함될 사운드. 음소 단위로 분해
+        let compPart = Utils.disassemble(comp, 'sound'); // +가 있는 비교 사운드. 음소 단위로 분해
+        // 예외처리 : 기+에 괴, 쌍모음은 들어가지 않게 처리할 것
+        if (compPart[1]==='ㅣ' && charPart[1]==='ㅗ' && charPart[2] === 'ㅣ') {
+            return false;
+        }
+        // 기+에 갸 등 이중모음 안 들어가게 처리
+        else if (compPart[1] === 'ㅣ' && !/[ㅏ-ㅣ]/.test(compPart[2]) && /[ㅏ-ㅡ]/.test(charPart[2])) {
+            return false;
+        }
+        // 나머지 - charPart가 compPart의 모든 자모를 포함하면 true
+        else {
+            return Utils.objectInclude(compPart, charPart, true);
+        }
+
+    }
+
     //어떤 단어가 다른 단어에 포함되는지 체크하기
     wordInclude(inc, exc) {
-        // wordToArray 형태로 inc, exc 변환하기
+        // wordToArray 형태로 inc, exc 변환하기. 이 때 단어 붙여서 변환하기
         if (typeof inc === "string") inc = Utils.wordToArray(inc);
         else if (Array.isArray(inc)) inc = Utils.wordToArray(inc.join(""));
 
         if (typeof exc === "string") exc = Utils.wordToArray(exc);
         else if (Array.isArray(exc)) exc = Utils.wordToArray(exc.join(""));
 
-        // 포함관계 체크하기
-        let tempCnt = 0;
-        let val = false;
-        for (let incCnt in inc) {
-            // inc 낱자 파싱
-            let mainChar = inc[incCnt][0]; // 기본 낱자
-            let parserChar = inc[incCnt][1]; // 파싱 낱자. ! 또는 ?
-            let astLength = (parserChar==="!"|| parserChar==="+")? inc[incCnt].length-2: inc[incCnt].length-1; // ? 갯수
-
-            while(tempCnt < exc.length) {
-                // exc 낱자 파싱
-                let excChar = exc[tempCnt][0] // 낱자
-                let excParserChar = exc[tempCnt][1] // exc 파싱 낱자
-                let excAstLength = excParserChar==="!"?exc[tempCnt].length-2:exc[tempCnt].length-1; // ext ? 갯수
-
-                //낱자의 astLength는 exc 배열 낱자의 astLength보다 우선 짧아야 한다.
-                if (astLength <= excAstLength){
-                    // excParserChar가 !표시, 즉 유사 낱자 다 포함할 때.
-                    if (excParserChar === "!" && parserChar !=="!") {
-                        if (this.isKindChar(mainChar, excChar)) {
-                            val = true;
-                            if (incCnt<inc.length-1) tempCnt++;
-                            break;
-                        }
-                        else tempCnt++;
-                    }
-                    else {
-                        if (mainChar === excChar) {
-                            val = true;
-                            if (incCnt<inc.length-1) tempCnt++;
-                            break;
-                        }
-                        else tempCnt++;
-                    }
-                }
-                // tempCnt에서 astLength가 더 긴게 있다면 넘어가자
-                else {
-                    tempCnt++;
-                }
-            }
-            // for 루프 탈출조건.
-            if (tempCnt === exc.length) {
-                val = false;
-                break;
-            }
+        for(let i=0; i<exc.length - inc.length; i++) {
+            // wordIncludeType 함수를 사용해서 비교해보자.
+            if (this.wordIncludeType(inc, exc.slice(i, i+inc.length))) return true;
         }
-        return val;
+
+        return false;
     }
 
     // 한글 조합 함수. 각 원소들을 Hangul.assemble(Hangul.disassemble())로 조합하는데 사용합니다. isIgnoreComma 옵션은 파서 문자 ,를 무시할지 물어봅니다.
@@ -1467,7 +1509,7 @@ class Tetrapod {
     getOriginalPosition(messageMap, positionList) {
         const parsedMessage= Utils.parseMap(messageMap);
         const totalRes = parsedMessage.messageIndex;
-        const joinedParsedMessage = this.assembleHangul(parsedMessage.messageList.join(""), false);
+        const joinedParsedMessage = this.assembleHangul(parsedMessage.joinedMessage, false);
         let res = []
         for (let pos of positionList) {
             let firstIndex = totalRes[pos];
@@ -1486,13 +1528,13 @@ class Tetrapod {
         let res = [] // 리스트 형태로 출력. 각 원소는 [1,2,4] 형식으로 출력함.
         let originalRes = [] // 원문의 위치 리스트 형태로 출력. isMap이 참일 때만 사용 가능
         let messageParse = isMap ? Utils.parseMap(message) : {messageList:[], messageIndex: [], parsedMessage:[]}
-        let newMessage= isMap? this.assembleHangul(messageParse.parsedMessage.join(""), false): message; // 결과 메시지
+        let newMessage= isMap? this.assembleHangul(messageParse.joinedParsedMessage, false): message; // 결과 메시지
         let msgMap;
 
         // 반복되는 프로세스를 callback으로 정리
         const joinProcess = (msgMap) => {
             let wordResult = this.oneWordFind(wordList, msgMap, this.badWordsMap, true, true, true);
-            console.log(wordResult);
+            // console.log(wordResult);
             res = res.concat(wordResult.originalPosition);
             // isMap일 때는 partRes를 이용해서
             if (isMap) {
@@ -1508,18 +1550,15 @@ class Tetrapod {
         switch(type) {
             // 한영자 타입 섞기 테스트
             case 'qwerty':
-                // console.log('qwertytest');
                 msgMap = Utils.qwertyToDubeol(newMessage, true);
                 joinProcess(msgMap);
                 break;
             //
             case 'antispoof':
-                // console.log('antispoof test');
                 msgMap = Utils.antispoof(newMessage, true);
                 joinProcess(msgMap);
                 break;
             case 'pronounce':
-                // console.log('engtoko test');
                 msgMap = Utils.engToKo(newMessage, true);
                 joinProcess(msgMap);
                 break;

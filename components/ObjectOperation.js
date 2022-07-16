@@ -3,6 +3,7 @@
 const ObjectOperation = {
 
     // 배열/오브젝트 동일성 체크. 기능 확장.
+    // 주의! 숫자, 문자열, 불리안만 원소로 구성된 리스트, 오브젝트만 비교 가능합니다. (함수 등의 원소는 비교 불가능)
     objectEqual: (a,b) => {
         if (typeof a !== typeof b) {
             return false;
@@ -10,12 +11,18 @@ const ObjectOperation = {
         else {
             if (typeof a === "string" || typeof a === "number" || typeof a === "boolean")
                 return (a===b);
+            // 타입이 달라도 패스
+            else if (Array.isArray(a) !== Array.isArray(b)) {
+                return false;
+            }
+            // 길이가 달라도 pass
             else if (Object.keys(a).length !== Object.keys(b).length ) {
                 return false;
             }
+            // 나머지 경우 - 원소 by 원소로 비교한다.
             else {
-                for (let key in a) { // a의 키에 대해 조사
-                    if (a[key]!==b[key]) {return false;}
+                for (let key in a) { // a의 키에 대해 조사. objectEqual로 동일 여부 비교
+                    if (!b[key] || !ObjectOperation.objectEqual(a[key], b[key]) ) return false;
                 }
             }
             return true;
@@ -25,16 +32,17 @@ const ObjectOperation = {
 
     // 배열/오브젝트의 포함관계 체크. obj(a, b)에서  a가 b안에 들어갈 때 True
     objectInclude: (inc, exc, order=false) => {
-        let val = true;
+
         // 순서 생각하지 않고 포함관계
         if ( Array.isArray(inc) && Array.isArray(exc)) {
             if ( !order ) {
                 // inc 안의 원소들에 대해서 exc안에 포함하기만 하면 OK
                 for (let x of inc) {
                     if (!ObjectOperation.objectIn(x, exc))
-                    {val = false; break;}
+                    {return false;}
                 }
-
+                // return false가 아니면 return true;
+                return true;
             }
             // 순서 생각할 때에는 좀 다르게 전략을 짜보자. 우선
             else {
@@ -56,12 +64,13 @@ const ObjectOperation = {
                         break;
                     }
                 }
-                val = tempVal
+                return tempVal;
             }
 
         }
 
-        return val;
+        // 위의 작업 실행 못하면 거짓 출력.
+        return false;
 
     },
 

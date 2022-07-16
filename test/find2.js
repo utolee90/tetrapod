@@ -11,7 +11,21 @@ import * as HO from "../components/HangulObjects";
 // console.log(Utils.engToKo('구라da drga C팔'))
 // console.log(Utils.engToKo('구라da drga C팔', true))
 
+// console.log(Hangul.assemble(Hangul.disassemble('업ㅅ다닊ㅏ')))
+// console.log(Utils.disassemble('없쟈 완젼 짜증나짂', 'key', true))
+// console.log(Utils.disassemble('없쟈 완젼 짜증나짂', 'part', true))
+// console.log(Utils.disassemble('없쟈 완젼 짜증나짂', 'sound', true))
+// console.log(Utils.disassemble('없쟈 완젼 짜증나짂'))
+// console.log(Utils.parseMap(Utils.qwertyToDubeol('rnfk치다 딱 rjffuTsp', true)))
+// console.log(Utils.parseMap(Utils.dropDouble('너 밥오쥐', true)))
 // 비속어 데이터 불러오기
+
+// console.log("TEST!!!::: ", Utils.objectEqual([2,[3,4,5]], [2,[3,4,5]]))
+// console.log(Utils.objectInclude([0,1], [0,2], false))
+console.log(Utils.dropDouble("ql이바알놈아!!", true, false))
+console.log('')
+console.log(Utils.dropDouble("시이바알놈아!!", true, false))
+console.log(Utils.originalPosition(Utils.qwertyToDubeol('dnflskfk akstp wjdakf rnlcksgek', true), [2,3,4,6,7,8]));
 let obj = new Tetrapod();
 obj.loadFile()
 
@@ -22,7 +36,17 @@ let newTime = new Date().getTime()
 // console.log(obj.find("시발 정말 나쁘게 구네", true))
 // console.log('nativeFind obj 테스트')
 console.log(obj.nativeFind(Utils.msgToMap("아주 짜즚잆 낪닚다 상쾌핪짒 앉넶"), true, true, true))
+console.log(obj.find("좆밥이네 아줎 싫어 새꺄", true))
 console.log("걸린시간:::", new Date().getTime() - newTime)
+// console.log(obj.find("시이바알놈아!!", true, 20, true))
+console.log('test')
+// console.log(Utils.dropDouble('시이바알놈, 나 버려놓고 즈이랄하지 마라', false))
+// console.log(Utils.dropDouble('시이바알놈, 나 버려놓고 즈이랄하지 마라', true))
+let testMap = Utils.dropDouble('시이바알놈, 나 버려놓고 즈이랄하지 마라', true)
+// console.log('PARSING')
+// console.log(Utils.parseMap(testMap))
+console.log(obj.nativeFind(testMap, true, true, true))
+console.log(obj.fix(Utils.dropDouble('시이바알놈, 나 버려놓고 즈이랄하지 마라', true), '*', true))
 // console.log('oneWordFind 테스트')
 // console.log('test!!!', Utils.objectIn(['시', '발!'], obj.parsedBadWords))
 // console.log(obj.oneWordFind(['시', '발!'], Utils.dropDouble("시파알놈아", true), obj.badWordsMap, true, true, true, true))
@@ -32,10 +56,13 @@ console.log("걸린시간:::", new Date().getTime() - newTime)
 // console.log(obj.getOriginalPosition(Utils.dropDouble('고아테이마알라', true), [0,2,4]))
 obj.adjustFilter([],[],['qwerty'],false);
 console.log('engBadWordsCheck 테스트!!!')
-// console.log('몽땅 사라졌나???', obj.parsedBadWords.length, Object.keys(obj.badWordsMap).length, obj.badWords[0].length)
-console.log(obj.engBadWordsCheck(['시', '발!'], 'tlvkfshadk'))
-obj.adjustFilter([],[],['antispoof'],false);
-console.log(obj.engBadWordsCheck(['시', '발!'], '^l발롬'))
+console.log('몽땅 사라졌나???', obj.parsedBadWords.length, Object.keys(obj.badWordsMap).length, obj.badWords[0].length)
+console.log(obj.find('whwehlfk 이 qudtlsdk', true));
+console.log('사라라라라라라라라랄')
+console.log(obj.countBad('whwehlfk 이 qudtlsdk'));
+// console.log(obj.engBadWordsCheck(['시', '발!'], 'tlvkfshadk'))
+// obj.adjustFilter([],[],['antispoof'],false);
+// console.log(obj.engBadWordsCheck(['시', '발!'], '^l발롬'))
 // console.log(obj.parseFromList(['구라', '괴!물!정', '곳간', '미창고']))
 // // 전체 치환하기 - Utils.replaceAll
 // // console.log('replaceAll 테스트');

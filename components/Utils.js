@@ -253,6 +253,58 @@ const Utils = {
 
     },
 
+    // Hangul.disassemble 상위 호환
+    // key 조건: part(초중종), key(키보드), sound(음소.복모음, 겹받침 모두 쪼개기)
+    disassemble: (msg, cond='key', grouped=false ) => {
+        let cont = Hangul.disassemble(msg, true); // 한글 키별로 낱자 분리
+
+        let res = []
+        for (let letterList of cont) {
+            switch(cond) {
+                // 키보드 기준. Hangul.disassemble과 동일하게 처리
+                case 'key':
+                case 'type':
+                    res.push(letterList);
+                    break;
+                case 'part':
+                    let idx = 0;
+                    let part = letterList;
+                    // 복자음 및 복받침 합치기
+                    while (idx<part.length) {
+                        if (idx<part.length-1 && Utils.objectIn([part[idx], part[idx+1]], Object.values(HO.doubleMap))) {
+                            for (var key in HO.doubleMap) {
+                                if (ObjectOperation.objectEqual([part[idx], part[idx+1]], HO.doubleMap[key])) {
+                                    part.splice(idx, 2, key)
+                                    break;
+                                }
+                            }
+                        }
+                        idx++;
+                    }
+                    res.push(part);
+                    break;
+                case 'sound':
+                    idx = 1; // 초성은 쌍자음도 음단위로 나누지 않으므로 일단 무시
+                    part = letterList;
+                    // 나누기
+                    while(idx<part.length) {
+                        if (Object.keys(HO.doubleMap).indexOf(part[idx])>-1) {
+                            let kv = HO.doubleMap[part[idx]];
+                            part.splice(idx, 1, kv[0], kv[1]);
+                            idx +=2;
+                        }
+                        else {
+                            idx++;
+                        }
+                    }
+                    res.push(part);
+                    break;
+            }
+        }
+        // grouped가 참이면 res, 거짓이면 합쳐서 출력
+        return grouped? res: ObjectOperation.addList(...res);
+    },
+
 
     // [var1,var2]가 겹자모 리스트 안에 있는지 판단하기.
     isDouble: (var1, var2, allowSim =false) => {
@@ -303,30 +355,39 @@ const Utils = {
     // 파싱하기 {씨:{value:시, index:[0]}, 브얼:{value:벌, index:[1]}} ->
     // => {messageList: ['씨', '브얼'], messageIndex: [0,1], parsedMessage: ['시', '벌']}
     // 맵 형식 - qwertyToDubeol map, antispoof map, dropDouble map을 입력으로 한다.
-    parseMap: (map) => {
+    parseMap: (map, isReassemble = true) => {
         let originalMessageList = []; // 원문의 리스트
         let originalMessageIndex = []; // 메시지의 원무의 위치 표시
         let parsedMessage = []; // 파싱된 메시지 리스트
         let search = 0;
-        let maxVal = Object.values(map).map(x=> (Math.max(...x.index)));
+        let maxVal = Object.values(map).map(x=> (Math.max(...x.index))); // index의 값 중에서 최대값.
+        let isPartKey = false; // isReassemble 형식일 때
 
         while(search <= Math.max(...maxVal)) {
-            for (let val in map) {
+            for (let val in map) { // val : 원문의 부분 텍스트값
                 // index 값이 존재하면
                 if (map[val].index.indexOf(search)!==-1) {
-                    originalMessageIndex.push(search);
-                    originalMessageList.push(val);
+                    originalMessageIndex.push(search); // 인덱스 값 추가
+                    originalMessageList.push(val); //
                     parsedMessage.push(map[val].value);
 
-                    if (/^[ㄱ-ㅎ][가-힣]+$/.test(val)) search +=val.length-1;
+                    if (isReassemble && /[ㄱ-ㅎ]/.test(val[0])) {
+                        let lastVal = originalMessageList.slice(-1)[0]; // originalMessageList의 마지막 글자
+                        let joined = lastVal + val[0]; // 마지막 글자에 val[0]을 붙임
+                        search += (Hangul.assemble(Hangul.disassemble(lastVal)).length === Hangul.assemble(Hangul.disassemble(joined)).length) ?
+                            val.length-1: val.length; // lastVal과 joined가 한글로 재조합시에 글자가 길어지면 길이에 -1 추가.
+                        isPartKey = true;
+                    }
                     else search += val.length;
                 }
             }
         }
         return {
             messageList: originalMessageList,
+            joinedMessage: isPartKey? Hangul.assemble(Hangul.disassemble(originalMessageList.join(''))): originalMessageList.join(''),
             messageIndex: originalMessageIndex,
-            parsedMessage: parsedMessage
+            parsedMessage: parsedMessage,
+            joinedParsedMessage: parsedMessage.join("")
         }
     },
 
@@ -351,9 +412,10 @@ const Utils = {
 
     // 한글 낱자를 초성중성종성으로 분리하기
     choJungJong: (char) => {
+
         const consonant = Utils.charInitials;
         const vowel = Utils.charMedials;
-        const charDisassemble = Hangul.disassemble(char);
+        const charDisassemble = Hangul.disassemble(char); // 오브젝트가 disassemble 함수에 최적화되어 있어서 일단 수정 보류
         let res = {cho:[], jung:[], jong:[]}
         // 오류 방지를 위해 한글 낱자일 때에만 함수 수행.
         if (/[가-힣]/.test(char)) {
@@ -795,7 +857,7 @@ const Utils = {
                         // 자음+ㅡ+ㅇ+모음 -> 그아 -> 가
                         if (msgAlphabet[i-1] === 'ㅡ') {
                             /// ㅢ는 예외처리. 그이 -> 긔
-                            if ( msgAlphabet[i+1] === "ㅣ") {msgAlphabet.splice(i-1, 1); i++;}
+                            if ( msgAlphabet[i+1] === "ㅣ") {msgAlphabet.splice(i-1, 3, 'ㅢ'); i++;}
                             else  { msgAlphabet.splice(i-1, 2); }
                         }
                         // 자음+ㅣ+ㅇ+모음. 이중모음이 뒤에 올 때는 예외처리. 기아 -> 갸
@@ -992,11 +1054,18 @@ const Utils = {
                     else if (Utils.charInitials.indexOf(msgAlphabet[i]) !== -1 && msgAlphabet[i] !== 'ㅇ') {
                         // 앞에 모음일 경우
                         if ( Utils.charMedials.indexOf(msgAlphabet[i - 1]) !== -1) {
-                            // 뒷자음과 겹받침을 형성하는 경우
+                            // 뒷자음과 겹받침을 형성하는 경우 &
                             if (Utils.objectIn([msgAlphabet[i], msgAlphabet[i+1]], Utils.doubleConsonant)) {
 
+                                // 일단 겹자음 바로 다음에 모음이 오면 겹자음 여부와는 무관하게 무조건 음절 나눈다.
+                                if (i<msgAlphabet.length-2 && /[ㅏ-ㅣ]/.test(msgAlphabet[i+2])) {
+                                    singleSyllable.push(msgAlphabet[i]);
+                                    divideSyllable.push(singleSyllable);
+                                    singleSyllable = [];
+                                    i++;
+                                }
                                 // 맨 마지막에 오거나 뒤에 모음 또는 ㅇ,ㅎ, 중복모음이 오지 않을 때
-                                if ( i >= msgAlphabet.length -2 ||
+                                else if ( i >= msgAlphabet.length -2 ||
                                     (Utils.charMedials.indexOf(msgAlphabet[i + 2]) === -1 && msgAlphabet[i + 2] !== 'ㅇ' && msgAlphabet[i+2]!== 'ㅎ'
                                         && !ObjectOperation.objectIn(msgAlphabet[i+1], Utils.jointConsonant[msgAlphabet[i+2]])  ) ) {
                                     singleSyllable = singleSyllable.concat( [msgAlphabet[i], msgAlphabet[i+1]] );
@@ -1108,9 +1177,10 @@ const Utils = {
 
                         // 나머지 - 뒷글자로 넘기기
                         else {
-                            divideSyllable.push(singleSyllable);
+                            if(singleSyllable.length>0) divideSyllable.push(singleSyllable);
                             singleSyllable = [msgAlphabet[i]];
                             i++;
+
                         }
                     }
 
@@ -1170,6 +1240,7 @@ const Utils = {
             return res;
         }
     },
+
 
     //ㅄ받침, ㄻ받침, ㄺ받침 과잉으로 사용하는 메시지 검출.
     tooMuchDoubleEnd: (msg, isStrong= false) => {
@@ -1513,6 +1584,26 @@ const Utils = {
         }
 
     },
+
+    // position vector에서 map의 original position을 찾아보기
+    originalPosition: (map, positionList=[]) => {
+        const parsed = Utils.parseMap(map);
+        const originalLength = parsed.joinedMessage.length;
+        const parsedLength = parsed.joinedParsedMessage.length;
+        console.log('OBJ_TEST', positionList)
+        positionList = positionList.filter(x=> x<parsedLength); // parsedLenght보다 짧게 잡아서 에러 방지.
+        const originalPosition = parsed.messageIndex.concat([originalLength]); // 인덱스에 마지막 리스트 넣기
+        const originalRange = Utils.grabCouple(originalPosition); // 범위 형태로 출력
+        let res = []
+        for (let idx in originalRange) {
+            // positionList 안에 있는 원소들만 찾아보자
+            let lix = originalRange[idx];
+            if (ObjectOperation.objectIn(Number(idx), positionList)) {
+                res = res.concat(Array.from(Array(lix[1]-lix[0]).keys()).map(x => x+lix[0]));
+            }
+        }
+        return res;
+    }
 
 }
 
