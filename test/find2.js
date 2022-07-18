@@ -19,9 +19,10 @@ import * as HO from "../components/HangulObjects";
 // console.log(Utils.parseMap(Utils.qwertyToDubeol('rnfk치다 딱 rjffuTsp', true)))
 // console.log(Utils.parseMap(Utils.dropDouble('너 밥오쥐', true)))
 // 비속어 데이터 불러오기
-
+// console.log('joinedSyllable 테스트', Utils.joinedSyllable('삶', '하'))
 // console.log("TEST!!!::: ", Utils.objectEqual([2,[3,4,5]], [2,[3,4,5]]))
 // console.log(Utils.objectInclude([0,1], [0,2], false))
+console.log(Utils.joinedSyllable('바','알'))
 console.log(Utils.dropDouble("ql이바알놈아!!", true, false))
 console.log('')
 console.log(Utils.dropDouble("시이바알놈아!!", true, false))
@@ -57,9 +58,13 @@ console.log(obj.fix(Utils.dropDouble('시이바알놈, 나 버려놓고 즈이�
 obj.adjustFilter([],[],['qwerty'],false);
 console.log('engBadWordsCheck 테스트!!!')
 console.log('몽땅 사라졌나???', obj.parsedBadWords.length, Object.keys(obj.badWordsMap).length, obj.badWords[0].length)
-console.log(obj.find('whwehlfk 이 qudtlsdk', true));
-console.log('사라라라라라라라라랄')
-console.log(obj.countBad('whwehlfk 이 qudtlsdk'));
+console.log(obj.nativeFind(Utils.msgToMap('좆되라 이 병신아'), true, true,false))
+console.log('XXXTEST')
+console.log(obj.find('좆되라 이 병신아', true, 20))
+// console.log('xxxtest again')
+// console.log(obj.find('whwehlfk 이 qudtlsdk', true));
+// console.log('사라라라라라라라라랄')
+// console.log(obj.countBad('whwehlfk 이 qudtlsdk'));
 // console.log(obj.engBadWordsCheck(['시', '발!'], 'tlvkfshadk'))
 // obj.adjustFilter([],[],['antispoof'],false);
 // console.log(obj.engBadWordsCheck(['시', '발!'], '^l발롬'))

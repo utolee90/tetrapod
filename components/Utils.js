@@ -410,20 +410,20 @@ const Utils = {
         return res;
     },
 
-    // 한글 낱자를 초성중성종성으로 분리하기
-    choJungJong: (char) => {
+    // 한글 낱자를 초성중성종성으로 분리하기. cond 옵션 추가
+    choJungJong: (char, cond='key') => {
 
         const consonant = Utils.charInitials;
         const vowel = Utils.charMedials;
-        const charDisassemble = Hangul.disassemble(char); // 오브젝트가 disassemble 함수에 최적화되어 있어서 일단 수정 보류
+        const charDisassemble = Utils.disassemble(char, cond); // 오브젝트가 disassemble 함수에 최적화되어 있어서 일단 수정 보류
         let res = {cho:[], jung:[], jong:[]}
         // 오류 방지를 위해 한글 낱자일 때에만 함수 수행.
         if (/[가-힣]/.test(char)) {
             for (var i =0; i<charDisassemble.length; i++) {
                 // 초성 : 처음일 때 들어감.
-                if (i===0 && consonant.indexOf(charDisassemble[i])>-1) res.cho.push(charDisassemble[i])
+                if (i===0 && /[ㄱ-ㅎ]/.test(charDisassemble[i])) res.cho.push(charDisassemble[i])
                 // 중성 : 모음에 있을 때 들어감.
-                else if (vowel.indexOf(charDisassemble[i])>-1) res.jung.push(charDisassemble[i])
+                else if (/[ㅏ-ㅣ]/.test(charDisassemble[i])) res.jung.push(charDisassemble[i])
                 else res.jong.push(charDisassemble[i])
             }
         }
@@ -814,431 +814,673 @@ const Utils = {
         return isMap ? resObj : res;
     },
 
-    // ㅇ, ㅡ 제거, 된소리/거센소리 예사음화 후 비속어 찾기. isMap을 사용하면 제거한 모음, 자음 대응 맵 찾기.
-    // 예시 : 브압오 -> {'브아':'바', 'ㅂ오':'보'}
-    // simplify 옵션을 true로 지정하면 거센소리 된소리를 예사소리화하기, 복모음, 이중모음 단모음화하는 작업도 추가.
-    // 메시지는 반드시 한글자모로만 조합.
-    dropDouble: (msg, isMap=false, simplify = false) => {
-
-        let msgAlphabet = Hangul.disassemble(msg, false); // 낱자 단위로 분해
-
-        // 모음 바뀔 때
-        const normalify = {"ㄲ":'ㄱ', 'ㄸ':'ㄷ', 'ㅃ':'ㅂ','ㅆ':'ㅅ', 'ㅉ':'ㅈ',
-            'ㅋ':'ㄱ', 'ㅌ':'ㄷ', 'ㅍ':'ㅂ', 'ㅒ':'ㅐ','ㅖ':'ㅔ'}; // 된소리/거센소리 단순화
-        const aspiritedSound = {"ㄱ": "ㅋ", "ㄷ":"ㅌ", "ㅂ":"ㅍ", "ㅅ":"ㅌ", "ㅈ":"ㅌ",
-            "ㅊ":"ㅌ", "ㅋ":"ㅋ", "ㅌ":"ㅌ","ㅍ":"ㅍ", "ㅎ":"ㅎ"} // ㅎ앞 거센소리 연음화
+    // dropDouble함수에서 사용하기 - 기아 -> ['갸'] (리스트 형태로 출력), 밥오 -> true ['바','보'] // false ['바', 'ㅂ오']
+    // 반드시 두 낱자가 한글임을 보장해야 사용가능하다.
+    // reduced - 음절 사라지지 않게 하느냐 확인. reduced=false는 dropDouble에서 원래음 찾을 때 필요하다.
+    // simplify - 음절 단순화 -> 된소리 예사소리로 바꾸고 복잡한 받침 간단하게
+    joinedSyllable:(char, nextChar, reduced=true, simplify=false) => {
+        // ㅣ+모음 -> 반모음으로 조정하기
         const yVowel = {"ㅏ":"ㅑ", "ㅐ":'ㅒ', 'ㅑ':'ㅑ', 'ㅒ':'ㅒ', 'ㅓ':'ㅕ', 'ㅔ':'ㅖ', 'ㅕ':'ㅕ',
             'ㅖ':'ㅖ', 'ㅗ':'ㅛ', 'ㅛ':'ㅛ', 'ㅜ':'ㅠ', 'ㅠ':'ㅠ', 'ㅡ':'ㅠ', 'ㅣ':'ㅣ' } // 이어 -> 여 단축을 위한 작업
 
         // 유사모음 축약형으로 잡아내기 위한 조건 갸앙 ->걍
         const vowelLast = {'ㅏ':['ㅏ'], 'ㅐ':['ㅐ', 'ㅔ'], 'ㅑ': ['ㅏ', 'ㅑ'], 'ㅒ':['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'],
             'ㅓ' : ['ㅓ'], 'ㅔ': ['ㅔ', 'ㅐ'], 'ㅕ': ['ㅓ', 'ㅕ'], 'ㅖ':['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'],
-            'ㅗ':['ㅗ'], 'ㅛ':['ㅛ', 'ㅗ'], 'ㅜ':['ㅜ', 'ㅡ'], 'ㅠ':['ㅠ', 'ㅜ', 'ㅡ'], 'ㅡ':['ㅡ'], 'ㅣ':['ㅣ']}
+            'ㅗ':['ㅗ'], 'ㅘ': ['ㅏ', 'ㅘ'], 'ㅙ': ['ㅐ', 'ㅔ', 'ㅙ','ㅚ'], 'ㅚ': ['ㅚ'], 'ㅛ':['ㅛ', 'ㅗ'],
+            'ㅜ':['ㅜ', 'ㅡ'], 'ㅝ':['ㅓ', 'ㅝ'], 'ㅞ': ['ㅔ', 'ㅞ'], 'ㅟ': ['ㅟ', 'ㅣ'],
+            'ㅠ':['ㅠ', 'ㅜ', 'ㅡ'], 'ㅡ':['ㅡ'], 'ㅢ': ['ㅢ', 'ㅣ'], 'ㅣ':['ㅣ']}
 
-        // 유사모음 축약형. 그러나 이 경우는 뒷모음을 따를 때 -> 구아 -> 과, 구에 -> 궤 고언세 -> 권세
-        const vowelPair = [['ㅗ', 'ㅏ'], ['ㅗ', 'ㅐ'], ['ㅗ', 'ㅓ'], ['ㅗ', 'ㅔ'],
-            ['ㅜ', 'ㅏ'], ['ㅜ', 'ㅐ'], ['ㅜ', 'ㅓ'], ['ㅜ', 'ㅔ'], ['ㅜ', 'ㅣ'], ['ㅡ', 'ㅣ']]
+        // 중복모음 결과 유도. (앞모음+ㅇ+뒷모음 합병 가능여부)
+        const doubleVowelResult = (a, b) => {
+            // 합칠 수 있을 때 단모음, 합칠 수 없으면 빈 문자열 출력
+            // 그아 -> 가, 그이 ->긔
+            if (a === 'ㅡ') { return b==='ㅣ'? 'ㅢ': b; }
+            // 기아 -> 갸
+            else if (a === 'ㅣ' && Object.keys(yVowel).indexOf(b)>-1) { return yVowel[b]; }
+            // 갸아 -> 갸, 과아 -> 과
+            else if (Object.keys(vowelLast).indexOf(a)>-1 && vowelLast[a].indexOf(b)>-1) { return a; }
+            // 고아 -> 과, 두아 -> 돠
+            else if (Utils.objectIn([a,b], [['ㅗ','ㅏ'], ['ㅜ','ㅏ'], ['ㅗ', 'ㅘ'], ['ㅜ', 'ㅘ']])){ return 'ㅘ'; }
+            else if (Utils.objectIn([a,b], [['ㅗ', 'ㅐ'],[ 'ㅚ','ㅐ'], ['ㅜ', 'ㅐ'], ['ㅗ', 'ㅙ'], ['ㅜ', 'ㅙ'], ['ㅚ', 'ㅙ']])) { return 'ㅙ';}
+            else if (Utils.objectIn([a,b], [['ㅗ', 'ㅚ']])) { return 'ㅚ';}
+            else if (Utils.objectIn([a,b], [['ㅜ', 'ㅓ'], ['ㅗ', 'ㅓ'], ['ㅜ', 'ㅝ'], ['ㅗ', 'ㅝ']])) { return 'ㅝ'; }
+            else if (Utils.objectIn([a,b], [['ㅜ', 'ㅔ'], ['ㅜ', 'ㅞ']])) { return 'ㅞ'; }
+            else if (Utils.objectIn([a,b], [['ㅜ', 'ㅣ'], ['ㅜ', 'ㅟ']])) { return 'ㅟ';}
+            else { return '';}
+
+        }
+
+        // 낱자 char, nextChar 자모분해
+        let curList = Array.isArray(char)? char : Utils.disassemble(char);
+        let nextList = Array.isArray(nextChar)? nextChar: Utils.disassemble(nextChar);
+        let curCjj = Array.isArray(char)? Utils.choJungJong(Hangul.assemble(char)) : Utils.choJungJong(char);
+        let nextCjj = Array.isArray(nextChar)? Utils.choJungJong(Hangul.assemble(nextChar)): Utils.choJungJong(nextChar);
+
+        let curCho = curList[0];
+        let curJung = Hangul.assemble(curCjj.jung);
+        let curJongList = curCjj.jong;
+        let curJong = Hangul.assemble(curJongList); // 한글자모 합치기
+
+        let nextCho = nextList[0];
+        let nextJung = Hangul.assemble(nextCjj.jung);
+        let nextJungList = nextCjj.jung;
+        let res=[]; // 결과 리스트
+
+        // 경우 나누기 - 우선 앞의 글자의 초성이 ㅇ인 경우
+        if (nextCho === 'ㅇ') {
+            // ㅇ 아닌 받침이 있는 경우 - 받침 마지막 글자를 다음 글자에 떼어놓자. 복자음일 때는 마지막 글자만 떼어놓는다.
+            if (curJongList.length>0 && curJongList[0]!== 'ㅇ') {
+                let lastLetter = reduced?[...curList.slice(-1), ...nextList.slice(1)] : [...curList.slice(-1), ...nextList]
+                res = [curList.slice(0,-1), lastLetter];
+            }
+            else if (curJongList[0] === 'ㅇ') {
+                res = [curList, nextList ];
+            }
+            // 받침이 없는 경우
+            else {
+                // 모음을 합칠 수 있는 경우. not reduced일 때에도 음절은 하나로
+                if (doubleVowelResult(curJung, nextJung)!== "") {
+                    res = reduced? [[curCho, doubleVowelResult(curJung, nextJung), ...nextList.slice(1+nextJungList.length)]]
+                        : [[...curList, ...nextList]];
+                }
+                // 못 합치면 건드리지 말 것.
+                else {
+                    res = [curList, nextList];
+                }
+            }
+        }
+        // 각호 -> 가코 (거센소리로 바꾸기)
+        else if (nextCho === 'ㅎ') {
+            // 길이 1이면 받침이 넘어감, 길이 2면 받침은 그대로 다음 자음이 넘어감
+            const aspirited = {'ㄱ': 'ㅋ', 'ㄲ': 'ㄲ', 'ㄳ':'ㅋ',  'ㄷ': 'ㅌ',
+                 'ㅂ': 'ㅍ', 'ㅅ': 'ㅌ', 'ㅆ': 'ㅆ', 'ㅈ': 'ㅌ', 'ㅊ':'ㅌ', 'ㅋ': 'ㅋ', 'ㅌ':'ㅌ', 'ㅍ': 'ㅍ',
+                'ㄵ': 'ㄴㅊ','ㄶ': 'ㄴㅎ','ㄺ': 'ㄹㅋ', 'ㄻ': 'ㅁㅎ', 'ㄼ': 'ㄹㅍ','ㄽ': 'ㄹㅆ', 'ㄿ': 'ㄹㅍ', 'ㅀ': 'ㄹㅎ', 'ㅄ': 'ㅂㅆ'}
+            // 단음으로 표시될 때는 aspirited sound를 분리
+            if (Object.keys(aspirited).indexOf(curJong)>-1 && aspirited[curJong].length === 1) {
+                let lastLetter = reduced? [aspirited[curJong], ...nextList.slice(1)] : [curJong, ...nextList];
+                res = [[curCho, curJung], lastLetter];
+            }
+            // 받침도 발음되면서 앞자음을 바꿀 수 있는 경우는
+            else if (Object.keys(aspirited).indexOf(curJong)>-1 && aspirited[curJong].length ===2) {
+                let lastLetter = reduced? [aspirited[curJong][1], ...nextList.slice(1)] :
+                    [curJongList[1], ...nextList]
+                res = (!reduced && ['ㄶ', 'ㄻ', 'ㅀ'].indexOf(curJong)>-1)? [curList, nextList] :
+                    [[curCho, curJung, aspirited[curJong][0]], lastLetter]; // ㄶ, ㄻ, ㅀ일 때는 예외로 음절 단위로 나누기
+            }
+            else {
+                res = [curList, nextList];
+            }
+        }
+        // 나머지 -> 받침과 쌍자음이 가능한 경우만 찾아보자
+        else {
+            // 앞자음+뒷자음 -> 합칠 수 있는 경우
+            const consonantJoined = {'ㄱㄱ': 'ㄲ', 'ㄱㅋ':'ㅋ', 'ㄷㄷ': 'ㄸ', 'ㄷㄸ': 'ㄸ','ㄷㅅ': 'ㅆ', 'ㄷㅆ': 'ㅆ', 'ㄷㅈ': 'ㅉ', 'ㄷㅉ':'ㅉ',
+                'ㄷㅊ': 'ㅊ', 'ㄷㅌ':'ㅌ', 'ㅂㅂ': 'ㅃ', 'ㅂㅍ': 'ㅍ', 'ㅅㄷ': 'ㄸ', 'ㅅㄸ':'ㄸ', 'ㅅㅅ': 'ㅆ', 'ㅅㅈ': 'ㅉ', 'ㅅㅊ': 'ㅊ',
+                'ㅈㄷ': 'ㄸ', 'ㅈㅅ': 'ㅆ', 'ㅈㅆ': 'ㅆ', 'ㅈㅈ': 'ㅉ', 'ㅈㅉ': 'ㅉ', 'ㅈㅊ': 'ㅊ', 'ㅋㄱ': 'ㅋ', 'ㅋㅋ': 'ㅋ', 'ㅌㄷ': 'ㅌ', 'ㅌㅌ': 'ㅌ', 'ㅍㅂ': 'ㅍ',
+                'ㄲㄱ':'ㄱㄲ',  'ㅆㅅ': 'ㅅㅆ',  }
+
+            let joined = curJongList[curJongList.length-1] + nextCho;
+            if (Object.keys(consonantJoined).indexOf(joined)>-1) {
+                // 받침이 완전히 뒷자음에 붙어버리는 경우
+                if (consonantJoined[joined].length === 1) {
+                    let lastLetter = reduced? [consonantJoined[joined], ...nextList.slice(1)]: [curJongList[curJongList.length-1], ...nextList];
+                    res = [[curCho, curJung], lastLetter];
+                }
+                // 받침음이 살아남는 경우
+                else {
+                    res = reduced ?[[curCho, curJung, consonantJoined[joined][0]], [consonantJoined[joined][1], ...nextList.slice(1)]]
+                        : [curList, nextList]; // reduced가 false면 원래 표기대로 나눈다.
+                }
+            }
+            else {
+                res = [curList, nextList];
+            }
+        }
+
+        // 마지막으로 받침으로 허용되는 음은 ㄱ,ㄴ,ㄷ,ㄹ,ㅁ,ㅂ,ㅅ,ㅇ 여덟개 뿐이기에 다른 음은 단순화
+        const simplifyInit = {'ㄲ': 'ㄱ', 'ㄸ': 'ㄷ','ㅃ': 'ㅂ', 'ㅆ': 'ㅅ', 'ㅉ': 'ㅈ'}
+
+        //  복모음 단모음화
+        const simplifyMid = {
+            'ㅒ':'ㅐ', 'ㅖ':'ㅔ', 'ㅘ': 'ㅏ', 'ㅙ': 'ㅐ', 'ㅝ': 'ㅓ', 'ㅞ': 'ㅔ', 'ㅟ': 'ㅣ', 'ㅢ': 'ㅣ'
+        }
+        // 치음 한정으로는
+        const toothSimplifyMid = {
+            ...simplifyMid, 'ㅑ': 'ㅏ', 'ㅕ':'ㅓ', 'ㅛ': 'ㅗ', 'ㅠ': 'ㅜ'
+        }
+        const simplifyEnd = {
+            'ㄲ': 'ㄱ', 'ㄳ': 'ㄱ', 'ㄵ': 'ㄴ', 'ㄶ': 'ㄴ', 'ㄺ': 'ㄱ', 'ㄻ':'ㅁ', 'ㄼ': 'ㅂ', 'ㄽ': 'ㄹ', 'ㄾ': 'ㄷ', 'ㄿ':'ㅂ', 'ㅀ': 'ㄹ',
+            'ㅄ': 'ㅂ', 'ㅆ': 'ㅅ', 'ㅈ': 'ㄷ', 'ㅊ': 'ㄷ', 'ㅋ': 'ㄱ', 'ㅌ': 'ㄷ', 'ㅍ': 'ㅂ', 'ㅎ': 'ㄷ'
+        }
+        // 받침 간단한 쌍자음으로 치환하기. reduced가 있을 때에만 확인인
+        if(reduced && simplify) {
+            // 우선 복자음, 복모음을 하나로 합치기
+            for (let idx in res) {
+                if (/[ㅏ-ㅣ]/.test(res[idx][2])) res[idx].splice(1,2, Hangul.assemble(res[idx][1], res[idx][2]))
+                if (/[ㄱ-ㅎ]/.test(res[idx][3])) res[idx].splice(2,2, Hangul.assemble(res[idx][2], res[idx][3]))
+            }
+            // 단모음/ 단자음화하기
+            for (let idx in res) {
+                if (['ㄲ', 'ㄸ', 'ㅃ', 'ㅆ', 'ㅉ'].indexOf(res[idx][0])>-1) {
+                    res[idx][0] = simplifyInit[res[idx][0]];
+                }
+                if (HO.toothConsonant.indexOf(res[idx][0])>-1 && Object.keys(toothSimplifyMid).indexOf(res[idx][1])>-1) {
+                    res[idx][1] = toothSimplifyMid[res[idx][1]]
+                }
+                else if (Object.keys(simplifyMid).indexOf(res[idx][1])>-1) {
+                    res[idx][1] = simplifyMid[res[idx][1]]
+                }
+                if (res[idx].length ===3 && Object.keys(simplifyEnd).indexOf(res[idx][2])>-1) {
+                    res[idx][2] = simplifyEnd[res[idx][2]];
+                }
+            }
+        }
+
+        return res.map(x=> Hangul.assemble(x));
+
+    },
+
+    // ㅇ, ㅡ 제거, 된소리/거센소리 예사음화 후 비속어 찾기. isMap을 사용하면 제거한 모음, 자음 대응 맵 찾기.
+    // 예시 : 브압오 -> {'브아':'바', 'ㅂ오':'보'}
+    // simplify 옵션을 true로 지정하면 거센소리 된소리를 예사소리화하기, 복모음, 이중모음 단모음화하는 작업도 추가.
+    // 메시지는 반드시 한글자모로만 조합.
+    dropDouble: (msg, isMap=false, simplify = false) => {
+
+        // let msgAlphabet = Hangul.disassemble(msg, false); // 낱자 단위로 분해
+        let msgSplit = msg.split('') // 글자단위로 분해하기
+
+        // // 모음 바뀔 때
+        // const normalify = {"ㄲ":'ㄱ', 'ㄸ':'ㄷ', 'ㅃ':'ㅂ','ㅆ':'ㅅ', 'ㅉ':'ㅈ',
+        //     'ㅋ':'ㄱ', 'ㅌ':'ㄷ', 'ㅍ':'ㅂ', 'ㅒ':'ㅐ','ㅖ':'ㅔ'}; // 된소리/거센소리 단순화
+        // const aspiritedSound = {"ㄱ": "ㅋ", "ㄷ":"ㅌ", "ㅂ":"ㅍ", "ㅅ":"ㅌ", "ㅈ":"ㅌ",
+        //     "ㅊ":"ㅌ", "ㅋ":"ㅋ", "ㅌ":"ㅌ","ㅍ":"ㅍ", "ㅎ":"ㅎ"} // ㅎ앞 거센소리 연음화
+        // const yVowel = {"ㅏ":"ㅑ", "ㅐ":'ㅒ', 'ㅑ':'ㅑ', 'ㅒ':'ㅒ', 'ㅓ':'ㅕ', 'ㅔ':'ㅖ', 'ㅕ':'ㅕ',
+        //     'ㅖ':'ㅖ', 'ㅗ':'ㅛ', 'ㅛ':'ㅛ', 'ㅜ':'ㅠ', 'ㅠ':'ㅠ', 'ㅡ':'ㅠ', 'ㅣ':'ㅣ' } // 이어 -> 여 단축을 위한 작업
+        //
+        // // 유사모음 축약형으로 잡아내기 위한 조건 갸앙 ->걍
+        // const vowelLast = {'ㅏ':['ㅏ'], 'ㅐ':['ㅐ', 'ㅔ'], 'ㅑ': ['ㅏ', 'ㅑ'], 'ㅒ':['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'],
+        //     'ㅓ' : ['ㅓ'], 'ㅔ': ['ㅔ', 'ㅐ'], 'ㅕ': ['ㅓ', 'ㅕ'], 'ㅖ':['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'],
+        //     'ㅗ':['ㅗ'], 'ㅛ':['ㅛ', 'ㅗ'], 'ㅜ':['ㅜ', 'ㅡ'], 'ㅠ':['ㅠ', 'ㅜ', 'ㅡ'], 'ㅡ':['ㅡ'], 'ㅣ':['ㅣ']}
+        //
+        // // 유사모음 축약형. 그러나 이 경우는 뒷모음을 따를 때 -> 구아 -> 과, 구에 -> 궤 고언세 -> 권세
+        // const vowelPair = [['ㅗ', 'ㅏ'], ['ㅗ', 'ㅐ'], ['ㅗ', 'ㅓ'], ['ㅗ', 'ㅔ'],
+        //     ['ㅜ', 'ㅏ'], ['ㅜ', 'ㅐ'], ['ㅜ', 'ㅓ'], ['ㅜ', 'ㅔ'], ['ㅜ', 'ㅣ'], ['ㅡ', 'ㅣ']]
         // map일 때 최종결과용
-        let singleSyllable = []; // 음절 하나 표시할 때 사용.
+
         let divideSyllable = []; // 음절단위 나누기
         let res = {}; // 결과 오브젝트
 
-        // 상쇄모음 조합 -
-
-        if (!isMap) {
-            let i=0;
-            // 문제 해결을 위해 단모음화하는 과정은 자음 축약화 프로세스 다음으로 미루자.
-            while ( i <msgAlphabet.length) {
-                // 첫자, 끝자 제외 ㅇ일 때
-                if (1<i<msgAlphabet.length-1 && msgAlphabet[i] === 'ㅇ') {
-                    // 자음+모음+ㅇ+모음
-                    if (Utils.charInitials.indexOf(msgAlphabet[i-2])!== -1 && Utils.charMedials.indexOf(msgAlphabet[i-1])!== -1 && Utils.charMedials.indexOf(msgAlphabet[i+1])!== -1
-                    ) {
-                        // 자음+ㅡ+ㅇ+모음 -> 그아 -> 가
-                        if (msgAlphabet[i-1] === 'ㅡ') {
-                            /// ㅢ는 예외처리. 그이 -> 긔
-                            if ( msgAlphabet[i+1] === "ㅣ") {msgAlphabet.splice(i-1, 3, 'ㅢ'); i++;}
-                            else  { msgAlphabet.splice(i-1, 2); }
-                        }
-                        // 자음+ㅣ+ㅇ+모음. 이중모음이 뒤에 올 때는 예외처리. 기아 -> 갸
-                        else if (msgAlphabet[i-1] === 'ㅣ' && Object.keys(yVowel).indexOf(msgAlphabet[i+1])!==-1 && Utils.charMedials.indexOf(msgAlphabet[i+2])===-1 ) {
-                            msgAlphabet.splice(i-1, 3, yVowel[msgAlphabet[i+1]]);
-                        }
-                        // 자음+모음+ㅇ+중복모음 -> 고오 -> 고
-                        else if( Object.keys(vowelLast).indexOf(msgAlphabet[i-1])!== -1 && vowelLast[msgAlphabet[i-1]].indexOf(msgAlphabet[i+1])!==-1 ) {
-                            msgAlphabet.splice(i, 2);
-                        }
-                        // 자음+모음+ㅇ+모음, 복모음 형성 가능한 조합. 고아 -> 과
-                        else if (Utils.isDouble(msgAlphabet[i-1], msgAlphabet[i+1], vowelPair) ) {
-                            // 일부 복모음과 일치하지 않는 부분은 복모음 조합에 맞게 변형하기
-                            if (msgAlphabet[i-1] === 'ㅗ' && msgAlphabet[i+1] === 'ㅓ') msgAlphabet[i-1] = 'ㅜ';
-                            else if (msgAlphabet[i-1] === 'ㅗ' && msgAlphabet[i+1] === 'ㅔ') msgAlphabet[i+1] = 'ㅣ';
-                            else if (msgAlphabet[i-1] === 'ㅜ' && msgAlphabet[i+1] === 'ㅏ') msgAlphabet[i-1] = 'ㅗ';
-                            else if (msgAlphabet[i-1] === 'ㅜ' && msgAlphabet[i+1] === 'ㅐ') msgAlphabet[i-1] = 'ㅔ';
-                            msgAlphabet.splice(i, 1);
-                        }
-                        else i++; // 다음으로 넘기기
-                    }
-                    // 자음+복모음+ㅇ+뒤모음과 동일함. 귀이 -> 귀. 단 ㅚ+이는 제외.
-                    else if (i>2 && Utils.charInitials.indexOf(msgAlphabet[i-3])!== -1 && Utils.charMedials.indexOf(msgAlphabet[i-1])!== -1 &&
-                        (Utils.isDouble(msgAlphabet[i-2], msgAlphabet[i-1]) === true && !(msgAlphabet[i-2]==='ㅗ' && msgAlphabet[i-1]==='ㅣ') ) && msgAlphabet[i-1] == msgAlphabet[i+1]
-                    ) {
-                        msgAlphabet.splice(i,2);
-                    }
-                    // 자음+ㅇ+모음 -> ㄱ오 -> 고. ㅇ만 지우기. 복자음일 때도 해결 가능. 단 ㅇ일 때는 예외로
-                    else if (Utils.charInitials.indexOf(msgAlphabet[i-1])!== -1 && msgAlphabet[i-1] !=='ㅇ' && Utils.charMedials.indexOf(msgAlphabet[i+1])!== -1
-                    ) msgAlphabet.splice(i, 1);
-
-                    else i++; // 다음으로 넘기기
-                }
-                // 다른 자음일 때는
-                else if (1<i<msgAlphabet.length-1 && Utils.charInitials.indexOf(msgAlphabet[i]) !== -1) {
-                    // 앞의 받침이 뒤의 자음과 "사실상 중복일 때" 앞 자음 제거. 그 앞에 모음 오는지, 자음 오는지는 상관 없음. 겆지 -> 거지
-                    if (Utils.charInitials.indexOf(msgAlphabet[i-1])!== -1 && (Utils.objectIn(msgAlphabet[i-1], Utils.jointConsonant[msgAlphabet[i]]))
-                        && Utils.charMedials.indexOf(msgAlphabet[i+1])!== -1
-                    ) msgAlphabet.splice(i-1, 1);
-
-                    // ㅎ과 결합했을 때 거센소리화. 색히 -> 새키
-                    else if ( msgAlphabet[i] === 'ㅎ' && Object.keys(aspiritedSound).indexOf(msgAlphabet[i-1])!==-1) {
-                        msgAlphabet[i-1] = aspiritedSound[msgAlphabet[i-1]];
-                        msgAlphabet.splice(i, 1);
-                    }
-                    i++; // 다음으로 넘겨주기
-                }
-                // 나머지 경우
-                else {
-                    // 첫자이지만 자음 뒤에 ㅇ 아닌 자음+모음이 오는 경우 제거.
-                    if (i===0 && Utils.charInitials.indexOf(msgAlphabet[0])!== -1 && Utils.charInitials.indexOf(msgAlphabet[1])!== -1 && msgAlphabet[1]!=="ㅇ" && Utils.charMedials.indexOf(msgAlphabet[2])!==-1 ) {
-                        msgAlphabet.shift();
-                    }
-                        // 모음 뒤에 모음이 바로 오는 경우 맨 앞글자를 제거한다.
-                        // else if (i===0 && Utils.charMedials.indexOf(msgAlphabet[0])!== -1 && Utils.charMedials.indexOf(msgAlphabet[1])!== -1) {
-                        //     msgAlphabet.shift();
-                    // }
-                    else i++;
-                }
+        // msgAlphabetByLetter 리스트를 첨삭하는 방식으로 재조정
+        // msgAlphabetByLetter -> 키값으로 활용할 요소, divideSyllabe -> 출력값으로 활용할 요소
+        // 밥으오 -> msgAlphabetByLetter => ['ㅂ','ㅏ'], ['ㅂ','ㅇ','ㅡ','ㅇ','ㅗ'], divideSyllable => ['ㅂ','ㅏ'],['ㅂ','ㅗ']
+        // 그다음에 isMap이면 Map으로 만들고 아니면 join한다
+        let idx = 0; // 글자 인덱스
+        while( idx < msgSplit.length) {
+            let letter = msgSplit[idx]; // idx의 첫 글자
+            // 첫 글자는 첨삭 대상이 아니므로 다음 글자로 넘어간다.
+            if (idx ===0 ) {
+                divideSyllable.push(letter); idx++;
             }
-            // 단음화 작업 -> 복모음 단축 다 뽑아낸 이후에 작업
-            if (simplify) {
-                i = 0;
-                while (i< msgAlphabet.length) {
+            else {
+                // 마지막 앞글자와 현재 음절 비교
+                let pre = divideSyllable[idx-1]; // 앞글자 리스트
+                let lastMsg = msgSplit[idx-1]; // 마지막 메시지
+                // 둘 다 한글일 때 - joinedSyllable 활용하기
+                if (/^[가-힣]$/.test(letter) && /[가-힣]/.test(pre)) {
 
-                    if (Object.keys(normalify).indexOf(msgAlphabet[i])!== -1) {
-                        msgAlphabet[i] = normalify[msgAlphabet[i]];
-                        i++;
+                    let lastChar = msgSplit[idx-1][msgSplit[idx-1].length-1]; // msgSplit의 마지막 문자
+                    let testRes = Utils.joinedSyllable(pre, letter, true); // 음절이 줄어들 수 있는 경우
+                    let testResXR = Utils.joinedSyllable(lastChar, letter, false); // 음절이 줄어들지 않게 부착하는 경우.
+                    // 길이가 1일 때는 글자가 합쳐진 걸로 간주한다.
+                    if (testRes.length ===1) {
+                        msgSplit.splice(idx-1, 2, msgSplit[idx-1]+letter);
+                        divideSyllable[idx-1] = testRes[0];
                     }
-                    // 모음일 때는 앞의 모음과 복모음을 형성하지 못하는 경우 모음들만 제거하기  - 일단 dropDouble은 완전한 한글에서만 실험할 것.
-                    else if (Utils.charMedials.indexOf(msgAlphabet[i])!== -1) {
-
-                        // 겹모음 단모음화하기
-                        if ( Object.keys(normalify).indexOf(msgAlphabet[i])!== -1) {
-                            msgAlphabet[i] = normalify[msgAlphabet[i]];
-                            i++;
-                        }
-                        // 복모음 단모음화하기
-                        else if ( ObjectOperation.objectIn([msgAlphabet[i-1], msgAlphabet[i]],Utils.doubleVowel )) {
-                            if (msgAlphabet[i-1] !== "ㅗ" || msgAlphabet[i] !=="ㅣ") {
-                                msgAlphabet.splice(i-1, 1);
-                                i++;
-                            }
-                            else {
-                                i++;
-                            }
-
-                        }
-                            //     if ( !Utils.isDouble(msgAlphabet[i-1], msgAlphabet[i]) ) {
-                            //         msgAlphabet.splice(i,1);
-                        //     }
-                        else i++;
-                    }
-                    else i++;
-                }
-            }
-
-            return Hangul.assemble(msgAlphabet);
-
-        }
-        // isMap으로 정의할 경우 음절 단위로 우선 쪼갠 뒤 dropDouble 수행
-        else {
-            let i =0;
-            while ( i < msgAlphabet.length ) {
-
-                // 처음일 때는
-                if (i === 0 ) {
-                    singleSyllable.push(msgAlphabet[i]);
-                    i++;
-                }
-                // 나머지 경우
-                else {
-                    // 자음 ㅇ
-                    if (msgAlphabet[i] === 'ㅇ') {
-
-                        // 모음이 바로 앞에 오는 경우
-                        if (Utils.charMedials.indexOf(msgAlphabet[i-1])!== -1) {
-                            // 맨 마지막이거나 뒤에 모음이 안 오면 앞 글자에 붙여쓰기
-                            if ( i === msgAlphabet.length - 1 || Utils.charMedials.indexOf(msgAlphabet[i + 1]) === -1 ) {
-                                singleSyllable.push(msgAlphabet[i]);
-                                i++;
-                            }
-                            // 자음+ㅡ+ㅇ+모음 패턴
-                            else if (i>1 && Utils.charInitials.indexOf(msgAlphabet[i-2])!== -1  && msgAlphabet[i-1] ==='ㅡ') {
-                                singleSyllable.push(msgAlphabet[i]);
-                                i++;
-                            }
-                            // 자음+단모음+ㅇ+유사모음 패턴 - ㅇ과 유사모음을 앞음절로
-                            else if (i>1 && i<msgAlphabet.length-1 && Utils.charInitials.indexOf(msgAlphabet[i-2])!==-1 &&
-                                Object.keys(vowelLast).indexOf(msgAlphabet[i-1])!== -1 && vowelLast[msgAlphabet[i-1]].indexOf(msgAlphabet[i+1]) !== -1) {
-                                singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
-                                i +=2;
-                            }
-                            // 자음+ㅣ+ㅇ+단모음 -> 자음+복모음 처리를 위해 ㅇ을 앞에 붙임.
-                            else if (i>1 && i < msgAlphabet.length - 1 && Utils.charInitials.indexOf(msgAlphabet[i - 2]) !== -1 &&
-                                msgAlphabet[i - 1] === 'ㅣ' && Object.keys(yVowel).indexOf(msgAlphabet[i + 1]) !== -1 && Utils.charMedials.indexOf(msgAlphabet[i+2]) === -1) {
-                                singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
-                                i +=2;
-                            }
-                                // 자음 + 모음+ ㅇ+모음 -> 복모음 형성가능한 경우
-                            // 자음 + 모음 + ㅇ + 모음에서 앞모음+뒷모음이 복모음을 형성할 수 있는 경우 ㅇ을 앞에 붙임
-                            else if (i>1 && i < msgAlphabet.length - 1 && Utils.charMedials.indexOf(msgAlphabet[i - 1]) !== -1 && Utils.charMedials.indexOf(msgAlphabet[i + 1]) !== -1 &&
-                                Utils.charInitials.indexOf(msgAlphabet[i - 2]) !== -1 ) {
-
-                                if (Utils.objectIn([msgAlphabet[i-1], msgAlphabet[i+1]], vowelPair)) {
-                                    singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
-                                    i +=2;
-                                }
-                                // 나머지 경우는 음절 나누기
-                                else {
-                                    divideSyllable.push(singleSyllable);
-                                    singleSyllable = [msgAlphabet[i]];
-                                    i++;
-                                }
-                            }
-                            // 복모음+ㅇ+모음에서 뒷모음이 복모음과 겹침. 궈어 -> 궈
-                            else if (2 < i < msgAlphabet.length - 1 && Utils.charInitials.indexOf(msgAlphabet[i - 3]) !== -1 &&
-                                Utils.charMedials.indexOf(msgAlphabet[i-1])!==-1 && msgAlphabet[i + 1] === msgAlphabet[i -1] &&
-                                Utils.isDouble(msgAlphabet[i-2], msgAlphabet[i-1]) === true && !(msgAlphabet[i-2]==='ㅗ' && msgAlphabet[i-1]==='ㅣ') ) {
-                                singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
-                                i +=2;
-                            }
-                            // 나머지 케이스는 ㅇ으로 시작하는 글자 분리
-                            else {
-                                divideSyllable.push(singleSyllable);
-                                singleSyllable = [msgAlphabet[i]];
-                                i++;
-                            }
-
-                        }
-                        // 자음이 바로 앞에 오는 경우
-                        else if (Utils.charInitials.indexOf(msgAlphabet[i-1])!== -1) {
-                            // 뒤에 모음이 올 때+앞에 ㅇ 아닌 자음이 올 때 앞 음절에 붙이기
-                            if (i>1 && i < msgAlphabet.length - 1 && msgAlphabet[i - 1] !== 'ㅇ' && Utils.charMedials.indexOf(msgAlphabet[i + 1]) !== -1) {
-                                singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
-                                i +=2;
-                            }
-                            // 나머지는 ㅇ을 시작으로 음절 분리
-                            else {
-                                divideSyllable.push(singleSyllable);
-                                singleSyllable = [msgAlphabet[i]];
-                                i++;
-                            }
-                        }
-                        // 나머지는 ㅇ을 시작으로 음절 분리
-                        else {
-                            divideSyllable.push(singleSyllable);
-                            singleSyllable = [msgAlphabet[i]];
-                            i++;
-                        }
-                    }
-
-                    // ㅇ 아닌 자음일 때
-                    else if (Utils.charInitials.indexOf(msgAlphabet[i]) !== -1 && msgAlphabet[i] !== 'ㅇ') {
-                        // 앞에 모음일 경우
-                        if ( Utils.charMedials.indexOf(msgAlphabet[i - 1]) !== -1) {
-                            // 뒷자음과 겹받침을 형성하는 경우 &
-                            if (Utils.objectIn([msgAlphabet[i], msgAlphabet[i+1]], Utils.doubleConsonant)) {
-
-                                // 일단 겹자음 바로 다음에 모음이 오면 겹자음 여부와는 무관하게 무조건 음절 나눈다.
-                                if (i<msgAlphabet.length-2 && /[ㅏ-ㅣ]/.test(msgAlphabet[i+2])) {
-                                    singleSyllable.push(msgAlphabet[i]);
-                                    divideSyllable.push(singleSyllable);
-                                    singleSyllable = [];
-                                    i++;
-                                }
-                                // 맨 마지막에 오거나 뒤에 모음 또는 ㅇ,ㅎ, 중복모음이 오지 않을 때
-                                else if ( i >= msgAlphabet.length -2 ||
-                                    (Utils.charMedials.indexOf(msgAlphabet[i + 2]) === -1 && msgAlphabet[i + 2] !== 'ㅇ' && msgAlphabet[i+2]!== 'ㅎ'
-                                        && !ObjectOperation.objectIn(msgAlphabet[i+1], Utils.jointConsonant[msgAlphabet[i+2]])  ) ) {
-                                    singleSyllable = singleSyllable.concat( [msgAlphabet[i], msgAlphabet[i+1]] );
-                                    divideSyllable.push(singleSyllable);
-                                    singleSyllable = msgAlphabet[i+2]!==undefined?[msgAlphabet[i+2]]:[]
-                                    i +=3;
-                                }
-                                // 뒤에 ㅇ, ㅎ, 중복자음이 오지만 그래도 그 다음에 모음이 안 올 때
-                                else if ( i<msgAlphabet.length-2 &&
-                                    (msgAlphabet[i+2] === 'ㅇ' || msgAlphabet[i+2] === 'ㅎ' || ObjectOperation.objectIn(msgAlphabet[i+1], Utils.jointConsonant[msgAlphabet[i+2]]))
-                                    && Utils.charMedials.indexOf(msgAlphabet[i+3])=== -1) {
-                                    singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
-                                    divideSyllable.push(singleSyllable);
-                                    singleSyllable = [ msgAlphabet[i+2] ]
-                                    i +=3;
-                                }
-                                // 뒷자음 중복시- 뒤로 넘기기.
-                                else if (i<msgAlphabet.length-2 &&
-                                    ObjectOperation.objectIn(msgAlphabet[i+1], Utils.jointConsonant[msgAlphabet[i+2]])
-                                ) {
-                                    singleSyllable.push(msgAlphabet[i]);
-                                    divideSyllable.push(singleSyllable);
-                                    singleSyllable = [msgAlphabet[i+1], msgAlphabet[i+2]];
-                                    i +=3;
-                                }
-                                // 뒤에 ㅎ이 올 때 - 뒷모음으로 밀기
-                                else if (i<msgAlphabet.length-2 && msgAlphabet[i+2]=== 'ㅎ') {
-                                    // ㅎ 비음으로 밀어낼 수 있는 경우 한정
-                                    if ( Object.keys(aspiritedSound).indexOf(msgAlphabet[i+1]) !==-1 ) {
-                                        singleSyllable.push(msgAlphabet[i])
-                                        divideSyllable.push(singleSyllable);
-                                        singleSyllable = [msgAlphabet[i+1], msgAlphabet[i+2]];
-                                        i +=3;
-                                    }
-                                    // 안 그런 경우는 그냥 통상적으로 나누기
-                                    else {
-                                        singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
-                                        i +=2;
-                                    }
-                                }
-                                // 뒤에 ㅇ이 올 때 - 뒷모음으로 밀기
-                                else if (i<msgAlphabet.length -2 && msgAlphabet[i+2] === 'ㅇ') {
-                                    singleSyllable.push(msgAlphabet[i])
-                                    divideSyllable.push(singleSyllable);
-                                    singleSyllable = [msgAlphabet[i+1], msgAlphabet[i+2]];
-                                    i +=3;
-                                }
-                                // 혹시 나머지 경우는...
-                                else {
-                                    singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
-                                    i +=2;
-                                }
-
-                            }
-                            // 아닌 경우
-                            else {
-                                // 맨 마지막에 오거나 뒤에 모음 또는 ㅇ,ㅎ, 중복모음이 오지 않을 때
-                                if ( i === msgAlphabet.length -1 ||
-                                    (Utils.charMedials.indexOf(msgAlphabet[i + 1]) === -1 && msgAlphabet[i + 1] !== 'ㅇ' && msgAlphabet[i+1]!== 'ㅎ'
-                                        && !ObjectOperation.objectIn(msgAlphabet[i], Utils.jointConsonant[msgAlphabet[i+1]])  ) ) {
-                                    singleSyllable.push(msgAlphabet[i]);
-                                    i++;
-                                }
-                                // 뒤에 ㅇ, ㅎ, 중복자음이 오지만 그래도 그 다음에 모음이 안 올 때
-                                else if ( i<msgAlphabet.length-1 &&
-                                    (msgAlphabet[i+1] === 'ㅇ' || msgAlphabet[i+1] === 'ㅎ' || ObjectOperation.objectIn(msgAlphabet[i], Utils.jointConsonant[msgAlphabet[i+1]]))
-                                    && Utils.charMedials.indexOf(msgAlphabet[i+2])=== -1) {
-                                    singleSyllable.push(msgAlphabet[i]);
-                                    i++;
-                                }
-                                // 뒷자음 중복시- 뒤로 밀어내기
-                                else if (i<msgAlphabet.length-1 &&
-                                    ObjectOperation.objectIn(msgAlphabet[i], Utils.jointConsonant[msgAlphabet[i+1]])
-                                ) {
-                                    divideSyllable.push(singleSyllable);
-                                    singleSyllable = [msgAlphabet[i], msgAlphabet[i+1]];
-                                    i +=2;
-                                }
-                                // 뒤에 ㅎ이 올 때 - 뒷모음으로 밀기
-                                else if (i<msgAlphabet.length-1 && msgAlphabet[i+1]=== 'ㅎ') {
-                                    // ㅎ 비음으로 밀어낼 수 있는 경우 한정
-                                    if ( Object.keys(aspiritedSound).indexOf(msgAlphabet[i]) !==-1 ) {
-                                        divideSyllable.push(singleSyllable);
-                                        singleSyllable = [msgAlphabet[i], msgAlphabet[i+1]];
-                                        i +=2;
-                                    }
-                                    // 안 그런 경우는 그냥 통상적으로 나누기
-                                    else {
-                                        singleSyllable.push(msgAlphabet[i]);
-                                        i++;
-                                    }
-                                }
-                                // 뒤에 ㅇ이 올 때 - 뒷모음으로 밀기
-                                else if (i<msgAlphabet.length -1 && msgAlphabet[i+1] === 'ㅇ') {
-                                    divideSyllable.push(singleSyllable);
-                                    singleSyllable = [msgAlphabet[i], msgAlphabet[i+1]];
-                                    i +=2;
-                                }
-                                // 혹시 나머지 경우는...
-                                else {
-                                    divideSyllable.push(singleSyllable);
-                                    singleSyllable = [msgAlphabet[i] ];
-                                    i++;
-                                }
-
-                            }
-
-                        }
-
-                        // 나머지 - 뒷글자로 넘기기
-                        else {
-                            if(singleSyllable.length>0) divideSyllable.push(singleSyllable);
-                            singleSyllable = [msgAlphabet[i]];
-                            i++;
-
-                        }
-                    }
-
-                    // 자음 바로 뒤 모음 - 앞글자에 붙인다.
-                    else if (Utils.charMedials.indexOf(msgAlphabet[i]) !== -1 && Utils.charInitials.indexOf(msgAlphabet[i - 1]) !== -1) {
-                        singleSyllable.push(msgAlphabet[i]);
-                        i++;
-                    }
-                    // 겹모음 - 앞글자에 붙인다.
-                    else if (i > 1 && Utils.charInitials.indexOf(msgAlphabet[i - 2]) !== -1 && Utils.charMedials.indexOf(msgAlphabet[i - 1]) !== -1) {
-                        var tmp = true;
-                        if (Utils.objectIn([msgAlphabet[i-1], msgAlphabet[i]], Utils.doubleVowel)) {
-                            singleSyllable.push(msgAlphabet[i]);
-                            tmp = false;
-                            i++;
-                        }
-
-                        if (tmp) {
-                            divideSyllable.push(singleSyllable);
-                            singleSyllable = [msgAlphabet[i]];
-                            i++;
-                        }
-                    }
-                    // 나머지 케이스
+                    // 길이가 2일 때는
                     else {
-                        divideSyllable.push(singleSyllable);
-                        singleSyllable = [msgAlphabet[i]];
-                        i++;
+                        msgSplit.splice(idx-1, 2, msgSplit[idx-1].slice(0,-1)+testResXR[0], testResXR[1]);
+                        divideSyllable.splice(idx-1, 1, testRes[0], testRes[1]);
+                        idx++;
                     }
-
                 }
-
+                // 받침없는 글자 + 낱자음 -> 리스트 합치기
+                else if (/^[ㄱ-ㅎ]$/.test(letter)
+                    && lastMsg.length === Hangul.assemble(Hangul.disassemble(lastMsg).concat([letter])).length) {
+                    msgSplit.splice(idx, 2, Hangul.assemble(Hangul.disassemble(lastMsg).concat([letter])));
+                    divideSyllable[divideSyllable.length-1] = Hangul.assemble(Hangul.disassemble(pre).concat([letter]));
+                }
+                // 나머지 경우 - 그냥 나누어서 넣는다.
+                else {
+                    divideSyllable.push(letter);
+                    idx++;
+                }
             }
-            //마지막 문자 밀어넣기
-            if (singleSyllable.length>0) divideSyllable.push(singleSyllable);
+        }
 
-            let ind =0;
-            for (i =0; i<divideSyllable.length; i++) {
-                let cnt = 0, assembledSyllable =  Hangul.assemble(divideSyllable[i]);
-                for (var leti in assembledSyllable ) { // 한글 숫자 조합. Hangul.assemble로 조합.
-                    // 한글 자음이면서 낱자 바로 뒤나 앞에 한글이 오지 않으면 cnt 늘리기...
-                    if (!/[ㄱ-ㅎ]/.test( assembledSyllable[leti] )  ) cnt++;
-                    else if (leti > 0 && !/[가-힣]/.test( assembledSyllable[leti-1] ) ) cnt++;
-                    else if (leti === 0 && !/[가-힣]/.test( assembledSyllable[leti+1] ) ) cnt++;
-                }
-                if (res[Hangul.assemble(divideSyllable[i])]) {
-                    res[Hangul.assemble(divideSyllable[i])]["index"].push(ind);
+        // 리스트 도출하는데 성공했으므로 맵을 유도해보자
+        if (isMap) {
+            let pos = 0; // 위치 벡터
+            for (let idx in divideSyllable) {
+                let curLetter = msgSplit[idx];
+                if (idx == 0) {
+                    res[curLetter] = {value: divideSyllable[0], index: [0]}
+                    pos += curLetter.length;
                 }
                 else {
-                    res[Hangul.assemble(divideSyllable[i])] = {
-                        value: Utils.dropDouble(Hangul.assemble(divideSyllable[i]), false, simplify),
-                        index: [ind]
+                    let lastLetter = msgSplit[idx-1];
+                    if (!res[curLetter]) {
+                        res[curLetter] = {value: divideSyllable[idx], index: [pos]}
                     }
+                    else {
+                        res[curLetter].index.push(pos);
+                    }
+                    // 앞문자셋과 현재 문자셋을 합친 길이 - 앞 문자셋 길이. 그러면 앞에 자음이 들어갈 때 자음 길이는 뺄 수 있다.
+                    pos += Hangul.assemble(Hangul.disassemble(lastLetter).concat(Hangul.disassemble(curLetter))).length - lastLetter.length;
                 }
-                ind += cnt;
             }
             return res;
         }
+        // isMap이 거짓이면 그냥 결과물만 join해서 출력
+        else {
+            return divideSyllable.join('');
+        }
+
+        // // 상쇄모음 조합 -
+        //
+        // if (!isMap) {
+        //     let i=0;
+        //     // 문제 해결을 위해 단모음화하는 과정은 자음 축약화 프로세스 다음으로 미루자.
+        //     while ( i <msgAlphabet.length) {
+        //         // 첫자, 끝자 제외 ㅇ일 때
+        //         if (1<i<msgAlphabet.length-1 && msgAlphabet[i] === 'ㅇ') {
+        //             // 자음+모음+ㅇ+모음
+        //             if (Utils.charInitials.indexOf(msgAlphabet[i-2])!== -1 && Utils.charMedials.indexOf(msgAlphabet[i-1])!== -1 && Utils.charMedials.indexOf(msgAlphabet[i+1])!== -1
+        //             ) {
+        //                 // 자음+ㅡ+ㅇ+모음 -> 그아 -> 가
+        //                 if (msgAlphabet[i-1] === 'ㅡ') {
+        //                     /// ㅢ는 예외처리. 그이 -> 긔
+        //                     if ( msgAlphabet[i+1] === "ㅣ") {msgAlphabet.splice(i-1, 3, 'ㅢ'); i++;}
+        //                     else  { msgAlphabet.splice(i-1, 2); }
+        //                 }
+        //                 // 자음+ㅣ+ㅇ+모음. 이중모음이 뒤에 올 때는 예외처리. 기아 -> 갸
+        //                 else if (msgAlphabet[i-1] === 'ㅣ' && Object.keys(yVowel).indexOf(msgAlphabet[i+1])!==-1 && Utils.charMedials.indexOf(msgAlphabet[i+2])===-1 ) {
+        //                     msgAlphabet.splice(i-1, 3, yVowel[msgAlphabet[i+1]]);
+        //                 }
+        //                 // 자음+모음+ㅇ+중복모음 -> 고오 -> 고
+        //                 else if( Object.keys(vowelLast).indexOf(msgAlphabet[i-1])!== -1 && vowelLast[msgAlphabet[i-1]].indexOf(msgAlphabet[i+1])!==-1 ) {
+        //                     msgAlphabet.splice(i, 2);
+        //                 }
+        //                 // 자음+모음+ㅇ+모음, 복모음 형성 가능한 조합. 고아 -> 과
+        //                 else if (Utils.isDouble(msgAlphabet[i-1], msgAlphabet[i+1], vowelPair) ) {
+        //                     // 일부 복모음과 일치하지 않는 부분은 복모음 조합에 맞게 변형하기
+        //                     if (msgAlphabet[i-1] === 'ㅗ' && msgAlphabet[i+1] === 'ㅓ') msgAlphabet[i-1] = 'ㅜ';
+        //                     else if (msgAlphabet[i-1] === 'ㅗ' && msgAlphabet[i+1] === 'ㅔ') msgAlphabet[i+1] = 'ㅣ';
+        //                     else if (msgAlphabet[i-1] === 'ㅜ' && msgAlphabet[i+1] === 'ㅏ') msgAlphabet[i-1] = 'ㅗ';
+        //                     else if (msgAlphabet[i-1] === 'ㅜ' && msgAlphabet[i+1] === 'ㅐ') msgAlphabet[i-1] = 'ㅔ';
+        //                     msgAlphabet.splice(i, 1);
+        //                 }
+        //                 else i++; // 다음으로 넘기기
+        //             }
+        //             // 자음+복모음+ㅇ+뒤모음과 동일함. 귀이 -> 귀. 단 ㅚ+이는 제외.
+        //             else if (i>2 && Utils.charInitials.indexOf(msgAlphabet[i-3])!== -1 && Utils.charMedials.indexOf(msgAlphabet[i-1])!== -1 &&
+        //                 (Utils.isDouble(msgAlphabet[i-2], msgAlphabet[i-1]) === true && !(msgAlphabet[i-2]==='ㅗ' && msgAlphabet[i-1]==='ㅣ') ) && msgAlphabet[i-1] == msgAlphabet[i+1]
+        //             ) {
+        //                 msgAlphabet.splice(i,2);
+        //             }
+        //             // 자음+ㅇ+모음 -> ㄱ오 -> 고. ㅇ만 지우기. 복자음일 때도 해결 가능. 단 ㅇ일 때는 예외로
+        //             else if (Utils.charInitials.indexOf(msgAlphabet[i-1])!== -1 && msgAlphabet[i-1] !=='ㅇ' && Utils.charMedials.indexOf(msgAlphabet[i+1])!== -1
+        //             ) msgAlphabet.splice(i, 1);
+        //
+        //             else i++; // 다음으로 넘기기
+        //         }
+        //         // 다른 자음일 때는
+        //         else if (1<i<msgAlphabet.length-1 && Utils.charInitials.indexOf(msgAlphabet[i]) !== -1) {
+        //             // 앞의 받침이 뒤의 자음과 "사실상 중복일 때" 앞 자음 제거. 그 앞에 모음 오는지, 자음 오는지는 상관 없음. 겆지 -> 거지
+        //             if (Utils.charInitials.indexOf(msgAlphabet[i-1])!== -1 && (Utils.objectIn(msgAlphabet[i-1], Utils.jointConsonant[msgAlphabet[i]]))
+        //                 && Utils.charMedials.indexOf(msgAlphabet[i+1])!== -1
+        //             ) msgAlphabet.splice(i-1, 1);
+        //
+        //             // ㅎ과 결합했을 때 거센소리화. 색히 -> 새키
+        //             else if ( msgAlphabet[i] === 'ㅎ' && Object.keys(aspiritedSound).indexOf(msgAlphabet[i-1])!==-1) {
+        //                 msgAlphabet[i-1] = aspiritedSound[msgAlphabet[i-1]];
+        //                 msgAlphabet.splice(i, 1);
+        //             }
+        //             i++; // 다음으로 넘겨주기
+        //         }
+        //         // 나머지 경우
+        //         else {
+        //             // 첫자이지만 자음 뒤에 ㅇ 아닌 자음+모음이 오는 경우 제거.
+        //             if (i===0 && Utils.charInitials.indexOf(msgAlphabet[0])!== -1 && Utils.charInitials.indexOf(msgAlphabet[1])!== -1 && msgAlphabet[1]!=="ㅇ" && Utils.charMedials.indexOf(msgAlphabet[2])!==-1 ) {
+        //                 msgAlphabet.shift();
+        //             }
+        //                 // 모음 뒤에 모음이 바로 오는 경우 맨 앞글자를 제거한다.
+        //                 // else if (i===0 && Utils.charMedials.indexOf(msgAlphabet[0])!== -1 && Utils.charMedials.indexOf(msgAlphabet[1])!== -1) {
+        //                 //     msgAlphabet.shift();
+        //             // }
+        //             else i++;
+        //         }
+        //     }
+        //     // 단음화 작업 -> 복모음 단축 다 뽑아낸 이후에 작업
+        //     if (simplify) {
+        //         i = 0;
+        //         while (i< msgAlphabet.length) {
+        //
+        //             if (Object.keys(normalify).indexOf(msgAlphabet[i])!== -1) {
+        //                 msgAlphabet[i] = normalify[msgAlphabet[i]];
+        //                 i++;
+        //             }
+        //             // 모음일 때는 앞의 모음과 복모음을 형성하지 못하는 경우 모음들만 제거하기  - 일단 dropDouble은 완전한 한글에서만 실험할 것.
+        //             else if (Utils.charMedials.indexOf(msgAlphabet[i])!== -1) {
+        //
+        //                 // 겹모음 단모음화하기
+        //                 if ( Object.keys(normalify).indexOf(msgAlphabet[i])!== -1) {
+        //                     msgAlphabet[i] = normalify[msgAlphabet[i]];
+        //                     i++;
+        //                 }
+        //                 // 복모음 단모음화하기
+        //                 else if ( ObjectOperation.objectIn([msgAlphabet[i-1], msgAlphabet[i]],Utils.doubleVowel )) {
+        //                     if (msgAlphabet[i-1] !== "ㅗ" || msgAlphabet[i] !=="ㅣ") {
+        //                         msgAlphabet.splice(i-1, 1);
+        //                         i++;
+        //                     }
+        //                     else {
+        //                         i++;
+        //                     }
+        //
+        //                 }
+        //                     //     if ( !Utils.isDouble(msgAlphabet[i-1], msgAlphabet[i]) ) {
+        //                     //         msgAlphabet.splice(i,1);
+        //                 //     }
+        //                 else i++;
+        //             }
+        //             else i++;
+        //         }
+        //     }
+        //
+        //     return Hangul.assemble(msgAlphabet);
+        //
+        // }
+        // // isMap으로 정의할 경우 음절 단위로 우선 쪼갠 뒤 dropDouble 수행
+        // else {
+        //     let i =0;
+        //     while ( i < msgAlphabet.length ) {
+        //
+        //         // 처음일 때는
+        //         if (i === 0 ) {
+        //             singleSyllable.push(msgAlphabet[i]);
+        //             i++;
+        //         }
+        //         // 나머지 경우
+        //         else {
+        //             // 자음 ㅇ
+        //             if (msgAlphabet[i] === 'ㅇ') {
+        //
+        //                 // 모음이 바로 앞에 오는 경우
+        //                 if (Utils.charMedials.indexOf(msgAlphabet[i-1])!== -1) {
+        //                     // 맨 마지막이거나 뒤에 모음이 안 오면 앞 글자에 붙여쓰기
+        //                     if ( i === msgAlphabet.length - 1 || Utils.charMedials.indexOf(msgAlphabet[i + 1]) === -1 ) {
+        //                         singleSyllable.push(msgAlphabet[i]);
+        //                         i++;
+        //                     }
+        //                     // 자음+ㅡ+ㅇ+모음 패턴
+        //                     else if (i>1 && Utils.charInitials.indexOf(msgAlphabet[i-2])!== -1  && msgAlphabet[i-1] ==='ㅡ') {
+        //                         singleSyllable.push(msgAlphabet[i]);
+        //                         i++;
+        //                     }
+        //                     // 자음+단모음+ㅇ+유사모음 패턴 - ㅇ과 유사모음을 앞음절로
+        //                     else if (i>1 && i<msgAlphabet.length-1 && Utils.charInitials.indexOf(msgAlphabet[i-2])!==-1 &&
+        //                         Object.keys(vowelLast).indexOf(msgAlphabet[i-1])!== -1 && vowelLast[msgAlphabet[i-1]].indexOf(msgAlphabet[i+1]) !== -1) {
+        //                         singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
+        //                         i +=2;
+        //                     }
+        //                     // 자음+ㅣ+ㅇ+단모음 -> 자음+복모음 처리를 위해 ㅇ을 앞에 붙임.
+        //                     else if (i>1 && i < msgAlphabet.length - 1 && Utils.charInitials.indexOf(msgAlphabet[i - 2]) !== -1 &&
+        //                         msgAlphabet[i - 1] === 'ㅣ' && Object.keys(yVowel).indexOf(msgAlphabet[i + 1]) !== -1 && Utils.charMedials.indexOf(msgAlphabet[i+2]) === -1) {
+        //                         singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
+        //                         i +=2;
+        //                     }
+        //                         // 자음 + 모음+ ㅇ+모음 -> 복모음 형성가능한 경우
+        //                     // 자음 + 모음 + ㅇ + 모음에서 앞모음+뒷모음이 복모음을 형성할 수 있는 경우 ㅇ을 앞에 붙임
+        //                     else if (i>1 && i < msgAlphabet.length - 1 && Utils.charMedials.indexOf(msgAlphabet[i - 1]) !== -1 && Utils.charMedials.indexOf(msgAlphabet[i + 1]) !== -1 &&
+        //                         Utils.charInitials.indexOf(msgAlphabet[i - 2]) !== -1 ) {
+        //
+        //                         if (Utils.objectIn([msgAlphabet[i-1], msgAlphabet[i+1]], vowelPair)) {
+        //                             singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
+        //                             i +=2;
+        //                         }
+        //                         // 나머지 경우는 음절 나누기
+        //                         else {
+        //                             divideSyllable.push(singleSyllable);
+        //                             singleSyllable = [msgAlphabet[i]];
+        //                             i++;
+        //                         }
+        //                     }
+        //                     // 복모음+ㅇ+모음에서 뒷모음이 복모음과 겹침. 궈어 -> 궈
+        //                     else if (2 < i < msgAlphabet.length - 1 && Utils.charInitials.indexOf(msgAlphabet[i - 3]) !== -1 &&
+        //                         Utils.charMedials.indexOf(msgAlphabet[i-1])!==-1 && msgAlphabet[i + 1] === msgAlphabet[i -1] &&
+        //                         Utils.isDouble(msgAlphabet[i-2], msgAlphabet[i-1]) === true && !(msgAlphabet[i-2]==='ㅗ' && msgAlphabet[i-1]==='ㅣ') ) {
+        //                         singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
+        //                         i +=2;
+        //                     }
+        //                     // 나머지 케이스는 ㅇ으로 시작하는 글자 분리
+        //                     else {
+        //                         divideSyllable.push(singleSyllable);
+        //                         singleSyllable = [msgAlphabet[i]];
+        //                         i++;
+        //                     }
+        //
+        //                 }
+        //                 // 자음이 바로 앞에 오는 경우
+        //                 else if (Utils.charInitials.indexOf(msgAlphabet[i-1])!== -1) {
+        //                     // 뒤에 모음이 올 때+앞에 ㅇ 아닌 자음이 올 때 앞 음절에 붙이기
+        //                     if (i>1 && i < msgAlphabet.length - 1 && msgAlphabet[i - 1] !== 'ㅇ' && Utils.charMedials.indexOf(msgAlphabet[i + 1]) !== -1) {
+        //                         singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
+        //                         i +=2;
+        //                     }
+        //                     // 나머지는 ㅇ을 시작으로 음절 분리
+        //                     else {
+        //                         divideSyllable.push(singleSyllable);
+        //                         singleSyllable = [msgAlphabet[i]];
+        //                         i++;
+        //                     }
+        //                 }
+        //                 // 나머지는 ㅇ을 시작으로 음절 분리
+        //                 else {
+        //                     divideSyllable.push(singleSyllable);
+        //                     singleSyllable = [msgAlphabet[i]];
+        //                     i++;
+        //                 }
+        //             }
+        //
+        //             // ㅇ 아닌 자음일 때
+        //             else if (Utils.charInitials.indexOf(msgAlphabet[i]) !== -1 && msgAlphabet[i] !== 'ㅇ') {
+        //                 // 앞에 모음일 경우
+        //                 if ( Utils.charMedials.indexOf(msgAlphabet[i - 1]) !== -1) {
+        //                     // 뒷자음과 겹받침을 형성하는 경우 &
+        //                     if (Utils.objectIn([msgAlphabet[i], msgAlphabet[i+1]], Utils.doubleConsonant)) {
+        //
+        //                         // 일단 겹자음 바로 다음에 모음이 오면 겹자음 여부와는 무관하게 무조건 음절 나눈다.
+        //                         if (i<msgAlphabet.length-2 && /[ㅏ-ㅣ]/.test(msgAlphabet[i+2])) {
+        //                             singleSyllable.push(msgAlphabet[i]);
+        //                             divideSyllable.push(singleSyllable);
+        //                             singleSyllable = [];
+        //                             i++;
+        //                         }
+        //                         // 맨 마지막에 오거나 뒤에 모음 또는 ㅇ,ㅎ, 중복모음이 오지 않을 때
+        //                         else if ( i >= msgAlphabet.length -2 ||
+        //                             (Utils.charMedials.indexOf(msgAlphabet[i + 2]) === -1 && msgAlphabet[i + 2] !== 'ㅇ' && msgAlphabet[i+2]!== 'ㅎ'
+        //                                 && !ObjectOperation.objectIn(msgAlphabet[i+1], Utils.jointConsonant[msgAlphabet[i+2]])  ) ) {
+        //                             singleSyllable = singleSyllable.concat( [msgAlphabet[i], msgAlphabet[i+1]] );
+        //                             divideSyllable.push(singleSyllable);
+        //                             singleSyllable = msgAlphabet[i+2]!==undefined?[msgAlphabet[i+2]]:[]
+        //                             i +=3;
+        //                         }
+        //                         // 뒤에 ㅇ, ㅎ, 중복자음이 오지만 그래도 그 다음에 모음이 안 올 때
+        //                         else if ( i<msgAlphabet.length-2 &&
+        //                             (msgAlphabet[i+2] === 'ㅇ' || msgAlphabet[i+2] === 'ㅎ' || ObjectOperation.objectIn(msgAlphabet[i+1], Utils.jointConsonant[msgAlphabet[i+2]]))
+        //                             && Utils.charMedials.indexOf(msgAlphabet[i+3])=== -1) {
+        //                             singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
+        //                             divideSyllable.push(singleSyllable);
+        //                             singleSyllable = [ msgAlphabet[i+2] ]
+        //                             i +=3;
+        //                         }
+        //                         // 뒷자음 중복시- 뒤로 넘기기.
+        //                         else if (i<msgAlphabet.length-2 &&
+        //                             ObjectOperation.objectIn(msgAlphabet[i+1], Utils.jointConsonant[msgAlphabet[i+2]])
+        //                         ) {
+        //                             singleSyllable.push(msgAlphabet[i]);
+        //                             divideSyllable.push(singleSyllable);
+        //                             singleSyllable = [msgAlphabet[i+1], msgAlphabet[i+2]];
+        //                             i +=3;
+        //                         }
+        //                         // 뒤에 ㅎ이 올 때 - 뒷모음으로 밀기
+        //                         else if (i<msgAlphabet.length-2 && msgAlphabet[i+2]=== 'ㅎ') {
+        //                             // ㅎ 비음으로 밀어낼 수 있는 경우 한정
+        //                             if ( Object.keys(aspiritedSound).indexOf(msgAlphabet[i+1]) !==-1 ) {
+        //                                 singleSyllable.push(msgAlphabet[i])
+        //                                 divideSyllable.push(singleSyllable);
+        //                                 singleSyllable = [msgAlphabet[i+1], msgAlphabet[i+2]];
+        //                                 i +=3;
+        //                             }
+        //                             // 안 그런 경우는 그냥 통상적으로 나누기
+        //                             else {
+        //                                 singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
+        //                                 i +=2;
+        //                             }
+        //                         }
+        //                         // 뒤에 ㅇ이 올 때 - 뒷모음으로 밀기
+        //                         else if (i<msgAlphabet.length -2 && msgAlphabet[i+2] === 'ㅇ') {
+        //                             singleSyllable.push(msgAlphabet[i])
+        //                             divideSyllable.push(singleSyllable);
+        //                             singleSyllable = [msgAlphabet[i+1], msgAlphabet[i+2]];
+        //                             i +=3;
+        //                         }
+        //                         // 혹시 나머지 경우는...
+        //                         else {
+        //                             singleSyllable = singleSyllable.concat([msgAlphabet[i], msgAlphabet[i+1]]);
+        //                             i +=2;
+        //                         }
+        //
+        //                     }
+        //                     // 아닌 경우
+        //                     else {
+        //                         // 맨 마지막에 오거나 뒤에 모음 또는 ㅇ,ㅎ, 중복모음이 오지 않을 때
+        //                         if ( i === msgAlphabet.length -1 ||
+        //                             (Utils.charMedials.indexOf(msgAlphabet[i + 1]) === -1 && msgAlphabet[i + 1] !== 'ㅇ' && msgAlphabet[i+1]!== 'ㅎ'
+        //                                 && !ObjectOperation.objectIn(msgAlphabet[i], Utils.jointConsonant[msgAlphabet[i+1]])  ) ) {
+        //                             singleSyllable.push(msgAlphabet[i]);
+        //                             i++;
+        //                         }
+        //                         // 뒤에 ㅇ, ㅎ, 중복자음이 오지만 그래도 그 다음에 모음이 안 올 때
+        //                         else if ( i<msgAlphabet.length-1 &&
+        //                             (msgAlphabet[i+1] === 'ㅇ' || msgAlphabet[i+1] === 'ㅎ' || ObjectOperation.objectIn(msgAlphabet[i], Utils.jointConsonant[msgAlphabet[i+1]]))
+        //                             && Utils.charMedials.indexOf(msgAlphabet[i+2])=== -1) {
+        //                             singleSyllable.push(msgAlphabet[i]);
+        //                             i++;
+        //                         }
+        //                         // 뒷자음 중복시- 뒤로 밀어내기
+        //                         else if (i<msgAlphabet.length-1 &&
+        //                             ObjectOperation.objectIn(msgAlphabet[i], Utils.jointConsonant[msgAlphabet[i+1]])
+        //                         ) {
+        //                             divideSyllable.push(singleSyllable);
+        //                             singleSyllable = [msgAlphabet[i], msgAlphabet[i+1]];
+        //                             i +=2;
+        //                         }
+        //                         // 뒤에 ㅎ이 올 때 - 뒷모음으로 밀기
+        //                         else if (i<msgAlphabet.length-1 && msgAlphabet[i+1]=== 'ㅎ') {
+        //                             // ㅎ 비음으로 밀어낼 수 있는 경우 한정
+        //                             if ( Object.keys(aspiritedSound).indexOf(msgAlphabet[i]) !==-1 ) {
+        //                                 divideSyllable.push(singleSyllable);
+        //                                 singleSyllable = [msgAlphabet[i], msgAlphabet[i+1]];
+        //                                 i +=2;
+        //                             }
+        //                             // 안 그런 경우는 그냥 통상적으로 나누기
+        //                             else {
+        //                                 singleSyllable.push(msgAlphabet[i]);
+        //                                 i++;
+        //                             }
+        //                         }
+        //                         // 뒤에 ㅇ이 올 때 - 뒷모음으로 밀기
+        //                         else if (i<msgAlphabet.length -1 && msgAlphabet[i+1] === 'ㅇ') {
+        //                             divideSyllable.push(singleSyllable);
+        //                             singleSyllable = [msgAlphabet[i], msgAlphabet[i+1]];
+        //                             i +=2;
+        //                         }
+        //                         // 혹시 나머지 경우는...
+        //                         else {
+        //                             divideSyllable.push(singleSyllable);
+        //                             singleSyllable = [msgAlphabet[i] ];
+        //                             i++;
+        //                         }
+        //
+        //                     }
+        //
+        //                 }
+        //
+        //                 // 나머지 - 뒷글자로 넘기기
+        //                 else {
+        //                     if(singleSyllable.length>0) divideSyllable.push(singleSyllable);
+        //                     singleSyllable = [msgAlphabet[i]];
+        //                     i++;
+        //
+        //                 }
+        //             }
+        //
+        //             // 자음 바로 뒤 모음 - 앞글자에 붙인다.
+        //             else if (Utils.charMedials.indexOf(msgAlphabet[i]) !== -1 && Utils.charInitials.indexOf(msgAlphabet[i - 1]) !== -1) {
+        //                 singleSyllable.push(msgAlphabet[i]);
+        //                 i++;
+        //             }
+        //             // 겹모음 - 앞글자에 붙인다.
+        //             else if (i > 1 && Utils.charInitials.indexOf(msgAlphabet[i - 2]) !== -1 && Utils.charMedials.indexOf(msgAlphabet[i - 1]) !== -1) {
+        //                 var tmp = true;
+        //                 if (Utils.objectIn([msgAlphabet[i-1], msgAlphabet[i]], Utils.doubleVowel)) {
+        //                     singleSyllable.push(msgAlphabet[i]);
+        //                     tmp = false;
+        //                     i++;
+        //                 }
+        //
+        //                 if (tmp) {
+        //                     divideSyllable.push(singleSyllable);
+        //                     singleSyllable = [msgAlphabet[i]];
+        //                     i++;
+        //                 }
+        //             }
+        //             // 나머지 케이스
+        //             else {
+        //                 divideSyllable.push(singleSyllable);
+        //                 singleSyllable = [msgAlphabet[i]];
+        //                 i++;
+        //             }
+        //
+        //         }
+        //
+        //     }
+        //     //마지막 문자 밀어넣기
+        //     if (singleSyllable.length>0) divideSyllable.push(singleSyllable);
+        //
+        //     let ind =0;
+        //     for (i =0; i<divideSyllable.length; i++) {
+        //         let cnt = 0, assembledSyllable =  Hangul.assemble(divideSyllable[i]);
+        //         for (var leti in assembledSyllable ) { // 한글 숫자 조합. Hangul.assemble로 조합.
+        //             // 한글 자음이면서 낱자 바로 뒤나 앞에 한글이 오지 않으면 cnt 늘리기...
+        //             if (!/[ㄱ-ㅎ]/.test( assembledSyllable[leti] )  ) cnt++;
+        //             else if (leti > 0 && !/[가-힣]/.test( assembledSyllable[leti-1] ) ) cnt++;
+        //             else if (leti === 0 && !/[가-힣]/.test( assembledSyllable[leti+1] ) ) cnt++;
+        //         }
+        //         if (res[Hangul.assemble(divideSyllable[i])]) {
+        //             res[Hangul.assemble(divideSyllable[i])]["index"].push(ind);
+        //         }
+        //         else {
+        //             res[Hangul.assemble(divideSyllable[i])] = {
+        //                 value: Utils.dropDouble(Hangul.assemble(divideSyllable[i]), false, simplify),
+        //                 index: [ind]
+        //             }
+        //         }
+        //         ind += cnt;
+        //     }
+        //     return res;
+        // }
     },
 
 

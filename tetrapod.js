@@ -382,7 +382,6 @@ class Tetrapod {
             message: message, found: [], position: [], doubleEnd: [], doubleEndPosition: []
         }
 
-        let offset = ['qwerty', 'antispoof', 'pronounce']; // 재귀 실행시에 무한반복 방지용 변수
 
          // 편의상 메시지를 나누어서 처리하기. 15개 단위로 처리
          if (splitCheck === undefined) splitCheck = 20
@@ -398,6 +397,7 @@ class Tetrapod {
              adjustment = Math.floor(idx/2)*fullLimit + (idx%2)* halfLimit; // 문장 내 x의 보정 포지션 지정하기
              // 같은 비속어 키워드여도 여러 개 비속어 대응이 가능하므로 msgToMap을 이용해서 여러 개 찾아준다.
              let curResult = this.nativeFind(Utils.msgToMap(messages[idx]), needMultipleCheck, true,false, null, false);
+             console.log('curRESULT 테스트', idx, messages[idx], curResult)
 
              // 비어있지 않을 때에만 처리하기
              if (curResult.originalFound.length>0) {
@@ -438,6 +438,7 @@ class Tetrapod {
                  // 같은 비속어 키워드여도 여러 개 비속어 대응이 가능하므로 msgToMap을 이용해서 여러 개 찾아준다.
                  let ddResult = this.nativeFind(Utils.dropDouble(messages[idx], true), needMultipleCheck, true, true, null, false);
                  let ddsResult = this.nativeFind(Utils.dropDouble(messages[idx], true, true), needMultipleCheck, true, true, null, false);
+
 
                  if(ddResult.found.length>0) {
                      let ddFound = Utils.addList(...ddResult.originalFound); // 이중 리스트를 풀어서 처리
@@ -850,28 +851,32 @@ class Tetrapod {
 
             }
 
-            if (badWordPositions.length>0 && print) {
+            if (badWordPositions.length>0) {
 
                 if (isMap) {
-                    console.log(`원문: ${originalMessage}`);
-                    console.log(`변환된 문장: ${newMessage}`);
-                    console.log(`발견된 비속어: [${badWord.join()}]`)
-                    console.log(`발견된 비속어 유형: ${wordTypeValue[wordType]}`)
-                    console.log(`발견된 비속어 원문: [${originalBadWords}]`)
-                    console.log(`발견된 비속어 위치: [${badWordPositions}]`)
-                    console.log(`발견된 비속어 원래 위치: [${badWordOriginalPositions}]`)
-                    console.log('\n')
+                    if (print) {
+                        console.log(`원문: ${originalMessage}`);
+                        console.log(`변환된 문장: ${newMessage}`);
+                        console.log(`발견된 비속어: [${badWord.join()}]`)
+                        console.log(`발견된 비속어 유형: ${wordTypeValue[wordType]}`)
+                        console.log(`발견된 비속어 원문: [${originalBadWords}]`)
+                        console.log(`발견된 비속어 위치: [${badWordPositions}]`)
+                        console.log(`발견된 비속어 원래 위치: [${badWordOriginalPositions}]`)
+                        console.log('\n')
+                    }
                     foundBadWords.push(badWord.join(''))
                     foundBadWordPositions.push(badWordPositions)
                     originalFoundBadWords.push(originalBadWords);
                     originalFoundBadWordPositions.push(badWordOriginalPositions);
                 }
                 else {
-                    console.log(`원문: ${newMessage}`)
-                    console.log(`발견된 비속어: [${badWord.join()}]`)
-                    console.log(`발견된 비속어 유형: ${wordTypeValue[wordType]}`)
-                    console.log(`발견된 비속어 위치: [${badWordPositions}]`)
-                    console.log('\n')
+                    if (print) {
+                        console.log(`원문: ${newMessage}`)
+                        console.log(`발견된 비속어: [${badWord.join()}]`)
+                        console.log(`발견된 비속어 유형: ${wordTypeValue[wordType]}`)
+                        console.log(`발견된 비속어 위치: [${badWordPositions}]`)
+                        console.log('\n')
+                    }
                     foundBadWords.push(badWord.join(''))
                     foundBadWordPositions.push(badWordPositions)
                 }
