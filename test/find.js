@@ -10,6 +10,9 @@ for(let i=1;i<=2;i++) word.shift()
 word = word.join(' ')
 */
 
+// 첫 번째 테스트 - Utils의 함
+
+
 let initTime = new Date().getTime()
 
 let Tester = new Tetrapod()

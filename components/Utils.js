@@ -15,6 +15,24 @@ const Utils = {
     //중복 리스트 제거
     removeMultiple: ObjectOperation.removeMultiple,
 
+    // 리스트 더하기
+    addList: ObjectOperation.addList,
+
+    // 리스트/함수 합성 등 여러 상황에서 합성할 때 사용함.
+    joinMap: ObjectOperation.joinMap,
+
+    // 리스트를 곱하기. 예시  [[1,2,3],[4,5,6]] => [[1,4], [1,5], [1,6], [2,4], [2,5], [2,6], [3,4], [3,5], [3,6]]
+    productList: ObjectOperation.productList,
+
+    // 포함관계 정리 - elem이 object 안에 있는지 확인
+    objectIn : ObjectOperation.objectIn,
+
+    // 리스트 합집합 구하기. 리스트 원소가 일반이면 그냥 더하기, 오브젝트면 원소들을 union 하기
+    listUnion : ObjectOperation.listUnion,
+
+    // 리스트 교집합 구하기
+    listIntersection: ObjectOperation.listIntersection,
+
     escape: (text) => {
         return String(text).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
     },
@@ -26,8 +44,8 @@ const Utils = {
 
     // 메시지에서 단어의 위치를 찾아주는 함수.
     getPositionAll: (message, search, isString = true) => {
-        // 버그 방지를 위해 !, ? 기호는 드롭시키자.
-        search = search.replace("!","").replace("?","")
+        // 버그 방지를 위해 !, + 기호는 드롭시키자.
+        search = search.replace("!","").replace("+","")
 
         let i = message.indexOf(search),
             indexes = []
@@ -50,81 +68,93 @@ const Utils = {
         return manyArray.slice(0,-1).map((val, num)=> [val, manyArray[num+1]]);
     },
 
-    // 단어 -> 낱자로 분리하는 함수. 매크로를 이용한 처리
-    // 수정 - 매크로 ., !, +
+    // 단어를 낱자로 분리하는 함수.
+    // 수정 - 매크로 ",", ., !, +관련 처리
+    // 한글 낱자가 들어오면 조합하는 방식으로 처리. 즉 낱자 입력 변수 letter를 이용해서 ㄱㅏ -> 가로 처리한다.
     // . 이스케이프 문자.  .. -> .기호, .+ -> +기호 입력
     // 바! -> [바, 뱌, 빠,... ] -유사 문자까지 모두 포함
-    // 바? -> 한글 ? 개수까지 완전 무시... -> 220713 구현 기능에서 일단 제거. nativeFind의 shuffle 관련 기능과 상충되는 부분 있어서 제외
     // 바+ -> [바, 박, 밖,...]. 받침 또는 중복자음 포함. 고 -> [괴, 괘, 공]
     // wordToarray -> 바?꾸 -> ['바?', '꾸']
     wordToArray: word => {
-        let wordArray = []
+        let wordArray = []; // 결과 출력
+        let tmp = ''; // 문자 임시 변수
         for (let i = 0; i <= word.length - 1; i++) {
-
-            if ((i===1 || i>1 && word[i-2]!== "." )&& word[i-1] === ".") {
-                wordArray.splice(-1, 1, word[i])
+            // tmp 입력 문자가 없을 때
+            if (tmp === "") {
+                // 이스케이프 문자., 한글 낱자, 초성일 때는 입력 대기
+                if (/^[.가-힣]$/.test(word[i]) || HO.charInitials.indexOf(word[i])>-1) {
+                    tmp = word[i];
+                }
+                else {
+                    wordArray.push(word[i]);
+                }
             }
-            // // .뒤에 오지 않는 경우 ? 기호는 뒷 문자에 붙여서 밀어넣기. shuffle과 충돌하는 부분이 있어서 일단 구현하지 않는 것으로
-            // else if (word[i] === "?") {
-            //     wordArray.splice(-1, 1, wordArray.slice(-1)[0]+word[i])
-            // }
-            // !, + 기호 관련. 한글 뒤에 오는 경우 앞 문자에 붙이기.
-            else if (i>0 && /[가-힣]/.test(word[i-1]) && (word[i] === "!" || word[i] === "+") ) {
-                wordArray.splice(-1, 1, wordArray.slice(-1)[0]+word[i])
+            // 이스케이프 문자 . -> 뒤에 아무 문자가 오면 그 문자 입력
+            else if (tmp==='.') {
+                wordArray.push(word[i]);
+                tmp = '';
             }
-            // 그 외의 경우는 따로 놓기.
+            // 나머지 경우
             else {
-                wordArray.push(word[i])
+                // wordArray에서 tmp+word[i] 조합시에 한글 낱자가 완성되면 tmp에 추가
+                if (/^[가-힣]$/.test(Hangul.assemble(tmp.split('').concat(word[i])))) {
+                   tmp =  Hangul.assemble(tmp.split('').concat(word[i]));
+                }
+                // tmp가 한글 낱자인데 뒤에 ! 혹은 + 조합 -> 같이 출력
+                else if (/^[가-힣]$/.test(Hangul.assemble(tmp.split(''))) && ['!', '+'].indexOf(word[i])>-1) {
+                    wordArray.push(tmp+word[i]); tmp = '';
+                }
+                // 한글 문자가 있는데 다른게 들어올 때 -> 한글 출력 후 tmp 변경. 단 ,가 들어오면 삭제
+                else if (/^[가-힣]$/.test(Hangul.assemble(tmp.split('')))) {
+                    wordArray.push(tmp);
+                    tmp = word[i]===','? '':word[i];
+                }
+                // tmp가 비어있지 않은데 ,가 들어옴 -> tmp를 비우고 wordArray에 밀어넣음.
+                else if (word[i]===','){
+                    wordArray.push(tmp); tmp = '';
+                }
+                else {
+                    wordArray.push(tmp); // tmp 밀어넣기
+                    tmp = word[i];
+                }
             }
+
         }
+        // 마지막 남은 tmp 출력
+        if (tmp!=='') wordArray.push(tmp);
         return wordArray
     },
 
     // 메시지를 특정 길이로 분리. 옵션 추가 -> full node 이외에 half node 옵션 추가.
     lengthSplit: (message, limit) => {
-        if (message.length <= limit) return [message]
 
-        let fixedMessage = []
-        let fullMessageLength = message.length
-        let currentLength = 0
-        const halfLimit = Math.floor(limit/2)
-
-        let splitList = []
-        let splitList2 = []
-        while (currentLength.length>=0) {
-            if (currentLength == fullMessageLength) {
-                if (currentLength != 0) {
-                    if (splitList.length > splitList2.length) {
-                        fixedMessage.push(splitList.join(''))
-                        if (splitList2.length>0 ) fixedMessage.push(splitList2.join(""))
-                        splitList = []
-                        splitList2 = []
-                    }
-                    else {
-                        fixedMessage.push(splitList2.join(""))
-                        if ( splitList.length>0 ) fixedMessage.push(splitList.join(""))
-                        splitList =[]
-                        splitList2 =[]
-                    }
-                }
-                break
+        let res = [];
+        let idx = 1; // 시작점을 반길이부터 잡기
+        let firstMsg = message.slice(0, limit);
+        let secondMsg = '';
+        if (message.length <= limit || limit<1) return [message]; // message 길이가 limit 미달하면 그냥 message 하나 원소 출력
+        while (idx*limit/2<message.length) {
+            // 짝수번째
+            if (idx%2 ==0) {
+                firstMsg = message.slice(idx*limit/2, (idx+2)*limit/2);
+                res.push(secondMsg);
             }
-            if (currentLength != 0 && currentLength % limit == 0 && splitList.length != 0) {
-                fixedMessage.push(splitList.join(''))
-                splitList = []
+            // 홀수번째
+            else {
+                secondMsg = message.slice(idx*limit/2, (idx+2)*limit/2);
+                res.push(firstMsg); // firstMsg 추가
             }
-            if (currentLength !==0 && currentLength % limit == halfLimit && splitList2.length !==0) {
-                fixedMessage.push(splitList2.join(""))
-                splitList2 = []
-            }
-            splitList.push(message[currentLength])
-            if (currentLength >= halfLimit) {
-                splitList2.push(message[currentLength])
-            }
-            currentLength++
+            idx++; // idx는 숫자 증가
         }
+        // 잔여 메시지 ->
+        if (firstMsg.length> secondMsg.length) {
+            res.concat([firstMsg, secondMsg]);
+        }
+        else {
+            res.concat([secondMsg, firstMsg]);
+        }
+        return res.slice(-1)[0]===''? res.slice(0,-1): res;
 
-        return fixedMessage
     },
 
 
@@ -143,23 +173,7 @@ const Utils = {
         return sortedMap
     },
 
-    // 리스트 더하기
-    addList: ObjectOperation.addList,
 
-    // 리스트/함수 합성 등 여러 상황에서 합성할 때 사용함.
-    joinMap: ObjectOperation.joinMap,
-
-    // 리스트를 곱하기. 예시  [[1,2,3],[4,5,6]] => [[1,4], [1,5], [1,6], [2,4], [2,5], [2,6], [3,4], [3,5], [3,6]]
-    productList: ObjectOperation.productList,
-
-    // 포함관계 정리 - elem이 object 안에 있는지 확인
-    objectIn : ObjectOperation.objectIn,
-
-    // 리스트 합집합 구하기. 리스트 원소가 일반이면 그냥 더하기, 오브젝트면 원소들을 union 하기
-    listUnion : ObjectOperation.listUnion,
-
-    // 리스트 교집합 구하기
-    listIntersection: ObjectOperation.listIntersection,
 
     //빠른 연산을 위해 서로소 요건 판별하기
     isDisjoint: (a, b) => {
