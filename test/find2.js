@@ -32,6 +32,7 @@ for (let idx in split) {
     console.log(idx*6, ':', split[idx])
 }
 console.log()
+console.log(Utils.wordToArray('가!ㄴㅏ+닥로ㄱ,ㅏ'))
 // console.log('recursiveComponent 실험') // 오류가 있다.
 // let recur = [['1', '2', '3', [['a', 'b', 'c'], ['x','y','z']], ['가', '나', [['다', '마'], ['라','바']]]]];
 // console.log(Utils.recursiveComponent(recur))
