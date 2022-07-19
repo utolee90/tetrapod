@@ -397,7 +397,6 @@ class Tetrapod {
              adjustment = Math.floor(idx/2)*fullLimit + (idx%2)* halfLimit; // 문장 내 x의 보정 포지션 지정하기
              // 같은 비속어 키워드여도 여러 개 비속어 대응이 가능하므로 msgToMap을 이용해서 여러 개 찾아준다.
              let curResult = this.nativeFind(Utils.msgToMap(messages[idx]), needMultipleCheck, true,false, null, false);
-             console.log('curRESULT 테스트', idx, messages[idx], curResult)
 
              // 비어있지 않을 때에만 처리하기
              if (curResult.originalFound.length>0) {
@@ -887,13 +886,26 @@ class Tetrapod {
         }
 
         //부적절하게 겹받침 많이 사용했는지 여부 확인하기
+        let tooMuchDouble;
 
-        let tooMuchDouble ={pos:[], txt:[]};
+        // 일단 잡아내기
+        let doubleEndPos = Utils.tooMuchDoubleEnd(newMessage).pos;
+        let doubleEndTxt = Utils.tooMuchDoubleEnd(newMessage).txt;
 
-        tooMuchDouble = {
-            pos: [...tooMuchDouble.pos, ...Utils.tooMuchDoubleEnd(newMessage).pos],
-            txt: [...tooMuchDouble.txt, ...Utils.tooMuchDoubleEnd(newMessage).txt]
+        // 우선 정상단어 포지션에서는 제거한다.
+        let normalWordPositionsInSentence = Utils.listUnion(...normalWordPositions);
+        for (var x of normalWordPositionsInSentence) {
+            if (doubleEndPos.indexOf(Number(x))>-1) {
+                let pos = doubleEndPos.indexOf(Number(x));
+                doubleEndPos.splice(pos, 1);
+                doubleEndTxt.splice(pos, 1);
+            }
         }
+
+        // 최종적으로 결과 찾기.
+
+        tooMuchDouble = (doubleEndPos.length* 3>= newMessage.length)
+            ? { pos: doubleEndPos, txt: doubleEndTxt} : {pos: [], txt: []};
 
         // 결과 출력하기 전에 뒤의 단어가 앞의 단어의 비속어를 모두 포함하는지 체크. 포함되는 앞의 단어는 결과에서 제거.
         let delIndex = []; // 지울 인덱스 찾기

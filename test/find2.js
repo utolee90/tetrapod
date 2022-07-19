@@ -8,6 +8,7 @@ import * as HO from "../components/HangulObjects";
 
 // 테스트 시도
 // 우선 기본적으로 Utils의 함수들부터 실험해봅시다.
+console.log(Hangul.assemble(['ㅜ', 'ㅣ']))
 let testList1 = ['가', ['내리', '다', '수'], [1, 4]]
 console.log('거짓임:::', Utils.objectEqual(testList1, ['가', ['내리', '다', '수'], ['1', '4']])) // 거짓
 console.log('참임:::', Utils.objectEqual(testList1, ['가', ['내리', '다', '수'], [1, 4]])) // 참
@@ -37,33 +38,74 @@ console.log(Utils.wordToArray('가!ㄴㅏ+닥로ㄱ,ㅏ'))
 // let recur = [['1', '2', '3', [['a', 'b', 'c'], ['x','y','z']], ['가', '나', [['다', '마'], ['라','바']]]]];
 // console.log(Utils.recursiveComponent(recur))
 
-// console.log(Utils.disassemble('없쟈 완젼 짜증나짂', 'key', true))
-// console.log(Utils.disassemble('없쟈 완젼 짜증나짂', 'part', true))
-// console.log(Utils.disassemble('없쟈 완젼 짜증나짂', 'sound', true))
-// console.log(Utils.disassemble('없쟈 완젼 짜증나짂'))
-// console.log(Utils.parseMap(Utils.qwertyToDubeol('rnfk치다 딱 rjffuTsp', true)))
-// console.log(Utils.parseMap(Utils.dropDouble('너 밥오쥐', true)))
-// 비속어 데이터 불러오기
-// console.log('joinedSyllable 테스트', Utils.joinedSyllable('삶', '하'))
-// console.log("TEST!!!::: ", Utils.objectEqual([2,[3,4,5]], [2,[3,4,5]]))
-// console.log(Utils.objectInclude([0,1], [0,2], false))
-console.log(Utils.joinedSyllable('바','알'))
+console.log('disassemble 실험')
+console.log(Utils.disassemble('없쟈 완젼 짜증나짂', 'key', true))
+console.log(Utils.disassemble('없쟈 완젼 짜증나짂', 'part', true))
+console.log(Utils.disassemble('없쟈 완젼 짜증나짂', 'sound', true))
+console.log(Utils.disassemble('없쟈 완젼 짜증나짂'))
+console.log()
+// 각종 맵이 잘 작동하는지 확인해보자
+console.log('qwertyToDubeol 테스트')
+let testQwerty = Utils.qwertyToDubeol('dnflskfk가 가장 wkdkfkdtmfjqwl dksgdmsep? dho? 난 멀라.', true)
+console.log('PARSING')
+let parsed = Utils.parseMap(testQwerty)
+console.log(parsed)
+console.log('RESERVING')
+console.log(Utils.reserveMap(parsed))
+
+// antispoof 테스트
+console.log('antispoof 테스트')
+let testAntispoof = Utils.antispoof('ㄱH같이 ㅂy2고 저0스0같ㅇl 쓴다', true)
+let parsed2 = Utils.parseMap(testAntispoof)
+console.log(parsed2)
+console.log('RESERVING')
+console.log(Utils.reserveMap(parsed2))
+
+// dropDouble 테스트
+console.log('DROPDOUBLE 테스트')
+console.log('joinedSyllable', Utils.joinedSyllable('바','알'), Utils.joinedSyllable('삶', '하'))
 console.log(Utils.dropDouble("ql이바알놈아!!", true, false))
 console.log('')
-console.log(Utils.dropDouble("시이바알놈아!!", true, false))
+console.log(Utils.dropDouble("시이바알놈아!!", true, false));
+console.log('originalPosition 테스트')
 console.log(Utils.originalPosition(Utils.qwertyToDubeol('dnflskfk akstp wjdakf rnlcksgek', true), [2,3,4,6,7,8]));
-// let obj = new Tetrapod();
-// obj.loadFile()
-//
-// // console.log(obj.findNormalWordPositions('흰색 옷은 아름답다', false))
-// let newTime = new Date().getTime()
-// // console.log('시발 정발 나쁘게 구네 ::: TEST:::\n', JSON.stringify(obj.nativeFind("시발 정말 나쁘게 구네")))
-// // console.log("걸린시간:::", new Date().getTime() - newTime)
-// // console.log(obj.find("시발 정말 나쁘게 구네", true))
-// // console.log('nativeFind obj 테스트')
-// console.log(obj.nativeFind(Utils.msgToMap("아주 짜즚잆 낪닚다 상쾌핪짒 앉넶"), true, true, true))
-// console.log(obj.find("좆밥이네 아줎 싫어 새꺄", true))
-// console.log("걸린시간:::", new Date().getTime() - newTime)
+// dropDouble + simplify
+console.log('DROPDOUBLE + Simplify 테스트')
+let ddMap = Utils.dropDouble('아아아주 아아아주 복잡호아안 메에시이이이쥩', true, false)
+let ddsMap = Utils.dropDouble('아아아주 아아아주 복잡호아안 메에시이이이쥩', true, true)
+console.log(ddMap)
+console.log(Utils.parseMap(ddMap, true)) // dropDouble은 reassemble 조건 반드시 켜서 사용.
+console.log('simplify')
+console.log(ddsMap)
+console.log(Utils.parseMap(ddsMap, true)) // dropDouble은 reassemble 조건 반드시 켜서 사용.
+console.log('')
+//tooMuchDoubleEnd 테스트
+console.log('tooMuchDoubleEnd 테스트');
+console.log(Utils.tooMuchDoubleEnd('젊은 사람들아 값없이 지네'))
+console.log(Utils.tooMuchDoubleEnd('젊읆 사랆듦앎 값없이 짒넶'))
+console.log(Utils.tooMuchDoubleEnd('너 앍줎 없다.'))
+
+// engToKo 테스트
+let testPronounce = Utils.engToKo('dolai, dol-ai네 jarangoro jarang하지말자', true)
+console.log(Utils.parseMap(testPronounce))
+console.log('RESERVING')
+console.log(Utils.reserveMap(Utils.parseMap(testPronounce)))
+
+let obj = new Tetrapod();
+obj.loadFile()
+
+// console.log(obj.findNormalWordPositions('흰색 옷은 아름답다', false))
+let newTime = new Date().getTime()
+console.log('시발 정발 나쁘게 구네 ::: TEST:::\n', JSON.stringify(obj.nativeFind("시발 정말 나쁘게 구네")))
+console.log("걸린시간:::", new Date().getTime() - newTime)
+console.log(obj.find("시발 정말 나쁘게 구네", true))
+console.log('nativeFind obj 테스트')
+console.log('secondTest')
+console.log(obj.nativeFind(Utils.msgToMap("아주 짜즚잆 낪닚다 상쾌핪짒 앉넶"), true, true, true))
+
+console.log(obj.nativeFind(Utils.msgToMap("너 앍줎 없다."), true, true, true))
+console.log(obj.find("좆밥이네 아줎 싫어 새꺄", true))
+console.log("걸린시간:::", new Date().getTime() - newTime)
 // // console.log(obj.find("시이바알놈아!!", true, 20, true))
 // console.log('test')
 // // console.log(Utils.dropDouble('시이바알놈, 나 버려놓고 즈이랄하지 마라', false))
