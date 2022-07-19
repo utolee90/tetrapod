@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="104ff4eb-fd97-4171-9f6f-14d519183829" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/find.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/find.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -143,7 +144,8 @@
       <workItem from="1657675015478" duration="35662000" />
       <workItem from="1657844133886" duration="34131000" />
       <workItem from="1658136050327" duration="6514000" />
-      <workItem from="1658190327406" duration="14770000" />
+      <workItem from="1658190327406" duration="15255000" />
+      <workItem from="1658215994886" duration="1485000" />
     </task>
     <task id="LOCAL-00001" summary="modify source">
       <created>1618747573738</created>
@@ -178,18 +180,13 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/test/find.js</url>
-          <line>26</line>
+          <line>21</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/test/find.js</url>
           <line>19</line>
           <option name="timeStamp" value="9" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/test/find.js</url>
-          <line>25</line>
-          <option name="timeStamp" value="12" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

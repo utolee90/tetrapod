@@ -16,20 +16,20 @@ word = word.join(' ')
 let initTime = new Date().getTime()
 
 let Tester = new Tetrapod()
+// 테스트 사용시에는 우선 파일부터 호출한다.
+Tester.loadFile()
 
-Tetrapod.defaultLoad()
-// Tetrapod.loadFile(
-//     './resource/dictionary2/bad-words.json',
-//     './resource/dictionary2/normal-words.json',
-//     './resource/dictionary2/soft-search-words.json',
-//     './resource/dictionary2/macros.json',
-// )
 console.log("걸린 시간:::", new Date().getTime()-initTime)
 initTime = new Date().getTime()
 
-console.log(Tetrapod.nativeFind(Utils.msgToMap('시발점 죽일놈'), true, true))
+// 함수 사용시에는 클래스 Tetrapod가 아닌 호출된 클래스 Tester를 사용해야 한다.
+console.log(Tester.nativeFind(Utils.msgToMap('시발점 죽일놈'), true, true))
+console.log('test', Tester.findNormalWordPositions('시발점 죽일놈'));
 
-console.log('test', Tetrapod.findNormalWordPositions('시발점 죽일놈'))
+// Utils.js 사용할 때에는 다음과 같이 사용한다.
+console.log(Utils.qwertyToDubeol('dudwkdhk tjRdls aptlwlfmf 한글로 바꿔봅시다'));
+
+
 
 // // console.log("1", require("../resource/dictionary/bad-words.json").badwords)
 // // console.log(Tetrapod.getDefaultData().badWords)
@@ -98,52 +98,3 @@ console.log('test', Tetrapod.findNormalWordPositions('시발점 죽일놈'))
 // *받침 -> 받침: ["*받침"]
 // */
 //
-//
-// // console.log("text", Tetrapod.fix("즤랄 왕이 나셨도다 ㄱHㅅH끼", '$', {antispoof:true, isOriginal:true}))
-// // console.log(Tetrapod.nativeFind("존병"))
-// // console.log(Tetrapod.nativeFind( Utils.dropDouble("십발 정말 값삾핪닚닶", true) , true, true))
-// // console.log("걸린 시간:::", new Date().getTime()-initTime)
-// initTime = new Date().getTime()
-// console.log("\n\n================")
-// // console.log(Bias.recursiveComponent([["*별"], ["사랑", "사귐"]],
-// //     {}, {"별":["벌", "별", "뻘", "뼐", "펄", [["펼"], ["", "써"]]]}
-// //     ))
-// // console.log(Bias.recursiveList(["*별"],
-// //     {"별":["벌", "별", "뻘", "뼐", "펄", "펼"]} ))
-// // console.log(Tetrapod.fix("tlqkf dhkddl sktuTehek", "X", {qwertyToDubeol:true}))
-//
-// // console.log("지?랄?염병 테스트", Tetrapod.isExistBadWord("지!랄!염병"))
-// // console.log(Utils.dropDouble("밥옵", true, true))
-// // Bias.buildHelper('kr-fword', "지랄")
-// // console.log(Tetrapod.recursiveComponent([["바"], ["*보"]], {"보":["*보", "*봉"]}))
-// // console.log(Utils.filterList(["1", 2, "사기"], "string"))
-// // console.log(Tetrapod.isKindChar("즤", "지"))
-//
-// // console.log(Utils.objectEqual([Hangul.disassemble("즤")[0], Hangul.disassemble("즤")[2]], Hangul.disassemble("지")))
-//
-// // console.log(Tetrapod.nativeFind("지뢀염병", true))
-// // console.log(Tetrapod.isKindChar("뢀", "랄"))
-//
-// console.log("걸린 시간:::", new Date().getTime()-initTime)
-//
-// // console.log(Utils.objectInclude(['지', '병'], ["지", "염", "병", "룡"], true))
-// // console.log(Utils.objectInclude(["지","병"], ["병","지"], true))
-// // console.log(Utils.objectInclude(["지","병"], ["병","지"], false))
-// // console.log(Tetrapod.wordInclude("지뢀염병", "지!랄!염병"))
-// // console.log(Tetrapod.isKindChar("즤", "지"))
-// // console.log(Tetrapod.assembleHangul(["가ㅈㅣ", "구라", "개굴ㅣ"]))
-// // console.log(Tetrapod.find("^l바2롬", true, 0, false, true))
-//
-// // console.log("걸린 시간:::", new Date().getTime()-initTime)
-// initTime = new Date().getTime()
-//
-// console.log(Tetrapod.nativeFind(Utils.dropDouble("야 이 우리왕 아주 짜증나 죽겠어. 에휴에휴!!! 질알.", true), true, true, true))
-// console.log("걸린 시간:::", new Date().getTime()-initTime)
-// initTime = new Date().getTime()
-// console.log(Tetrapod.fix("야 이 우리왕 아주 짜증나 죽겠어. 에휴에휴!! 질알!", "*", {dropDouble:true}))
-// console.log("걸린 시간:::", new Date().getTime()-initTime)
-//
-// console.log(Tetrapod.nativeFind("지지"))
-
-
-//   Tetrapod.defaultSaveAllData()
