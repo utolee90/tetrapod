@@ -975,7 +975,6 @@ const Utils = {
                     res[idx][0] = simplifyInit[res[idx][0]];
                 }
                 if (HO.toothConsonant.indexOf(res[idx][0])>-1 && Object.keys(toothSimplifyMid).indexOf(res[idx][1])>-1) {
-                    console.log('NNNTEST', res[idx][1], toothSimplifyMid[res[idx][1]])
                     res[idx][1] = toothSimplifyMid[res[idx][1]]
                 }
                 else if (Object.keys(simplifyMid).indexOf(res[idx][1])>-1) {
@@ -1435,7 +1434,6 @@ const Utils = {
         const parsed = Utils.parseMap(map);
         const originalLength = parsed.joinedMessage.length;
         const parsedLength = parsed.joinedParsedMessage.length;
-        console.log('OBJ_TEST', positionList)
         positionList = positionList.filter(x=> x<parsedLength); // parsedLenght보다 짧게 잡아서 에러 방지.
         const originalPosition = parsed.messageIndex.concat([originalLength]); // 인덱스에 마지막 리스트 넣기
         const originalRange = Utils.grabCouple(originalPosition); // 범위 형태로 출력

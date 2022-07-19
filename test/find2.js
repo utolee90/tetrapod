@@ -106,13 +106,6 @@ console.log(obj.nativeFind(Utils.msgToMap("아주 짜즚잆 낪닚다 상쾌핪�
 console.log(obj.nativeFind(Utils.msgToMap("너 앍줎 없다."), true, true, true))
 console.log(obj.find("좆밥이네 아줎 싫어 새꺄", true))
 console.log("걸린시간:::", new Date().getTime() - newTime)
-// // console.log(obj.find("시이바알놈아!!", true, 20, true))
-// console.log('test')
-// // console.log(Utils.dropDouble('시이바알놈, 나 버려놓고 즈이랄하지 마라', false))
-// // console.log(Utils.dropDouble('시이바알놈, 나 버려놓고 즈이랄하지 마라', true))
-// let testMap = Utils.dropDouble('시이바알놈, 나 버려놓고 즈이랄하지 마라', true)
-// // console.log('PARSING')
-// // console.log(Utils.parseMap(testMap))
 // console.log(obj.nativeFind(testMap, true, true, true))
 // console.log(obj.fix(Utils.dropDouble('시이바알놈, 나 버려놓고 즈이랄하지 마라', true), '*', true))
 // // console.log('oneWordFind 테스트')
@@ -122,20 +115,32 @@ console.log("걸린시간:::", new Date().getTime() - newTime)
 // // console.log("걸린시간:::", new Date().getTime() - newTime)
 // // console.log(Utils.parseMap(Utils.dropDouble('고아테이마알라', true)))
 // // console.log(obj.getOriginalPosition(Utils.dropDouble('고아테이마알라', true), [0,2,4]))
-// obj.adjustFilter([],[],['qwerty'],false);
-// console.log('engBadWordsCheck 테스트!!!')
-// console.log('몽땅 사라졌나???', obj.parsedBadWords.length, Object.keys(obj.badWordsMap).length, obj.badWords[0].length)
-// console.log(obj.nativeFind(Utils.msgToMap('좆되라 이 병신아'), true, true,false))
-// console.log('XXXTEST')
-// console.log(obj.find('좆되라 이 병신아', true, 20))
-// // console.log('xxxtest again')
-// // console.log(obj.find('whwehlfk 이 qudtlsdk', true));
-// // console.log('사라라라라라라라라랄')
-// // console.log(obj.countBad('whwehlfk 이 qudtlsdk'));
-// // console.log(obj.engBadWordsCheck(['시', '발!'], 'tlvkfshadk'))
-// // obj.adjustFilter([],[],['antispoof'],false);
-// // console.log(obj.engBadWordsCheck(['시', '발!'], '^l발롬'))
-// // console.log(obj.parseFromList(['구라', '괴!물!정', '곳간', '미창고']))
+
+// 필터 켜기 실험
+console.log('필터 켜기 전에 단어 확인', obj.parsedBadWords.length, Object.keys(obj.badWordsMap).length, obj.badWords[0].length)
+obj.adjustFilter([],[],['qwerty'],false);
+console.log('engBadWordsCheck 테스트!!!')
+console.log('필터 켜기 후에 단어 확인', obj.parsedBadWords.length, Object.keys(obj.badWordsMap).length, obj.badWords[0].length)
+console.log('필터 켜고 단어 테스트 재확인')
+console.log(obj.find('whwehlfk 이 qudtlsdk', true));
+console.log('qwerty테스트 완료!,countBad 실험');
+console.log(obj.countBad('whwehlfk 이 qudtlsdk'));
+// 포지션 벡터로 확인해보자
+console.log(obj.engBadWordsCheck(['시', '발!'], 'tlvkfshadk'));
+console.log()
+console.log('antispoof 테스트')
+obj.adjustFilter([],[],['antispoof'],false);
+console.log('단어 확인할 수 있는지 engBadWordsCheck로 테스트')
+console.log(obj.engBadWordsCheck(['시', '발!'], '^l발롬'))
+console.log(obj.find('^ㅣ바2 샛77l'))
+console.log(obj.countBad('^ㅣ바2 샛77l'))
+console.log()
+console.log('pronounce 테스트 겸 dropDoubleCheck 테스트')
+obj.adjustFilter([], [], ['pronounce'], true)
+console.log(obj.find('sibal sakki!! 너 조용히 해라', true))
+console.log(obj.countBad('sibal sakki!! 너 조용히 해라'));
+obj.adjustFilter([], [], [], false)
+
 // // // 전체 치환하기 - Utils.replaceAll
 // // // console.log('replaceAll 테스트');
 // // // console.log(Utils.replaceAll('가랑비에, 옷, 젖는 줄도 모르고, 정말', ',', '-'));

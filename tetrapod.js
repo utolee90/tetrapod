@@ -220,7 +220,7 @@ class Tetrapod {
     // 사용방법 : adjustFilter([1], ['insult'], ['qwerty'], false) ->
     adjustFilter(level = this.badWordLevel, type = this.typeCheck, checkOptions = this.checkOptions, dropDoubleCheck = this.dropDoubleCheck) {
         this.badWordLevel = Array.isArray(level) ? level :this.badWordLevel;
-        this.typeCheck = Array.isArray(type) ? type :this.typeCheck;
+        this.typeCheck = Array.isArray(type) ? type :this.typeCheck; // 아직 타입체크 관련 기능은 구현이 안 됨.
         this.checkOptions = Array.isArray(checkOptions)? checkOptions: this.checkOptions;
         this.dropDoubleCheck = dropDoubleCheck;
         this.parse(); // 워딩은 재파싱으로 조절한다.
@@ -438,7 +438,6 @@ class Tetrapod {
                  let ddResult = this.nativeFind(Utils.dropDouble(messages[idx], true), needMultipleCheck, true, true, null, false);
                  let ddsResult = this.nativeFind(Utils.dropDouble(messages[idx], true, true), needMultipleCheck, true, true, null, false);
 
-
                  if(ddResult.found.length>0) {
                      let ddFound = Utils.addList(...ddResult.originalFound); // 이중 리스트를 풀어서 처리
                      let ddPosition = Utils.addList(...ddResult.positions).map(x=> (x.map(r=> r+adjustment))); // 포지션 벡터를 풀어서 처리
@@ -484,6 +483,7 @@ class Tetrapod {
              res = {...res, ...resPlus}; //
          }
 
+         // 우선 qwerty 변환 옵션이 켜졌을 때 찾을 수 있는지 확인
          if (this.checkOptions.indexOf('qwerty')>-1 && recursive) {
              let qwertyMap = Utils.qwertyToDubeol(message, true);
              let originalMessage= Utils.parseMap(qwertyMap).joinedMessage;
@@ -519,6 +519,8 @@ class Tetrapod {
              }
              res = {...res, ...resObject}
          }
+
+         // antispoof 변환 옵션이 켜졌을 때 잡을 수 있는지 확인
          if (this.checkOptions.indexOf('antispoof')>-1 && recursive) {
              let antispoofMap = Utils.antispoof(message, true);
              let originalMessage= Utils.parseMap(antispoofMap).joinedMessage;
@@ -554,6 +556,8 @@ class Tetrapod {
              }
              res = {...res, ...resObject}
          }
+
+         // 발음 조건이 있을 때 잡을 수 있는지 확인
          if (this.checkOptions.indexOf('pronounce')>-1 && recursive) {
              let pronounceMap = Utils.engToKo(message, true);
              let originalMessage= Utils.parseMap(pronounceMap).joinedMessage;
@@ -1143,12 +1147,10 @@ class Tetrapod {
 
                 // 원문 위치 찾기
                 for (var pos of tempWordPositions) {
-                    // console.log('t', pos, originalMessageList[Number(pos)])
                     let originalCount = originalMessageList[Number(pos)].length;
                     if (isReassemble) {
                         originalCount = originalMessageList[Number(pos)].split("").filter(x=> /[^ㄱ-ㅎㅏ-ㅣ]/.test(x)).length;
                     }
-                    // console.log('then', originalCount)
                     // 원문의 위치 추가
                     for (let k=0; k<originalCount; k++) {
                         tempOriginalPosition.push(originalMessageSyllablePositions[pos]+k);
@@ -1268,7 +1270,7 @@ class Tetrapod {
     // 메시지에서 정상단어 위치 찾는 맵
     // isMap 형식일 경우 {정상단어: [[정상단어포지션1], [정상단어포지션2],...],... } 형식으로 출력
     // isMap 형식이 아니면 message에서 정상단어의 낱자의 위치 리스트 형식으로 출력.
-    // 선택자 ?, !는 일단 무시하는 것으로.
+    // 선택자 !, +는 일단 무시하는 것으로.
     findNormalWordPositions (message, isMap = true) {
         let exceptNormalPosition = []
 
@@ -1551,7 +1553,6 @@ class Tetrapod {
         // 반복되는 프로세스를 callback으로 정리
         const joinProcess = (msgMap) => {
             let wordResult = this.oneWordFind(wordList, msgMap, this.badWordsMap, true, true, true);
-            // console.log(wordResult);
             res = res.concat(wordResult.originalPosition);
             // isMap일 때는 partRes를 이용해서
             if (isMap) {
