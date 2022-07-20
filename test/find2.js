@@ -103,7 +103,7 @@ console.log(Utils.dropDouble('저여', false, true))
 console.log(Utils.dropDouble('져여', false, true))
 // console.log(obj.findNormalWordPositions('흰색 옷은 아름답다', false))
 let newTime = new Date().getTime()
-// console.log('시발 정발 나쁘게 구네 ::: TEST:::\n', JSON.stringify(obj.nativeFind("시발 정말 나쁘게 구네")))
+console.log('시발 정발 나쁘게 구네 ::: TEST:::\n', JSON.stringify(obj.nativeFind("시발 정말 나쁘게 구네")))
 // console.log("걸린시간:::", new Date().getTime() - newTime)
 // console.log(obj.find("시발 정말 나쁘게 구네", true))
 // console.log('nativeFind obj 테스트')
@@ -141,50 +141,57 @@ let newTime = new Date().getTime()
 
 // isKindChar, isInChar 테스트 - 지! , 지+에서 출력 가능한 한글이 모두 어떻게 나오는지 확인해보자.
 // 가-힣까지 테스트
-let simJi = [];
-let simJi_Ral = [];
-let simJam = [];
-let simByeol = [];
-let inJi = [];
-let inJam = [];
-let inByeol = [];
-for (let i =44032; i<55204; i++) {
-    let char = String.fromCharCode(i);
-    if (obj.isKindChar(char, '지')) {
-        simJi.push(char);
-    }
-    if (obj.isKindChar(char, '지', '랄')) {
-        simJi_Ral.push(char);
-    }
-    if (obj.isKindChar(char, '잠')){
-        simJam.push(char);
-    }
-    if (obj.isKindChar(char, '별')) {
-        simByeol.push(char);
-    }
-    if (obj.isInChar(char, '지')) {
-        inJi.push(char)
-    }
-    if (obj.isInChar(char, '잠')) {
-        inJam.push(char)
-    }
-    if (obj.isInChar(char, '별')) {
-        inByeol.push(char)
-    }
-}
-
-console.log(simJi)
-console.log(simJi_Ral)
-console.log(simJam)
-console.log(simByeol)
-console.log(inJi)
-console.log(inJam)
-console.log(inByeol)
+// let simJi = [];
+// let simJi_Ral = [];
+// let simJam = [];
+// let simByeol = [];
+// let inJi = [];
+// let inJam = [];
+// let inByeol = [];
+// for (let i =44032; i<55204; i++) {
+//     let char = String.fromCharCode(i);
+//     if (obj.isKindChar(char, '지')) {
+//         simJi.push(char);
+//     }
+//     if (obj.isKindChar(char, '지', '랄')) {
+//         simJi_Ral.push(char);
+//     }
+//     if (obj.isKindChar(char, '잠')){
+//         simJam.push(char);
+//     }
+//     if (obj.isKindChar(char, '별')) {
+//         simByeol.push(char);
+//     }
+//     if (obj.isInChar(char, '지')) {
+//         inJi.push(char)
+//     }
+//     if (obj.isInChar(char, '잠')) {
+//         inJam.push(char)
+//     }
+//     if (obj.isInChar(char, '별')) {
+//         inByeol.push(char)
+//     }
+// }
+//
+// console.log(simJi)
+// console.log(simJi_Ral)
+// console.log(simJam)
+// console.log(simByeol)
+// console.log(inJi)
+// console.log(inJam)
+// console.log(inByeol)
 
 //chojungjong 테스트
 
-console.log(Utils.choJungJong('뷁', 'part'))
-console.log(Utils.choJungJong('뷁', 'key'))
-console.log(Utils.choJungJong('볦', 'key'))
-console.log(Utils.choJungJong('볦', 'sound'))
-console.log(Utils.joinedSyllable('짉','까', true))
+// console.log(Utils.choJungJong('뷁', 'part'))
+// console.log(Utils.choJungJong('뷁', 'key'))
+// console.log(Utils.choJungJong('볦', 'key'))
+// console.log(Utils.choJungJong('볦', 'sound'))
+// console.log(Utils.joinedSyllable('짉','까', true))
+
+// console.log(Utils.wordToArray('^송^작$점$'))
+
+// fs.writeFile('./test.txt', JSON.stringify(Object.keys(obj.badWordsMap)), 'utf-8', (err)=> {console.log(err);})
+// console.log(obj.engBadWordsCheck([['지!','랄!']], 'ziral', 'pronounce', false))
+obj.adjustFilter([],[],[], true);
+console.log(obj.find('쥐이랄 나보고 좆밥이라 부른 노옴 누구야!!', true, 20))

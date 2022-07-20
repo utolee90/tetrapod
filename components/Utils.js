@@ -75,18 +75,28 @@ const Utils = {
     // 바! -> [바, 뱌, 빠,... ] -유사 문자까지 모두 포함
     // 바+ -> [바, 박, 밖,...]. 받침 또는 중복자음 포함. 고 -> [괴, 괘, 공]
     // wordToarray -> 바?꾸 -> ['바?', '꾸']
+    // 20220720 이스케이프 문자 ^, $ 추가.
     wordToArray: word => {
         let wordArray = []; // 결과 출력
         let tmp = ''; // 문자 임시 변수
+        let startMacro = false; // 시작매크로 ^감지
         for (let i = 0; i <= word.length - 1; i++) {
             // tmp 입력 문자가 없을 때
             if (tmp === "") {
                 // 이스케이프 문자., 한글 낱자, 초성일 때는 입력 대기
                 if (/^[.가-힣]$/.test(word[i]) || HO.charInitials.indexOf(word[i])>-1) {
                     tmp = word[i];
+                    if (tmp === '.' && startMacro) {
+                        startMacro = false; //startMacro가 켜져있을 때 .가 들어오면 강제로 끔.
+                    }
+                }
+                // 맨 처음에 오는 ^ 감지.
+                else if (i===0 && word[i]==='^') {
+                    startMacro = true; // 시작매크로 감지
                 }
                 else {
                     wordArray.push(word[i]);
+                    startMacro = false; //밀어넣는 순간 startMacro 꺼버리기
                 }
             }
             // 이스케이프 문자 . -> 뒤에 아무 문자가 오면 그 문자 입력
@@ -100,22 +110,27 @@ const Utils = {
                 if (/^[가-힣]$/.test(Hangul.assemble(tmp.split('').concat(word[i])))) {
                    tmp =  Hangul.assemble(tmp.split('').concat(word[i]));
                 }
-                // tmp가 한글 낱자인데 뒤에 ! 혹은 + 조합 -> 같이 출력
-                else if (/^[가-힣]$/.test(Hangul.assemble(tmp.split(''))) && ['!', '+'].indexOf(word[i])>-1) {
-                    wordArray.push(tmp+word[i]); tmp = '';
+                // tmp가 한글 낱자인데 뒤에 ! 혹은 + 조합, 아니면 맨 마지막 글자에 $ 기호 -> 같이 출력
+                else if (/^[가-힣]$/.test(Hangul.assemble(tmp.split(''))) && (['!', '+'].indexOf(word[i])>-1 || i===word.length-1 && word[i] === '$')) {
+                    wordArray.push(startMacro?"^"+tmp+word[i]:tmp+word[i]);
+                    tmp = '';
+                    startMacro = false;
                 }
                 // 한글 문자가 있는데 다른게 들어올 때 -> 한글 출력 후 tmp 변경. 단 ,가 들어오면 삭제
                 else if (/^[가-힣]$/.test(Hangul.assemble(tmp.split('')))) {
-                    wordArray.push(tmp);
+                    wordArray.push(startMacro?"^"+tmp:tmp);
                     tmp = word[i]===','? '':word[i];
+                    startMacro = false;
                 }
                 // tmp가 비어있지 않은데 ,가 들어옴 -> tmp를 비우고 wordArray에 밀어넣음.
                 else if (word[i]===','){
-                    wordArray.push(tmp); tmp = '';
+                    wordArray.push(startMacro?"^"+tmp:tmp); tmp = '';
+                    startMacro= false;
                 }
                 else {
                     wordArray.push(tmp); // tmp 밀어넣기
                     tmp = word[i];
+                    startMacro = false;
                 }
             }
 
