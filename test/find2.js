@@ -180,3 +180,11 @@ console.log(simByeol)
 console.log(inJi)
 console.log(inJam)
 console.log(inByeol)
+
+//chojungjong 테스트
+
+console.log(Utils.choJungJong('뷁', 'part'))
+console.log(Utils.choJungJong('뷁', 'key'))
+console.log(Utils.choJungJong('볦', 'key'))
+console.log(Utils.choJungJong('볦', 'sound'))
+console.log(Utils.joinedSyllable('짉','까', true))

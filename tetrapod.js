@@ -1397,18 +1397,32 @@ class Tetrapod {
     // 추가- this.strongerCheck가 true일 때에는 영어, 유사자형도 체크한다.
     isKindChar(char, comp, following="") {
         // 초성중성종성 분리 데이터 이용하기
-        let charDisassemble = Utils.choJungJong(char)
-        let compDisassemble = Utils.choJungJong(comp)
-        let followDisassemble = !(/^[가-힣]$/.test(following))?{cho:[], jung:[], jong:[]}:Utils.choJungJong(following);// 다음 자모 분해
+        // 0720 수정 - disassemble 작업단위를 part단위로 수정 및 simObject 간소
+        let charDisassemble = Utils.choJungJong(char, 'part');
+        let charCho= charDisassemble.cho[0];
+        let charJung = charDisassemble.jung[0];
+        let charJong = charDisassemble.jong[0]?charDisassemble.jong[0]:"";
+        let compDisassemble = Utils.choJungJong(comp, 'part');
+        let compCho= compDisassemble.cho[0];
+        let compJung = compDisassemble.jung[0];
+        let compJong = compDisassemble.jong[0]?compDisassemble.jong[0]:"";
+        let followDisassemble = !(/^[가-힣]$/.test(following))?{cho:[], jung:[], jong:[]}:Utils.choJungJong(following, 'part');// 다음 자모 분해
+        let followCho= followDisassemble.cho[0]?followDisassemble.cho[0]:'';
+        let followJung = followDisassemble.jung[0]?followDisassemble.jung[0]:'';
         let resi = false; // 초성 유사음
         let resm = false; // 중성 유사음
         let rese = false; // 종성 유사음
 
         // 치음-> 다, 자,짜, 차 등
         const toothConsonant = Utils.toothConsonant;
+        // i모음 -> 야, 여, 의, 이 등
+        const iVowel = Utils.iVowel;
 
         // 유사초성. 가 -> 까, 카
         const simInit = Utils.simInit;
+
+        // i모음에서 유사초성
+        const iSimInit = Utils.iSimInit;
 
         // 유사중성.  고 -> 거, 교
         const simMiddle = Utils.simMiddle;
@@ -1424,46 +1438,66 @@ class Tetrapod {
         //뒷글자에 의한 ㅣ 모음동화 잡아내기
         const jointVowel = Utils.jointVowel;
 
-        //우선 유사초음 찾아내기. 밑바탕(!들어감) 자음의 유사자음 리스트 안에 원 자음이 들어가는 경우
-        if (compDisassemble["cho"][0] === charDisassemble["cho"][0] || (simInit[compDisassemble["cho"][0]]!==undefined && simInit[compDisassemble["cho"][0]].indexOf( charDisassemble["cho"][0] )!== -1)) {
+        // 우선 유사초성여부 찾아내기. i모음일 때부터
+        if (iVowel.indexOf(compJung)>-1 && charJung === compJung && iSimInit[compCho].indexOf(charCho)>-1 ) {
+            resi = true;
+        }
+        // i모음이 아닐 때는 simInit으로 비교
+        else if (simInit[compCho].indexOf(charCho)>-1) {
             resi = true;
         }
 
         // 유사중음 찾아내기. 치음의 경우
-
-        if (Utils.objectEqual(compDisassemble["jung"], charDisassemble["jung"])) {
+        if (resi && toothConsonant.indexOf(compCho)!== -1 && toothSimMiddle[compJung].indexOf(charJung)>-1) {
             resm = true;
         }
-        else if (toothConsonant.indexOf(charDisassemble["cho"][0])!== -1 && Utils.objectIn(charDisassemble["jung"], toothSimMiddle[Hangul.assemble(compDisassemble["jung"])] ) === true) {
+        // 치음 아닌 경우
+        else if (resi && simMiddle[compJung].indexOf(charJung)>-1) {
             resm = true;
         }
-        else if (toothConsonant.indexOf(charDisassemble["cho"][0])=== -1 && Utils.objectIn(charDisassemble["jung"], simMiddle[Hangul.assemble(compDisassemble["jung"])] ) === true) {
-            resm = true;
-        }
-        // 모음 동화 반영
-        else if (followDisassemble["jung"].length>0 && Utils.objectIn( followDisassemble["jung"],[["ㅣ"], ["ㅡ","ㅣ"], ["ㅜ","ㅣ"]]) === true && Utils.objectIn( charDisassemble["jung"], jointVowel[Hangul.assemble(compDisassemble["jung"])]) === true) {
+        // 아니면 뒤의 음절 이용해서 동화 반영
+        else if (resi && ['ㅣ', 'ㅢ'].indexOf(followJung)>-1 && jointVowel[compJung].indexOf(charJung)>-1) {
             resm = true;
         }
 
         // 유사종음 찾아내기.
-        // 우선 두 글자 받침이 동일할 때는 무조건 OK
-        if (Utils.objectEqual(compDisassemble["jong"], charDisassemble["jong"])) {
+        let charJongPlus = '';
+        // 우선 char 글자 받침이 comp와 동일하거나 유사받침으로 포함될 때는 무조건 OK
+
+        if (resi && resm && simEnd[compJong].indexOf(charJong)>-1) {
             rese = true;
         }
-        else if (Utils.objectIn(charDisassemble["jong"], simEnd[compDisassemble["jong"]])) {
-            rese = true;
+        // 아니면 다음 캐릭터의 초성을 받침으로 가져와보자
+        else if (resi && resm && followCho!== "") {
+            // 다음 초성을 가져와서 받침으로 조합하기
+            charJongPlus = Hangul.assemble(Hangul.disassemble(comp).concat([followCho]));
+            if(charJongPlus.length === 1) {
+                let newJong = Utils.choJungJong(charJongPlus, 'part').jong[0];
+                if (simEnd[newJong].indexOf(charJong)>-1) {
+                    rese = true;
+                }
+            }
         }
-        // 또 comp 받침 글자를 char가 포함하는 경우 무조건 OK
-        else if (compDisassemble["jong"].length>0 && Utils.objectInclude(compDisassemble["jong"], charDisassemble["jong"]) ) {
-            rese = true;
+        // 마지막 확인. Utils.joinedSyllable을 이용해서 같은 결과 유도하는지 확인해보자
+        if (resi && resm && !rese && /[가-힣]/.test(following)) {
+            let resJS = Utils.joinedSyllable(char, following, true, true);
+            let compJS= Utils.joinedSyllable(comp, following, true, true);
+            let compJS2 = [''];
+            if (charJongPlus!=="" && charJongPlus.length ===1) compJS2 = Utils.joinedSyllable(charJongPlus, following, true, true);
+            if (resJS[0] === compJS[0] || resJS[0] === compJS2[0]) rese = true;
         }
-        // 자음동화. comp에 받침이 없을 때 받침 맨 뒷글자가 follow의 초성과 자음동화를 이룰 때
-        else if (followDisassemble["cho"].length>0 && compDisassemble["jong"].length ===0 &&  charDisassemble["jong"].slice(-1)[0] === followDisassemble["cho"][0] ) {
-            rese = true;
-        }
-        else if (followDisassemble["cho"].length>0 && compDisassemble["jong"].length ===0 && jointConsonant[ followDisassemble["cho"][0] ]!== undefined && jointConsonant[ followDisassemble["cho"][0] ].indexOf( charDisassemble["jong"].slice(-1)[0] ) !==-1 ) {
-            rese = true;
-        }
+
+        // // 또 comp 받침 글자를 char가 포함하는 경우 무조건 OK
+        // else if (compDisassemble["jong"].length>0 && Utils.objectInclude(compDisassemble["jong"], charDisassemble["jong"]) ) {
+        //     rese = true;
+        // }
+        // // 자음동화. comp에 받침이 없을 때 받침 맨 뒷글자가 follow의 초성과 자음동화를 이룰 때
+        // else if (followDisassemble["cho"].length>0 && compDisassemble["jong"].length ===0 &&  charDisassemble["jong"].slice(-1)[0] === followDisassemble["cho"][0] ) {
+        //     rese = true;
+        // }
+        // else if (followDisassemble["cho"].length>0 && compDisassemble["jong"].length ===0 && jointConsonant[ followDisassemble["cho"][0] ]!== undefined && jointConsonant[ followDisassemble["cho"][0] ].indexOf( charDisassemble["jong"].slice(-1)[0] ) !==-1 ) {
+        //     rese = true;
+        // }
 
         return resi && resm && rese;
     }

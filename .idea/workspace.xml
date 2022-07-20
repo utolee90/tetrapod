@@ -4,9 +4,8 @@
     <list default="true" id="104ff4eb-fd97-4171-9f6f-14d519183829" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/HangulObjects.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/HangulObjects.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Utils.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Utils.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resource/dictionary/bad-words.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/bad-words.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resource/dictionary/macros.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/macros.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/find2.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/find2.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tetrapod.js" beforeDir="false" afterPath="$PROJECT_DIR$/tetrapod.js" afterDir="false" />
     </list>
@@ -151,7 +150,7 @@
       <workItem from="1658136050327" duration="6514000" />
       <workItem from="1658190327406" duration="15255000" />
       <workItem from="1658215994886" duration="1485000" />
-      <workItem from="1658277771514" duration="7275000" />
+      <workItem from="1658277771514" duration="26180000" />
     </task>
     <task id="LOCAL-00001" summary="modify source">
       <created>1618747573738</created>

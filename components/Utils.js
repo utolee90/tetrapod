@@ -952,14 +952,44 @@ const Utils = {
         }
         // 나머지 -> 받침과 쌍자음이 가능한 경우만 찾아보자
         else {
+
             // 앞자음+뒷자음 -> 합칠 수 있는 경우
-            const consonantJoined = {'ㄱㄱ': 'ㄲ', 'ㄱㅋ':'ㅋ', 'ㄷㄷ': 'ㄸ', 'ㄷㄸ': 'ㄸ','ㄷㅅ': 'ㅆ', 'ㄷㅆ': 'ㅆ', 'ㄷㅈ': 'ㅉ', 'ㄷㅉ':'ㅉ',
-                'ㄷㅊ': 'ㅊ', 'ㄷㅌ':'ㅌ', 'ㅂㅂ': 'ㅃ', 'ㅂㅍ': 'ㅍ', 'ㅅㄷ': 'ㄸ', 'ㅅㄸ':'ㄸ', 'ㅅㅅ': 'ㅆ', 'ㅅㅈ': 'ㅉ', 'ㅅㅊ': 'ㅊ',
-                'ㅈㄷ': 'ㄸ', 'ㅈㅅ': 'ㅆ', 'ㅈㅆ': 'ㅆ', 'ㅈㅈ': 'ㅉ', 'ㅈㅉ': 'ㅉ', 'ㅈㅊ': 'ㅊ', 'ㅋㄱ': 'ㅋ', 'ㅋㅋ': 'ㅋ', 'ㅌㄷ': 'ㅌ', 'ㅌㅌ': 'ㅌ', 'ㅍㅂ': 'ㅍ',
-                'ㄲㄱ':'ㄱㄲ',  'ㅆㅅ': 'ㅅㅆ',  }
+            const consonantJoined = {
+                'ㄱㄱ': 'ㄲ',  'ㄱㅋ':'ㅋ',
+                'ㄷㄷ': 'ㄸ', 'ㄷㄸ': 'ㄸ','ㄷㅅ': 'ㅆ', 'ㄷㅆ': 'ㅆ', 'ㄷㅈ': 'ㅉ', 'ㄷㅉ':'ㅉ', 'ㄷㅊ': 'ㅊ', 'ㄷㅌ':'ㅌ',
+                'ㅂㅂ': 'ㅃ', 'ㅂㅍ': 'ㅍ', 'ㅂㅃ': 'ㅃ',
+                'ㅅㄷ': 'ㄸ', 'ㅅㄸ':'ㄸ', 'ㅅㅅ': 'ㅆ', 'ㅅㅈ': 'ㅉ', 'ㅅㅊ': 'ㅊ',
+                'ㅈㄷ': 'ㄸ', 'ㅈㅅ': 'ㅆ', 'ㅈㅆ': 'ㅆ', 'ㅈㅈ': 'ㅉ', 'ㅈㅉ': 'ㅉ', 'ㅈㅊ': 'ㅊ',
+                'ㅋㄱ': 'ㅋ', 'ㅋㅋ': 'ㅋ', 'ㅌㄷ': 'ㅌ', 'ㅌㅌ': 'ㅌ',
+                'ㅍㅂ': 'ㅍ', 'ㅍㅍ': 'ㅍ', 'ㅎㅎ': 'ㅌ',
+                'ㄲㄱ':'ㄱㄲ',  'ㅆㅅ': 'ㅅㅆ',
+                'ㄷㄴ':'ㄴㄴ', 'ㅅㄴ': 'ㄴㄴ', 'ㅆㄴ': 'ㄴㄴ', 'ㅈㄴ': 'ㄴㄴ', 'ㅊㄴ': 'ㄴㄴ', 'ㅌㄴ': 'ㄴㄴ', 'ㅎㄴ': 'ㄴㄴ'
+            }
+
+            // 앞자음+뒷자음  -> 복모음 한정 합치기. 빈 음절은 강제분리 못하게 조치 취하기
+            const doubleConsonantJoined = {...consonantJoined,
+                "ㄱㄲ": "ㄲ", // ㄺ 관련
+                "ㅁㅁ": 'ㅁ', // ㄻ 관련
+                "ㅅㄴ": null, 'ㅅㄷ': null, 'ㅅㄸ': null, 'ㅅㅅ': null,  // ㄳ, ㄽ, ㅄ 관련. 음절 분리 못하게 조치.
+                "ㅈㄴ": null,  // ㄵ 관련
+                "ㅌㄴ": null, //ㄾ 관련
+                "ㅎㄱ": "ㅋ", "ㅎㄴ": null, "ㅎㄷ": "ㅌ", "ㅎㅂ": "ㅍ",  "ㅎㅅ": "ㅆ", "ㅎㅈ": "ㅊ", "ㅎㅎ": null  // ㄶ, ㅀ
+            }
 
             let joined = curJongList[curJongList.length-1] + nextCho;
-            if (Object.keys(consonantJoined).indexOf(joined)>-1) {
+            // 겹반침인 경우
+            if (curJongList.length ===2) {
+                // 값이 있는 경우 - 재조합
+                if (doubleConsonantJoined[joined]) {
+                    let lastLetter = reduced? [doubleConsonantJoined[joined], ...nextList.slice(1)]: [curJongList[curJongList.length-1], ...nextList];
+                    res = [[curCho, curJung, curJongList[0]], lastLetter];
+                }
+                // 비어 있는 경우
+                else {
+                    res = [curList, nextList]; // 분리하지 않는다.
+                }
+            }
+            else if (Object.keys(consonantJoined).indexOf(joined)>-1) {
                 // 받침이 완전히 뒷자음에 붙어버리는 경우
                 if (consonantJoined[joined].length === 1) {
                     let lastLetter = reduced? [consonantJoined[joined], ...nextList.slice(1)]: [curJongList[curJongList.length-1], ...nextList];
@@ -988,11 +1018,11 @@ const Utils = {
             ...simplifyMid, 'ㅑ': 'ㅏ', 'ㅕ':'ㅓ', 'ㅛ': 'ㅗ', 'ㅠ': 'ㅜ'
         }
         const simplifyEnd = {
-            'ㄲ': 'ㄱ', 'ㄳ': 'ㄱ', 'ㄵ': 'ㄴ', 'ㄶ': 'ㄴ', 'ㄺ': 'ㄱ', 'ㄻ':'ㅁ', 'ㄼ': 'ㅂ', 'ㄽ': 'ㄹ', 'ㄾ': 'ㄷ', 'ㄿ':'ㅂ', 'ㅀ': 'ㄹ',
+            'ㄲ': 'ㄱ', 'ㄳ': 'ㄱ', 'ㄵ': 'ㄴ', 'ㄶ': 'ㄴ', 'ㄺ': 'ㄱ', 'ㄻ':'ㅁ', 'ㄼ': 'ㄹ', 'ㄽ': 'ㄹ', 'ㄾ': 'ㄹ', 'ㄿ':'ㅂ', 'ㅀ': 'ㄹ',
             'ㅄ': 'ㅂ', 'ㅆ': 'ㅅ', 'ㅈ': 'ㄷ', 'ㅊ': 'ㄷ', 'ㅋ': 'ㄱ', 'ㅌ': 'ㄷ', 'ㅍ': 'ㅂ', 'ㅎ': 'ㄷ'
         }
         // 받침 간단한 쌍자음으로 치환하기. reduced가 있을 때에만 확인인
-        if(reduced && simplify) {
+        if(reduced) {
             // 우선 복자음, 복모음을 하나로 합치기
             for (let idx in res) {
                 if (/[ㅏ-ㅣ]/.test(res[idx][2])) res[idx].splice(1,2, Hangul.assemble([res[idx][1], res[idx][2]]))
@@ -1000,21 +1030,28 @@ const Utils = {
             }
             // 단모음/ 단자음화하기
             for (let idx in res) {
-                if (['ㄲ', 'ㄸ', 'ㅃ', 'ㅆ', 'ㅉ'].indexOf(res[idx][0])>-1) {
+                if (simplify && ['ㄲ', 'ㄸ', 'ㅃ', 'ㅆ', 'ㅉ'].indexOf(res[idx][0])>-1) {
                     res[idx][0] = simplifyInit[res[idx][0]];
                 }
-                if (HO.toothConsonant.indexOf(res[idx][0])>-1 && Object.keys(toothSimplifyMid).indexOf(res[idx][1])>-1) {
+                if (simplify && HO.toothConsonant.indexOf(res[idx][0])>-1 && Object.keys(toothSimplifyMid).indexOf(res[idx][1])>-1) {
                     res[idx][1] = toothSimplifyMid[res[idx][1]]
                 }
-                else if (Object.keys(simplifyMid).indexOf(res[idx][1])>-1) {
+                else if (simplify && Object.keys(simplifyMid).indexOf(res[idx][1])>-1) {
                     res[idx][1] = simplifyMid[res[idx][1]]
                 }
+                // 이중받침 단조화는 simplify 컨디션 없이도 처리하자.
                 if (res[idx].length ===3 && Object.keys(simplifyEnd).indexOf(res[idx][2])>-1) {
                     res[idx][2] = simplifyEnd[res[idx][2]];
                 }
             }
         }
 
+        // 최종작업 - 받침 ㄴ+초성 ㄹ 또는 받침ㄹ+초성ㄴ  -> 받침 ㄹ로 변환
+        if (reduced && res.length ===2 && ['ㄹㄴ', 'ㄴㄹ'].indexOf(res[0][2]+res[1][0])>-1 ) {
+            res[0][2] = 'ㄹ'; res[1][0] = 'ㄹ'
+        }
+
+        // 결과는 자모리스트를 한글로 조합해서 처리한다.
         return res.map(x=> Hangul.assemble(x));
 
     },
