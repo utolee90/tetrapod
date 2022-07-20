@@ -232,34 +232,38 @@ const Utils = {
     // [[1,2],[3,4,5]] -> [13,14,15,23,24,25]
     recursiveComponent: (data) => {
 
+
         // 배열 정의되지 않은 것은 그대로 출력
         if (typeof data !== "object") return data
         else {
+            // 오류 방지를 위해 deep-copy해서 처리하자.
+            let newData = JSON.parse(JSON.stringify(data))
+
             // 데이터의 모든 항 순회
-            for (let i=0;i<data.length;i++){
+            for (let i=0;i<newData.length;i++){
 
                 // 데이터 원소 내부의 모든 항목을 순회합니다.
-                for(let itemIndex in data[i]){
-                    let item = data[i][itemIndex]
+                for(let itemIndex in newData[i]){
+                    let item = newData[i][itemIndex]
 
                     // 데이터 항목이 배열인 경우
                     // 재귀 컴포넌트 해석을 진행합니다.
                     if(Array.isArray(item)){
                         let solvedData = Utils.recursiveComponent(item)
-                        data[i][itemIndex] = null
-                        data[i] = data[i].concat(solvedData)
+                        newData[i][itemIndex] = null
+                        newData[i] = newData[i].concat(solvedData)
                     }
                 }
             }
 
             // 그 다음에 null 원소는 모두 제거하기
-            for (let i=0; i<data.length; i++) {
-                data[i] = data[i].filter(x => x !==null );
+            for (let i=0; i<newData.length; i++) {
+                newData[i] = newData[i].filter(x => x !==null );
             }
 
             // 데이터 리스트 곱 연산 수행 후 붙여쓰기
             // [[1,2],[3,4,5]] = [[1,3],[1,4],[1,5],[2,3],[2,4],[2,5]]-> [13, 14, 15, 23, 24, 25]
-            let presolvedData = ObjectOperation.productList(data)
+            let presolvedData = ObjectOperation.productList(newData)
             let solvedData = presolvedData.map(x=> x.join(""))
 
             return solvedData
@@ -834,11 +838,12 @@ const Utils = {
             'ㅖ':'ㅖ', 'ㅗ':'ㅛ', 'ㅛ':'ㅛ', 'ㅜ':'ㅠ', 'ㅠ':'ㅠ', 'ㅡ':'ㅠ', 'ㅣ':'ㅣ' } // 이어 -> 여 단축을 위한 작업
 
         // 유사모음 축약형으로 잡아내기 위한 조건 갸앙 ->걍
-        const vowelLast = {'ㅏ':['ㅏ'], 'ㅐ':['ㅐ', 'ㅔ'], 'ㅑ': ['ㅏ', 'ㅑ'], 'ㅒ':['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'],
-            'ㅓ' : ['ㅓ'], 'ㅔ': ['ㅔ', 'ㅐ'], 'ㅕ': ['ㅓ', 'ㅕ'], 'ㅖ':['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'],
-            'ㅗ':['ㅗ'], 'ㅘ': ['ㅏ', 'ㅘ'], 'ㅙ': ['ㅐ', 'ㅔ', 'ㅙ','ㅚ'], 'ㅚ': ['ㅚ'], 'ㅛ':['ㅛ', 'ㅗ'],
-            'ㅜ':['ㅜ', 'ㅡ'], 'ㅝ':['ㅓ', 'ㅝ'], 'ㅞ': ['ㅔ', 'ㅞ'], 'ㅟ': ['ㅟ', 'ㅣ'],
-            'ㅠ':['ㅠ', 'ㅜ', 'ㅡ'], 'ㅡ':['ㅡ'], 'ㅢ': ['ㅢ', 'ㅣ'], 'ㅣ':['ㅣ']}
+        // 수정 -> 겨여 -> 두번째에 ㅣ가 끼어 있어서 합치지 못한다.
+        const vowelLast = {'ㅏ':['ㅏ'], 'ㅐ':['ㅐ', 'ㅔ'], 'ㅑ': ['ㅏ'], 'ㅒ':['ㅐ', 'ㅔ'],
+            'ㅓ' : ['ㅓ'], 'ㅔ': ['ㅔ', 'ㅐ'], 'ㅕ': ['ㅓ'], 'ㅖ':['ㅐ', 'ㅔ'],
+            'ㅗ':['ㅗ'], 'ㅘ': ['ㅏ'], 'ㅙ': ['ㅐ', 'ㅔ','ㅚ'], 'ㅚ': ['ㅚ'], 'ㅛ':['ㅗ'],
+            'ㅜ':['ㅜ', 'ㅡ'], 'ㅝ':['ㅓ'], 'ㅞ': ['ㅔ', 'H'], 'ㅟ': ['ㅟ', 'ㅣ'],
+            'ㅠ':['ㅜ', 'ㅡ'], 'ㅡ':['ㅡ'], 'ㅢ': ['ㅢ', 'ㅣ'], 'ㅣ':['ㅣ']}
 
         // 중복모음 결과 유도. (앞모음+ㅇ+뒷모음 합병 가능여부)
         const doubleVowelResult = (a, b) => {
@@ -857,7 +862,6 @@ const Utils = {
             else if (Utils.objectIn([a,b], [['ㅜ', 'ㅔ'], ['ㅜ', 'ㅞ']])) { return 'ㅞ'; }
             else if (Utils.objectIn([a,b], [['ㅜ', 'ㅣ'], ['ㅜ', 'ㅟ']])) { return 'ㅟ';}
             else { return '';}
-
         }
 
         // 낱자 char, nextChar 자모분해
@@ -865,6 +869,31 @@ const Utils = {
         let nextList = Array.isArray(nextChar)? nextChar: Utils.disassemble(nextChar);
         let curCjj = Array.isArray(char)? Utils.choJungJong(Hangul.assemble(char)) : Utils.choJungJong(char);
         let nextCjj = Array.isArray(nextChar)? Utils.choJungJong(Hangul.assemble(nextChar)): Utils.choJungJong(nextChar);
+
+        // Simplify일 때 선제치환
+        if (reduced && simplify) {
+            // simplify일 때에는 ㅢ -> ㅣ로 선제치환,
+            if (curList[1] =='ㅡ' && curList[2] == 'ㅣ') {
+                curList.splice(1,1); curCjj.jung = ['ㅣ'];
+            }
+            if (nextList[1]=='ㅡ' && nextList[2] == 'ㅣ') {
+                nextList.splice(1,1); nextCjj.jung = ['ㅣ']
+            }
+            const simplified = {'ㅑ': 'ㅏ', 'ㅒ': 'ㅐ', "ㅕ": 'ㅓ', 'ㅖ': 'ㅔ', 'ㅛ': 'ㅗ', 'ㅠ': 'ㅜ'};
+            // 치음 + 반모음 -> 치음 + 단모음
+            if (['ㄷ', 'ㅈ', 'ㅊ', 'ㅉ'].indexOf(curList[0]) >-1) {
+                if (Object.keys(simplified).indexOf(curList[1])>-1) {
+                    curList.splice(1,1, simplified[curList[1]]);
+                    curCjj.jung = [curList[1]]
+                }
+            }
+            if (['ㄷ', 'ㅈ', 'ㅊ', 'ㅉ'].indexOf(nextList[0]) >-1) {
+                if (Object.keys(simplified).indexOf(nextList[1])>-1) {
+                    nextList.splice(1,1, simplified[nextList[1]]);
+                    nextCjj.jung = [nextList[1]]
+                }
+            }
+        }
 
         let curCho = curList[0];
         let curJung = Hangul.assemble(curCjj.jung);
@@ -1022,7 +1051,7 @@ const Utils = {
 
                     let lastChar = msgSplit[idx-1][msgSplit[idx-1].length-1]; // msgSplit의 마지막 문자
                     let testRes = Utils.joinedSyllable(pre, letter, true, simplify); // 음절이 줄어들 수 있는 경우
-                    if (simplify && idx>msgSplit.length-3) {console.log(testRes)}
+
                     let testResXR = Utils.joinedSyllable(lastChar, letter, false); // 음절이 줄어들지 않게 부착하는 경우.
                     // 길이가 1일 때는 글자가 합쳐진 걸로 간주한다.
                     if (testRes.length ===1) {

@@ -1606,6 +1606,8 @@ class Tetrapod {
      */
      recursiveComponent (data, variable={}, nonParsedVariable = null) {
         // data : array.
+        // 오류 방지를 위해 데이터 조작 부분은 deep-copy로 전환
+        let newData = JSON.parse(JSON.stringify(data))
 
         // console.log('recursiveComponent() start')
 
@@ -1613,8 +1615,8 @@ class Tetrapod {
         for(let i=0;i<=1;i++){
 
             // 데이터의 모든 항목을 순회합니다.
-            for(let itemIndex in data[i]){
-                let item = data[i][itemIndex]
+            for(let itemIndex in newData[i]){
+                let item = newData[i][itemIndex]
 
                 // console.log("item LIST:::", item)
 
@@ -1623,15 +1625,15 @@ class Tetrapod {
                 if(Array.isArray(item)){
                     let solvedData = this.recursiveComponent(item, variable, nonParsedVariable)
                     // console.log("SOLVEDDATA", solvedData)
-                    data[i][itemIndex] = null
-                    data[i] = data[i].concat(solvedData)
+                    newData[i][itemIndex] = null
+                    newData[i] = newData[i].concat(solvedData)
                     // data[i] = this.assembleHangul(data[i])
 
                 } else if(!Array.isArray(item) && typeof item === 'object'){
 
                     // 부가 함수를 사용한 경우
                     // 지정된 함수가 반환하는 리스트를 반영합니다.
-                    data[i] = data[i].concat(this.recursiveComponent(item, variable, nonParsedVariable))
+                    newData[i] = newData[i].concat(this.recursiveComponent(item, variable, nonParsedVariable))
                     // data[i] = this.assembleHangul(data[i])
 
                 } else if(typeof item === 'string' && item[0] === '*'){
@@ -1648,7 +1650,7 @@ class Tetrapod {
                     if(typeof variable[varName] !== 'undefined'){
                         //  console.log(`1함수호출됨: ${varName}`)
 
-                        data[i] = data[i].concat(variable[varName])
+                        newData[i] = newData[i].concat(variable[varName])
                         // data[i] = this.assembleHangul(data[i])
                     }
                     // 아니면 nonParsedVariable에서 변수가 있는지 확인해보기.
@@ -1659,7 +1661,7 @@ class Tetrapod {
                         if(nonParsedVariable !== null){
                             //   console.log(`2함수진행됨: ${varName}`)
                             let parsedHeaderVariable = this.recursiveList(nonParsedVariable[varName], nonParsedVariable, true)
-                            data[i] = data[i].concat(parsedHeaderVariable)
+                            newData[i] = newData[i].concat(parsedHeaderVariable)
                             // data[i] = this.assembleHangul(data[i])
                             //  console.log(`2함수결과:`)
                             //  console.log(parsedHeaderVariable.length)
@@ -1669,16 +1671,16 @@ class Tetrapod {
                             throw new Error (`nonParsedVariable 전해받지 못함, ${varName} 변수를 찾을 수 없습니다.`)
                         }
                     }
-                    data[i][itemIndex] = null
+                    newData[i][itemIndex] = null
                 }
             }
         }
 
         // 데이터의 전항 후항을 순회합니다.
         let solvedData = []
-        for(let before of data[0]){
+        for(let before of newData[0]){
             if(before === null) continue
-            for(let after of data[1]){
+            for(let after of newData[1]){
                 if(after === null) continue
                 solvedData.push(before+after)
             }
@@ -1702,6 +1704,9 @@ class Tetrapod {
      recursiveList (list, variable = null, isVariableParse = false, defaultType = 'string') {
         // console.log('recursiveList() start')
 
+        // 수정 - 입력값이 바뀌는 현상이 발생해서 deep-copy로 바꾸어보자.
+        let newList = JSON.parse(JSON.stringify(list));
+
         // 변수단을 해석처리합니다.
         let parsedVaraible = {}
 
@@ -1715,9 +1720,9 @@ class Tetrapod {
         // 결과 리스트
         let rebuild = []
         // 리스트의 엘리먼트에 대해서
-        for(let itemIndex in list){
+        for(let itemIndex in newList){
             // console.log("ITEMINDEX:::", list[itemIndex])
-            let item = list[itemIndex]
+            let item = newList[itemIndex]
 
             if(typeof item === defaultType){
 

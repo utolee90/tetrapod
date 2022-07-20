@@ -94,6 +94,13 @@ console.log(Utils.reserveMap(Utils.parseMap(testPronounce)))
 let obj = new Tetrapod();
 obj.loadFile()
 
+console.log('의 처리가 필요한가?')
+console.log(Utils.dropDouble('듸어서', false, false))
+console.log(Utils.dropDouble('듸어서', false, true))
+console.log(Utils.dropDouble('저여', false, false))
+console.log(Utils.dropDouble('져여', false, false))
+console.log(Utils.dropDouble('저여', false, true))
+console.log(Utils.dropDouble('져여', false, true))
 // console.log(obj.findNormalWordPositions('흰색 옷은 아름답다', false))
 let newTime = new Date().getTime()
 // console.log('시발 정발 나쁘게 구네 ::: TEST:::\n', JSON.stringify(obj.nativeFind("시발 정말 나쁘게 구네")))
