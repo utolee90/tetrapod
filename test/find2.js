@@ -193,5 +193,7 @@ console.log('시발 정발 나쁘게 구네 ::: TEST:::\n', JSON.stringify(obj.n
 
 // fs.writeFile('./test.txt', JSON.stringify(Object.keys(obj.badWordsMap)), 'utf-8', (err)=> {console.log(err);})
 // console.log(obj.engBadWordsCheck([['지!','랄!']], 'ziral', 'pronounce', false))
-obj.adjustFilter([],[],[], true);
-console.log(obj.find('쥐이랄 나보고 좆밥이라 부른 노옴 누구야!!', true, 20))
+obj.adjustFilter([],[],['qwerty', 'antispoof'], true);
+newTime = new Date().getTime()
+console.log(obj.find('Tlqkf 샏까 정말 ㅉH0하다!', false, 20))
+console.log(new Date().getTime()-newTime); // 걸리는 시간 체크해보자.

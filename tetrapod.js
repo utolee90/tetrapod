@@ -429,16 +429,7 @@ class Tetrapod {
                      }
                  }
 
-                 // let tempFound = Utils.addList(...curResult.originalFound); // 이중 리스트를 풀어서 처리
-                 // let tempPosition = Utils.addList(...curResult.positions).map(x=> (x.map(r=> r+adjustment))); // 포지션 벡터를 풀어서 처리
-                 // for (var idx1 in tempPosition) {
-                 //     if (!Utils.objectIn(tempPosition[idx1], res.position) && (needMultipleCheck || res.position.length ===0)) {
-                 //         res.found.push(tempFound[idx1]);
-                 //         res.position.push(tempPosition[idx1]);
-                 //     }
-                 // }
-
-                 //
+                 // 부적절한 겹받침 위치 찾아내기
                  for (var idx2 in tempDEPositions) {
                      if (res.doubleEndPositions.indexOf(tempDEPositions[idx2]) === -1) {
                          res.doubleEnd.push(tempDEFound[idx2]);
@@ -446,15 +437,15 @@ class Tetrapod {
                      }
                  }
                  // needMultipleCheck가 거짓이면 잡아냈을 때 작업 중단합시다.
-                 if (!needMultipleCheck && res.position.length>0) {
+                 if (!needMultipleCheck && res.positions.length>0) {
                      res.found = res.found.slice(0,1); // 결과 하나만 추출
-                     res.position = res.position.slice(0,1); // 결과 하나만 추출
+                     res.positions = res.positions.slice(0,1); // 결과 하나만 추출
                  }
              }
          }
 
          // isStrong 옵션이 있을 때에는 dropDouble한 메시지도 같이 검사한다.
-         if(isStrong) {
+         if(isStrong && (needMultipleCheck || res.positions.length ===0)) {
              // 결과 추가
              let ddMap = Utils.dropDouble(message, true);
              let ddsMap = Utils.dropDouble(message, true, true);
@@ -483,73 +474,28 @@ class Tetrapod {
                      let ddType = ddFind.type[idx3];
                      resPlus.ddType.push(ddType);
                  }
+                 if (!needMultipleCheck && resPlus.ddPositions.length > 0) break;
              }
 
              // ddFind.positions 기준으로 조회
              // found, positions, keyWord, type은 모두 길이가 동일하다는 점을 이용해보자.
-             for (let idx4  in ddsFindPositions) {
-                 let oddsPosition = Utils.originalPosition(ddsMap, ddsFindPositions[idx4]);
-                 if (!Utils.objectIn(oddsPosition, res.positions)) {
-                     resPlus.ddsPositions.push(oddsPosition);
-                     let originalWord = message.split("").filter((x, idx)=> (oddsPosition.indexOf(idx)>-1)).join("");
-                     resPlus.ddsFound.push(originalWord);
-                     let ddsFoundKey = ddsFind.keyWord[idx4];
-                     resPlus.ddsKeyWord.push(ddsFoundKey);
-                     let ddsType = ddsFind.type[idx4];
-                     resPlus.ddsType.push(ddsType);
+             if (needMultipleCheck || resPlus.ddPositions.length===0) {
+                 for (let idx4  in ddsFindPositions) {
+                     let oddsPosition = Utils.originalPosition(ddsMap, ddsFindPositions[idx4]);
+                     if (!Utils.objectIn(oddsPosition, res.positions) && !Utils.objectIn(oddsPosition, resPlus.ddPositions)) {
+                         resPlus.ddsPositions.push(oddsPosition);
+                         let originalWord = message.split("").filter((x, idx) => (oddsPosition.indexOf(idx) > -1)).join("");
+                         resPlus.ddsFound.push(originalWord);
+                         let ddsFoundKey = ddsFind.keyWord[idx4];
+                         resPlus.ddsKeyWord.push(ddsFoundKey);
+                         let ddsType = ddsFind.type[idx4];
+                         resPlus.ddsType.push(ddsType);
+                     }
+                     if (!needMultipleCheck && resPlus.ddsPositions.length > 0) break;
                  }
              }
 
-             // adjustment = 0; // 보정 포지션 재지정
-             // for (let idx =0; idx<messages.length; idx++) {
-             //     adjustment = Math.floor(idx/2)*fullLimit + (idx%2)* halfLimit; // 문장 내 x의 보정 포지션 지정하기
-             //     // 같은 비속어 키워드여도 여러 개 비속어 대응이 가능하므로 msgToMap을 이용해서 여러 개 찾아준다.
-             //     let ddResult = this.nativeFind(Utils.dropDouble(messages[idx], true), needMultipleCheck, true, true,  false);
-             //     let ddsResult = this.nativeFind(Utils.dropDouble(messages[idx], true, true), needMultipleCheck, true, true, false);
-             //
-             //     if(ddResult.found.length>0) {
-             //         let ddFound = Utils.addList(...ddResult.originalFound); // 이중 리스트를 풀어서 처리
-             //         let ddPosition = Utils.addList(...ddResult.positions).map(x=> (x.map(r=> r+adjustment))); // 포지션 벡터를 풀어서 처리
-             //         let ddOriginalPosition = Utils.addList(...ddResult.originalPositions).map(x=> (x.map(r=> r+adjustment))); // 포지션 벡터의 원래 위치
-             //         for (var idx1 in ddPosition) {
-             //             if (!Utils.objectIn(ddPosition[idx1], resPlus.ddPosition) && (needMultipleCheck || resPlus.ddPosition.length ===0)) {
-             //                 // 맵 축약하기 전에도 원본에서 찾을 수 있었는지 확인할 것.
-             //                 if (!Utils.objectIn(Utils.originalPosition(Utils.dropDouble(messages[idx], true), ddPosition[idx1]), res.position)) {
-             //                     resPlus.ddFound.push(ddFound[idx1]);
-             //                     resPlus.ddPosition.push(ddOriginalPosition[idx1]);
-             //                 }
-             //             }
-             //         }
-             //         // needMultipleCheck가 거짓이면 잡아냈을 때 작업 중단합시다.
-             //         if (!needMultipleCheck && resPlus.ddPosition.length>0) {
-             //             resPlus.ddFound = resPlus.ddFound.slice(0,1); // 결과 하나만 추출
-             //             resPlus.ddPosition = resPlus.ddPosition.slice(0,1); // 결과 하나만 추출
-             //         }
-             //     }
-             //
-             //     if (ddsResult.found.length>0) {
-             //         let ddsFound = Utils.addList(...ddsResult.originalFound); // 이중 리스트를 풀어서 처리
-             //         let ddsPosition = Utils.addList(...ddsResult.positions).map(x=> (x.map(r=> r+adjustment))); // 포지션 벡터를 풀어서 처리
-             //         let ddsOriginalPosition = Utils.addList(...ddsResult.originalPositions).map(x=> (x.map(r=> r+adjustment))); // 포지션 벡터의 원래 위치
-             //
-             //         for (var idx2 in ddsPosition) {
-             //             if (!Utils.objectIn(ddsPosition[idx2], resPlus.ddsPosition) && (needMultipleCheck || resPlus.ddsPosition.length ===0)) {
-             //                 // 맵 축약하기 전에도 원본에서 찾을 수 있었는지 확인할 것.
-             //                 if (!Utils.objectIn(Utils.originalPosition(Utils.dropDouble(messages[idx], true, true), ddsPosition[idx2]), res.position)) {
-             //                     resPlus.ddsFound.push(ddsFound[idx2]);
-             //                     resPlus.ddsPosition.push(ddsOriginalPosition[idx2]);
-             //                 }
-             //             }
-             //         }
-             //         // needMultipleCheck가 거짓이면 잡아냈을 때 작업 중단합시다.
-             //         if (!needMultipleCheck && resPlus.ddsPosition.length>0) {
-             //             resPlus.ddsFound = resPlus.ddsFound.slice(0,1); // 결과 하나만 추출
-             //             resPlus.ddsPosition = resPlus.ddsPosition.slice(0,1); // 결과 하나만 추출
-             //         }
-             //     }
-             // }
-
-             res = {...res, ...resPlus}; //
+             res = {...res, ...resPlus}; // 결과 합치기
          }
 
          // 반복 작업을 타입에 따라 콜백으로 처리
@@ -570,12 +516,14 @@ class Tetrapod {
              for (let idx5 in positions) {
                  if (!Utils.objectIn(positions[idx5], res.positions)) {
                      newPositions.push(positions[idx5]);
-                     let curWord = positions[idx5].map(y=> orgMsg[y]).join("");
+                     let curWord = positions[idx5].map(y => orgMsg[y]).join("");
                      curFound.push(curWord);
                      keyWord.push(curObject.keyWord[idx5]);
                      type.push(curObject.type[idx5]);
                  }
+                 if (!needMultipleCheck && newPositions.length > 0) break;
              }
+
              let dePositions = curObject.doubleEndPositions.map(x=> (Utils.originalPosition(processMap, [Number(x)])))
              let newDePositions=[], deFound = [];
              for (let idx6 in dePositions) {
@@ -595,7 +543,7 @@ class Tetrapod {
              newRes[keyNameList[5]] = deFound;
              newRes[keyNameList[6]] = newDePositions;
 
-             if (isStrong) {
+             if (isStrong && (needMultipleCheck || newPositions.length===0)) {
                  let curDdMsg = curObject.ddMessage;
                  let curDdsMsg = curObject.ddsMessage;
                  let ddPositions = curObject.ddPositions.map(x=> (Utils.originalPosition(processMap, x)));
@@ -608,16 +556,20 @@ class Tetrapod {
                          ddKeyWord.push(curObject.ddKeyWord[idx7]);
                          ddType.push(curObject.ddType[idx7]);
                      }
+                     if (!needMultipleCheck && newDdPositions.length>0) break;
                  }
                  let ddsPositions = curObject.ddsPositions.map(x=> (Utils.originalPosition(processMap, x)));
                  let newDdsPositions = [], curDdsFound=[], ddsKeyWord = [], ddsType = [];
-                 for (let idx8 in ddsPositions) {
-                     if (!Utils.objectIn(ddsPositions[idx8], res.positions)) {
-                         newDdsPositions.push(ddsPositions[idx8]);
-                         let curDdsWord = ddsPositions[idx8].map(y=> orgMsg[y]).join("");
-                         curDdsFound.push(curDdsWord);
-                         ddsKeyWord.push(curObject.ddsKeyWord[idx8]);
-                         ddsType.push(curObject.ddsType[idx8]);
+                 if (needMultipleCheck || newDdPositions.length ===0) {
+                     for (let idx8 in ddsPositions) {
+                         if (!Utils.objectIn(ddsPositions[idx8], res.positions)) {
+                             newDdsPositions.push(ddsPositions[idx8]);
+                             let curDdsWord = ddsPositions[idx8].map(y=> orgMsg[y]).join("");
+                             curDdsFound.push(curDdsWord);
+                             ddsKeyWord.push(curObject.ddsKeyWord[idx8]);
+                             ddsType.push(curObject.ddsType[idx8]);
+                         }
+                         if (!needMultipleCheck && newDdsPositions.length ===0 ) break;
                      }
                  }
 
@@ -640,38 +592,6 @@ class Tetrapod {
          if (this.checkOptions.indexOf('qwerty')>-1 && recursive) {
 
              let newRes = extendedProcess('qwerty');
-             // let qwertyMap = Utils.qwertyToDubeol(message, true);
-             // let originalMessage= Utils.parseMap(qwertyMap).joinedMessage;
-             // let newMessage= Utils.parseMap(qwertyMap).joinedParsedMessage;
-             // let qwertyObject = this.find(newMessage, needMultipleCheck, splitCheck, isStrong, false); // 무한반복 방지를 위해 recursive 변수 추가
-             // let qwertyPosition = qwertyObject.position.map(x=> (Utils.originalPosition(qwertyMap, x)));
-             // let qwertyFound = qwertyPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) )
-             // let qwertyDoubleEndPosition = qwertyObject.doubleEndPosition.map(x=> (Utils.originalPosition(qwertyMap, x)));
-             // let qwertyDoubleEndFound = qwertyDoubleEndPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) )
-             // let resObject = {
-             //     qwertyMessage: newMessage,
-             //     qwertyFound : qwertyFound,
-             //     qwertyPosition: qwertyPosition,
-             //     qwertyDoubleEnd: qwertyDoubleEndFound,
-             //     qwertyDoubleEndPosition: qwertyDoubleEndPosition
-             // }
-             // if (isStrong) {
-             //     let qwertyDdMessage = qwertyObject.ddMessage;
-             //     let qwertyDdsMessage= qwertyObject.ddsMessage;
-             //     let qwertyDdPosition = qwertyObject.ddPosition.map(x=> (Utils.originalPosition(qwertyMap, x)));
-             //     let qwertyDdFound = qwertyDdPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) );
-             //     let qwertyDdsPosition = qwertyObject.ddsPosition.map(x=> (Utils.originalPosition(qwertyMap, x)));
-             //     let qwertyDdsFound = qwertyDdsPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) );
-             //     let resDdObject = {
-             //         qwertyDdMessage: qwertyDdMessage,
-             //         qwertyDdFound: qwertyDdFound,
-             //         qwertyDdPosition: qwertyDdPosition,
-             //         qwertyDdsMessage: qwertyDdsMessage,
-             //         qwertyDdsFound: qwertyDdsFound,
-             //         qwertyDdsPosition: qwertyDdsPosition
-             //     }
-             //     resObject = {...resObject, ...resDdObject};
-             // }
              res = {...res, ...newRes}
          }
 
@@ -679,38 +599,6 @@ class Tetrapod {
          if (this.checkOptions.indexOf('antispoof')>-1 && recursive) {
              let newRes = extendedProcess('antispoof');
 
-             // let antispoofMap = Utils.antispoof(message, true);
-             // let originalMessage= Utils.parseMap(antispoofMap).joinedMessage;
-             // let newMessage= Utils.parseMap(antispoofMap).joinedParsedMessage;
-             // let antispoofObject = this.find(newMessage, needMultipleCheck, splitCheck, isStrong, false);
-             // let antispoofPosition = antispoofObject.position.map(x=> (Utils.originalPosition(antispoofMap, x)));
-             // let antispoofFound = antispoofPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) )
-             // let antispoofDoubleEndPosition = antispoofObject.doubleEndPosition.map(x=> (Utils.originalPosition(antispoofMap, x)));
-             // let antispoofDoubleEndFound = antispoofDoubleEndPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) )
-             // let resObject = {
-             //     antispoofMessage: newMessage,
-             //     antispoofFound : antispoofFound,
-             //     antispoofPosition: antispoofPosition,
-             //     antispoofDoubleEnd: antispoofDoubleEndFound,
-             //     antispoofDoubleEndPosition: antispoofDoubleEndPosition
-             // }
-             // if (isStrong) {
-             //     let antispoofDdMessage = antispoofObject.ddMessage;
-             //     let antispoofDdsMessage= antispoofObject.ddsMessage;
-             //     let antispoofDdPosition = antispoofObject.ddPosition.map(x=> (Utils.originalPosition(antispoofMap, x)));
-             //     let antispoofDdFound = antispoofDdPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) );
-             //     let antispoofDdsPosition = antispoofObject.ddsPosition.map(x=> (Utils.originalPosition(antispoofMap, x)));
-             //     let antispoofDdsFound = antispoofDdsPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) );
-             //     let resDdObject = {
-             //         antispoofDdMessage: antispoofDdMessage,
-             //         antispoofDdFound: antispoofDdFound,
-             //         antispoofDdPosition: antispoofDdPosition,
-             //         antispoofDdsMessage: antispoofDdsMessage,
-             //         antispoofDdsFound: antispoofDdsFound,
-             //         antispoofDdsPosition: antispoofDdsPosition
-             //     }
-             //     resObject = {...resObject, ...resDdObject};
-             // }
              res = {...res, ...newRes}
          }
 
@@ -718,38 +606,6 @@ class Tetrapod {
          if (this.checkOptions.indexOf('pronounce')>-1 && recursive) {
 
              let newRes = extendedProcess('pronounce');
-             // let pronounceMap = Utils.engToKo(message, true);
-             // let originalMessage= Utils.parseMap(pronounceMap).joinedMessage;
-             // let newMessage= Utils.parseMap(pronounceMap).joinedParsedMessage;
-             // let pronounceObject = this.find(newMessage, needMultipleCheck, splitCheck, isStrong, false);
-             // let pronouncePosition = pronounceObject.position.map(x=> (Utils.originalPosition(pronounceMap, x)));
-             // let pronounceFound = pronouncePosition.map(x=> (x.map(y=> originalMessage[y]).join("")) )
-             // let pronounceDoubleEndPosition = pronounceObject.doubleEndPosition.map(x=> (Utils.originalPosition(pronounceMap, x)));
-             // let pronounceDoubleEndFound = pronounceDoubleEndPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) )
-             // let resObject = {
-             //     pronounceMessage: newMessage,
-             //     pronounceFound : pronounceFound,
-             //     pronouncePosition: pronouncePosition,
-             //     pronounceDoubleEnd: pronounceDoubleEndFound,
-             //     pronounceDoubleEndPosition: pronounceDoubleEndPosition
-             // }
-             // if (isStrong) {
-             //     let pronounceDdMessage = pronounceObject.ddMessage;
-             //     let pronounceDdsMessage= pronounceObject.ddsMessage;
-             //     let pronounceDdPosition = pronounceObject.ddPosition.map(x=> (Utils.originalPosition(pronounceMap, x)));
-             //     let pronounceDdFound = pronounceDdPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) );
-             //     let pronounceDdsPosition = pronounceObject.ddsPosition.map(x=> (Utils.originalPosition(pronounceMap, x)));
-             //     let pronounceDdsFound = pronounceDdsPosition.map(x=> (x.map(y=> originalMessage[y]).join("")) );
-             //     let resDdObject = {
-             //         pronounceDdMessage: pronounceDdMessage,
-             //         pronounceDdFound: pronounceDdFound,
-             //         pronounceDdPosition: pronounceDdPosition,
-             //         pronounceDdsMessage: pronounceDdsMessage,
-             //         pronounceDdsFound: pronounceDdsFound,
-             //         pronounceDdsPosition: pronounceDdsPosition
-             //     }
-             //     resObject = {...resObject, ...resDdObject};
-             // }
              res = {...res, ...newRes}
          }
 
@@ -841,18 +697,20 @@ class Tetrapod {
             let fixedOrder = false; // 순서 고정여부 확인
 
             // 비속어 단어를 한 글자씩 순회하며 존재여부를 검사합니다.
-            for (let character of badWord) {
+            for (let pos in badWord) {
+                let character = badWord[pos];
+
                 // badWord가 isInit인지 확인할 것
-                if (badWord.indexOf(character) === 0 && character[0] === "^") {
+                if (Number(pos) === 0 && character[0] === "^") {
                     isInit = true;
                 }
-               character = isInit && badWord.indexOf(character)===0 ? character.slice(1): character; //
+               character = isInit && Number(pos)===0 ? character.slice(1): character; //
                 let mainCharacter = character[0] // 핵심 글자.
                 let parserCharacter = ['!', '+', '$'].indexOf(character[1])>-1 ? character[1]: '' // !, + 또는 $
 
                 // 뒤의 낱자 수집
-                let nextCharacter = (badWord.indexOf(character) < badWord.length-1)
-                    ? badWord[ badWord.indexOf(character)+1 ][0].toLowerCase(): "" // 뒤의 낱자 수집.
+                let nextCharacter = (Number(pos) < badWord.length-1)
+                    ? badWord[ Number(pos)+1 ][0].toLowerCase(): "" // 뒤의 낱자 수집.
 
                 let badOneCharacter = String(mainCharacter).toLowerCase(); // 소문자로 통일합니다.
 

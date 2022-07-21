@@ -16,17 +16,17 @@
     "experiment": "node --no-warnings ./node_modules/@babel/node/bin/babel-node.js ./test/find2.js"
   },
   "devDependencies": {
-    "@babel/cli": "^7.1.5",
-    "@babel/core": "^7.1.5",
-    "@babel/node": "^7.0.0",
-    "@babel/plugin-transform-runtime": "^7.1.0",
-    "@babel/preset-env": "^7.1.5",
-    "@babel/runtime": "^7.1.5",
-    "babel-loader": "^8.0.4",
+    "@babel/cli": "^7.18.9",
+    "@babel/core": "^7.18.9",
+    "@babel/node": "^7.18.9",
+    "@babel/plugin-transform-runtime": "^7.18.9",
+    "@babel/preset-env": "^7.18.9",
+    "@babel/runtime": "^7.18.9",
+    "babel-loader": "^8.2.5",
     "chalk": "^2.4.1",
     "clone": "^2.1.2",
-    "webpack": "^4.25.1",
-    "webpack-cli": "^3.1.2"
+    "webpack": "^4.46.0",
+    "webpack-cli": "^3.3.12"
   },
   "contributors": [
     "hmmhmmhm <hmmhmmhm@naver.com>",
@@ -35,7 +35,7 @@
   "license": "MIT",
   "dependencies": {
     "fs": "0.0.1-security",
-    "hangul-js": "^0.2.5",
+    "hangul-js": "^0.2.6",
     "package.json": "^2.0.1"
   },
   "repository": {
