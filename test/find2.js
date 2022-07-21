@@ -197,3 +197,5 @@ obj.adjustFilter([],[],['qwerty', 'antispoof'], true);
 newTime = new Date().getTime()
 console.log(obj.find('Tlqkf 샏까 정말 ㅉH0하다!', false, 20))
 console.log(new Date().getTime()-newTime); // 걸리는 시간 체크해보자.
+console.log(obj.fix('Tlqkf 샏까 정말 ㅉH0하다!'))
+console.log(new Date().getTime()-newTime); // 걸리는 시간 체크해보자.

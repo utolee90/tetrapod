@@ -1002,29 +1002,29 @@ class Tetrapod {
 
         let fixedMessageObject = this.find(newMessage, true, 20, this.dropDoubleCheck);
         let allPositions = this.dropDoubleCheck
-            ? [...fixedMessageObject.position, ...fixedMessageObject.ddPosition, ...fixedMessageObject.ddsPosition, fixedMessageObject.doubleEndPosition]
-            : [...fixedMessageObject.position, fixedMessageObject.doubleEndPosition];
+            ? [...fixedMessageObject.positions, ...fixedMessageObject.ddPositions, ...fixedMessageObject.ddsPositions, fixedMessageObject.doubleEndPositions]
+            : [...fixedMessageObject.positions, fixedMessageObject.doubleEndPositions];
         allPositions = allPositions.slice(-1)[0].length === 0 ? allPositions.slice(0, -1) : allPositions; // 마지막 열 길이가 0이면 비우기;
 
         // qwerty가 있을 때
         if (this.checkOptions.indexOf('qwerty') > -1) {
             allPositions = this.dropDoubleCheck
-                ? [...allPositions, ...fixedMessageObject.qwertyPosition, ...fixedMessageObject.qwertyDdPosition, ...fixedMessageObject.qwertyDdsPosition, fixedMessageObject.qwertyDoubleEndPosition]
-                : [...allPositions, ...fixedMessageObject.qwertyPosition, fixedMessageObject.qwertyDoubleEndPosition];
+                ? [...allPositions, ...fixedMessageObject.qwertyPositions, ...fixedMessageObject.qwertyDdPositions, ...fixedMessageObject.qwertyDdsPositions, fixedMessageObject.qwertyDoubleEndPositions]
+                : [...allPositions, ...fixedMessageObject.qwertyPositions, fixedMessageObject.qwertyDoubleEndPositions];
             allPositions = allPositions.slice(-1)[0].length === 0 ? allPositions.slice(0, -1) : allPositions; // 마지막 열 길이가 0이면 비우기;
         }
         // antispoof가 있을 때
         if (this.checkOptions.indexOf('antispoof') > -1) {
             allPositions = this.dropDoubleCheck
-                ? [...allPositions, ...fixedMessageObject.antispoofPosition, ...fixedMessageObject.antispoofDdPosition, ...fixedMessageObject.antispoofDdsPosition, fixedMessageObject.antispoofDoubleEndPosition]
-                : [...allPositions, ...fixedMessageObject.antispoofPosition, fixedMessageObject.antispoofDoubleEndPosition];
+                ? [...allPositions, ...fixedMessageObject.antispoofPositions, ...fixedMessageObject.antispoofDdPositions, ...fixedMessageObject.antispoofDdsPositions, fixedMessageObject.antispoofDoubleEndPositions]
+                : [...allPositions, ...fixedMessageObject.antispoofPositions, fixedMessageObject.antispoofDoubleEndPositions];
             allPositions = allPositions.slice(-1)[0].length === 0 ? allPositions.slice(0, -1) : allPositions; // 마지막 열 길이가 0이면 비우기;
         }
         // pronounce가 있을 때
         if (this.checkOptions.indexOf('pronounce') > -1) {
             allPositions = this.dropDoubleCheck
-                ? [...allPositions, ...fixedMessageObject.pronouncePosition, ...fixedMessageObject.pronounceDdPosition, ...fixedMessageObject.pronounceDdsPosition, fixedMessageObject.pronounceDoubleEndPosition]
-                : [...allPositions, ...fixedMessageObject.pronouncePosition, fixedMessageObject.pronounceDoubleEndPosition];
+                ? [...allPositions, ...fixedMessageObject.pronouncePositions, ...fixedMessageObject.pronounceDdPositions, ...fixedMessageObject.pronounceDdsPositions, fixedMessageObject.pronounceDoubleEndPositions]
+                : [...allPositions, ...fixedMessageObject.pronouncePositions, fixedMessageObject.pronounceDoubleEndPositions];
             allPositions = allPositions.slice(-1)[0].length === 0 ? allPositions.slice(0, -1) : allPositions; // 마지막 열 길이가 0이면 비우기;
         }
 
