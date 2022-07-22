@@ -33,34 +33,99 @@ const Utils = {
     // 리스트 교집합 구하기
     listIntersection: ObjectOperation.listIntersection,
 
-    escape: (text) => {
-        return String(text).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
-    },
+    // 서로소 확인
+    isDisjoint: ObjectOperation.isDisjoint,
+
+    // 리스트 차집합 확인
+    listDifference: ObjectOperation.listDifference,
+
+    // 리스트에서 특정 타입만 필터링
+    filterList: ObjectOperation.filterList,
+
+    // // - [ ] { } * + ? . , \ $ | # 공백 기호에 이스케이프 문자 \\ 씌우기. 현재 미사용.
+    // escape: (text) => {
+    //     return String(text).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
+    // },
 
     // 메시지에서 특정 패턴을 찾아서 전부 바꿔주는 함수.
     replaceAll: (message, search, replace) => {
         return message.replace(new RegExp(search, 'gi'), replace)
     },
 
-    // 메시지에서 단어의 위치를 찾아주는 함수.
-    getPositionAll: (message, search, isString = true) => {
-        // 버그 방지를 위해 !, + 기호는 드롭시키자.
-        search = search.replace("!","").replace("+","")
+    // 매크로가 있을 때 메시지에서 첫 포지션 찾기
+    getPositionWithMacro: (message, search, isString = true) => {
+        let listSearch  = Utils.wordToArray(search);
+        let listMacros = listSearch.map(x=> (x[1]==='!' || x[1]==='+'? x[1]: "")); // 글자 매크로 목록
+        let first = listSearch[0][0];
+        let second = listSearch.length>1 ? listSearch[1][0] : "";
+        let firstMacro = listMacros[0];
 
-        let i = message.indexOf(search),
-            indexes = []
-        while (i !== -1) {
-            // isString이 거짓이면 첫 글자 위치만 추가
-            if (!isString) indexes.push(i)
-
-            // isString이 참이면 글자 전체 위치 추가
-            else {
-                let adding = Array.from(Array(search.length).keys()).map(x => x+i); // [i, i+1, ... i+l-1]
-                indexes = indexes.concat(adding);
-            }
-            i = message.indexOf(search, ++i)
+        // 우선 첫글자로 가능한 포지션부터 모두 찾아보자
+        let possibleFirst = message.split('').map((x,idx)=>([x,idx])); // 우선 message를 나누어서 값과 인덱스로 처리
+        if (firstMacro === "!") {
+            possibleFirst = possibleFirst.filter(y=> (Utils.isKindChar(y[0], first, second))).map(x=> x[1]); // 값이 isKindChar가 가능한 애들만 남기고 index만 처리
         }
-        return indexes;
+        else if (firstMacro === '+') {
+            possibleFirst = possibleFirst.filter(y=> (Utils.isInChar(y[0], first))).map(x=> x[1]); // 값이 isInChar가 가능한 애들만 남기고
+        }
+        else {
+            possibleFirst = possibleFirst.filter(y=> (y[0]===first)).map(x=>x[1]); // 그냥 값이 같은 애들만 남기고
+        }
+        // possibleFirst로 가능한 애들만 확인
+        if (possibleFirst.length>0) {
+            for (let i in possibleFirst) {
+                let reduced = message.slice(Number(i)).replace(/[^가-힣A-Za-z]/gi, ''); // 문자열 중에서 한글영어 제외 모두 소거
+                let okWord = true;
+                for (let x in reduced.split('').slice(0, listSearch.length)) {
+                    let cur = listSearch[x][0];
+                    let follow = Number(x)<listSearch.length-1 ? listSearch[Number(x)+1][0] : "";
+                    okWord = okWord && (
+                        (listMacros[x]==='!' && Utils.isKindChar(reduced[x], cur, follow))
+                        || (listMacros[x]==='+' && Utils.isInChar(reduced[x], cur))
+                        || (listMacros[x] ==='' && reduced[x] === cur) )
+                    if (!okWord) break; // 단어가 오류가 있으면 중단.
+                }
+                if (okWord) return (isString ? Array.from(Array(search.length).keys()).map(x => x+Number(i)) : [Number(i)]);
+            }
+        }
+        return [-1];
+    },
+
+
+    // 메시지에서 단어의 위치를 찾아주는 함수.
+    // 재수정 - getPositionAll은 매크로 !, + 사용도 할 수도 있게 처리한다.
+    getPositionAll: (message, search, isString = true, useMacro = false) => {
+
+        // 매크로 사용 옵션 추가
+        if (useMacro) {
+            let indexes = []
+            let init = 0; // 초기값 보정
+            let firstList = Utils.getPositionWithMacro(message, search, isString);
+            while(firstList[0]!== -1) {
+                indexes.concat(firstList.map(x => x+init));
+                init = firstList[0]+1; // 처음
+                firstList = Utils.getPositionWithMacro(message.slice(init), search, isString);
+            }
+            return indexes;
+        }
+        // 매크로 미사용시에는 간단하게
+        else {
+            let i = message.indexOf(search),
+            indexes = []
+            while (i !== -1) {
+                // isString이 거짓이면 첫 글자 위치만 추가
+                if (!isString) indexes.push(i)
+
+                // isString이 참이면 글자 전체 위치 추가
+                else {
+                    let adding = Array.from(Array(search.length).keys()).map(x => x+i); // [i, i+1, ... i+l-1]
+                    indexes = indexes.concat(adding);
+                }
+                i = message.indexOf(search, ++i)
+            }
+            return indexes;
+        }
+
     },
 
     // manyArray => [[manyArray[0], manyArray[1]], [manyArray[1], manyArray[2]], ...]
@@ -188,36 +253,16 @@ const Utils = {
         return sortedMap
     },
 
-
-
-    //빠른 연산을 위해 서로소 요건 판별하기
-    isDisjoint: (a, b) => {
-        if (typeof a === typeof b && typeof a === "object") {
-            for (var i in a) {
-                // 하나라도 안에 있으면 거짓을 출력.
-                if (ObjectOperation.objectIn(a[i], b)) return false;
-            }
-            return true;
+    // 단어 리스트가 존재할 때 wordToArray로 배열하고 길이 역순으로 정렬:
+    // ['가랑비', '나!무', '돼지갈비'] -> [[['돼','지','갈','비'], ['가','랑','비'], ['나!', '무']], ['돼지갈비', '가랑비', '나!무']]
+    parseFromList: (wordList) => {
+        let res  = []
+        for (let word of wordList) {
+            res.push([Utils.wordToArray(word), word])
         }
-        else {
-            return false
-        }
-    },
-
-    // 리스트에서 특정 타입만 필터링
-    filterList: (list, type) => {
-        let res = [];
-        if (Array.isArray(list)) {
-            if (typeof type === "string") {
-                res = list.filter(item => (typeof item === type))
-            }
-            else if (Array.isArray(list)) {
-                res = list.filter(item => (Utils.objectIn(typeof item, type)))
-            }
-        }
-        return res;
-    },
-
+        res.sort((a,b) => (a[1].length-b[1].length)).reverse()
+        return [res.map(x=>x[0]), res.map(x=> x[1])]
+    }
 
     // 각 원소를 맵으로 바꿔주는 함수.  여기서 callback은 문자열 단변수를 입력값으로 하는 함수여야 합니다.
     listMap: (elem, callback) => {
@@ -246,7 +291,6 @@ const Utils = {
     // 2차원 배열 형태로 정의된 것을 풀어쓰기. 반복적으로 풀어쓰기 가능
     // [[1,2],[3,4,5]] -> [13,14,15,23,24,25]
     recursiveComponent: (data) => {
-
 
         // 배열 정의되지 않은 것은 그대로 출력
         if (typeof data !== "object") return data
@@ -278,7 +322,7 @@ const Utils = {
 
             // 데이터 리스트 곱 연산 수행 후 붙여쓰기
             // [[1,2],[3,4,5]] = [[1,3],[1,4],[1,5],[2,3],[2,4],[2,5]]-> [13, 14, 15, 23, 24, 25]
-            let presolvedData = ObjectOperation.productList(newData)
+            let presolvedData = ObjectOperation.productList(...newData)
             let solvedData = presolvedData.map(x=> x.join(""))
 
             return solvedData
@@ -291,17 +335,19 @@ const Utils = {
     disassemble: (msg, cond='key', grouped=false ) => {
         let cont = Hangul.disassemble(msg, true); // 한글 키별로 낱자 분리
 
-        let res = []
+        let res = [], idx =0, part = [];
         for (let letterList of cont) {
             switch(cond) {
                 // 키보드 기준. Hangul.disassemble과 동일하게 처리
                 case 'key':
-                case 'type':
+                case 'type': {
                     res.push(letterList);
                     break;
-                case 'part':
-                    let idx = 0;
-                    let part = letterList;
+                }
+
+                case 'part': {
+                    idx = 0;
+                    part = letterList;
                     // 복자음 및 복받침 합치기
                     while (idx<part.length) {
                         if (idx<part.length-1 && Utils.objectIn([part[idx], part[idx+1]], Object.values(HO.doubleMap))) {
@@ -316,7 +362,9 @@ const Utils = {
                     }
                     res.push(part);
                     break;
-                case 'sound':
+                }
+
+                case 'sound':{
                     idx = 1; // 초성은 쌍자음도 음단위로 나누지 않으므로 일단 무시
                     part = letterList;
                     // 나누기
@@ -332,6 +380,8 @@ const Utils = {
                     }
                     res.push(part);
                     break;
+                }
+
             }
         }
         // grouped가 참이면 res, 거짓이면 합쳐서 출력
@@ -357,10 +407,10 @@ const Utils = {
                         ...Utils.doubleConsonant,
                         ...Utils.doubleVowel,
                         ...[
-                            ["ㄱ","7"], ["7","7"], ...Utils.productList([["ㄱ", '7'],["ㅅ", "^"]]),
+                            ["ㄱ","7"], ["7","7"], ...Utils.productList(["ㄱ", '7'],["ㅅ", "^"]),
                             ["ㄹ","^"], ["#","ㅅ"], ["ㅂ","^"], ["#","ㅅ"],
                             ["ㅗ","H"], ["ㅜ","y"], ["t","y"], ["T","y"],
-                            ...Utils.productList([["ㅗ","ㅜ", "t", "T", "ㅡ", "_"], ["ㅣ", "!", "I", "1","l", "|"]])
+                            ...Utils.productList(["ㅗ","ㅜ", "t", "T", "ㅡ", "_"], ["ㅣ", "!", "I", "1","l", "|"])
                         ].map(x=> [x[0],x[1]])
                     ]
                 )
@@ -640,13 +690,15 @@ const Utils = {
                 // 한글이나 공백, 기타문자 -> 그대로 삽입. 한 음절에 하나의 글자만 사용가능하며, 다른 문자 뒤에 붙을 수 없음.
                 case 'h':
                 case 's':
-                case 'e':
+                case 'e': {
                     splitSyllable();
                     break;
+                }
+
 
                 // 자음 -> 모음/유사모음 뒤에 오거나 받침 없는 한글 뒤에 오면서 뒤에 모음/유사모음이 따라오지 않을 때 앞 음절에 붙임.
                 // 특수한 겹받침일 때에도 케이스 추가
-                case 'c':
+                case 'c': {
                     // 첫자이거나 바로 뒤에 모음이 오면 무조건 음절분리.
                     if (i === 0 || (i<msgLength-1 &&  ['v','w'].indexOf(msgAlphabetType[i+1])>-1)) { splitSyllable();}
                     else {
@@ -665,23 +717,26 @@ const Utils = {
                         else splitSyllable();
                     }
                     break;
+                }
 
                 // 받침 전용 자음의 경우 - 앞에 모음이 있으면 앞 음절에 붙이고 아님 그냥 나누기
-                case 'f':
+                case 'f': {
                     if (i>0 && ['v', 'w'].indexOf(msgAlphabetType[i-1])>-1) {joinFrontSyllable()}
                     else splitSyllable();
                     break;
+                }
 
                 //모음인 경우
-                case 'v':
+                case 'v': {
                     // 첫자일 때는 무조건 삽입.
-                    if (i === 0 ) { splitSyllable();}
-                    else {
+                    if (i === 0) {
+                        splitSyllable();
+                    } else {
                         // 자음이 앞에 있을 때는 앞에 붙는다.
-                        if (msgAlphabetType[i-1] ==='c' || msgAlphabetType[i-1] === 'd') joinFrontSyllable();
+                        if (msgAlphabetType[i - 1] === 'c' || msgAlphabetType[i - 1] === 'd') joinFrontSyllable();
                         // 앞의 모음과 함께 복모음 형성할 수 있는 경우 앞에 붙인다.
                         else if (
-                            i>1 && (msgAlphabetType[i-2] ==='c' || msgAlphabetType[i-2] === 'd') && Utils.isDouble(msgAlphabet[i-1], msgAlphabet[i])
+                            i > 1 && (msgAlphabetType[i - 2] === 'c' || msgAlphabetType[i - 2] === 'd') && Utils.isDouble(msgAlphabet[i - 1], msgAlphabet[i])
                         )
                             joinFrontSyllable();
                         // 나머지는 그대로 뒤 움절에 붙이기
@@ -689,10 +744,10 @@ const Utils = {
 
                     }
                     break;
+                }
 
                 //유사 자음인 경우
-                case "d":
-
+                case "d": {
                     // 처음에는 그냥 삽입. 그러나 모음/유사모음 앞에서만큼은 자음으로 변형되서 들어간다.
                     if (i === 0 ) {
                         splitSyllable(
@@ -728,9 +783,11 @@ const Utils = {
                             );
                     }
                     break;
+                }
+
 
                 // 유사 모음인 경우
-                case 'w':
+                case 'w': {
                     // 첫자일 때는 무조건 삽입. 유사모음은 단어 변형하지 않고 삽입.
                     if (i === 0 ) { splitSyllable();}
                     else {
@@ -746,6 +803,7 @@ const Utils = {
 
                     }
                     break;
+                }
             }
         }
 
@@ -1195,32 +1253,6 @@ const Utils = {
         }
     },
 
-    // 단문자타입 확인하는 함수
-    checkCharType: (char, antispoof=false) => {
-        if (/^[가-힣]$/.test(char)) return 'h'; // 한글 낱자
-        else if (['ㄸ', 'ㅃ', 'ㅉ'].indexOf(char)>-1) return 'i'; // 초성 전용
-        else if (HO.charInitials.indexOf(char)>-1)  return 'c'; // 초성/종성 공용
-        else if (/^[ㄱ-ㅎ]$/.test(char)) return 'f'; // 종성전용
-        else if (/^[ㅏ-ㅣ]$/.test(char)) return 'v'; // 모음
-        else {
-            // antispoof 있으면 antispoof 기준으로 캐릭터 분류
-            if (antispoof) {
-                if (Object.keys(Utils.similarConsonant).indexOf(char)>-1) return 'd'; // 유사자음
-                else if (Object.keys(Utils.similarVowel).indexOf(char)>-1) return 'w'; // 유사모음
-                else if (/^\s+/.test(char)) return 's';
-                else return 'e';
-            }
-            // antispoof 없으면 발음 기준 적용
-            else {
-                if (/^[aeiou]+$/.test(char)) return 'ev';
-                else if (/^[yw]$/.test(char)) return 'eh';
-                else if (/^[bcdfghjklmnpqrstvxz]+$/.test(char)) return 'ec';
-                else if (/^\s+/.test(char)) return 's';
-                else return 'e';
-            }
-        }
-            },
-
     // 영어변환 한글로 하기. 최대한 일대일 대응으로만 잡아보자.
     engToKo: (msg, isMap=false) => {
         let msgSplit = msg.toLowerCase().split('');
@@ -1394,7 +1426,7 @@ const Utils = {
             // 영어 초중종, 혹은 아무것도 없는 것만 바꾸어보자.
             if (/[a-z]/.test(x[0]) || x[0]==='') {
                 switch(x[1]) {
-                    case '초':
+                    case '초': {
                         let cObj = Utils.alphabetPronounceMapping.consonants;
                         // x[1]이 c일 때는 다음 모음에 따라 발음 결정
                         if (x[1]==='c') {
@@ -1414,8 +1446,10 @@ const Utils = {
                             }
                             return x;
                         }
-                        break;
-                    case '중':
+                    }
+
+
+                    case '중': {
                         let vObj = Utils.alphabetPronounceMapping.vowels;
                         let dObj = Utils.alphabetPronounceMapping.doubleVowels;
                         for (let key in vObj) {
@@ -1429,8 +1463,8 @@ const Utils = {
                             }
                         }
                         return x;
-                        break;
-                    case '종':
+                    }
+                    case '종': {
                         let eObj = Utils.alphabetPronounceMapping.endConsonants;
                         for (let key in eObj) {
                             if (eObj[key].indexOf(x[0])>-1) {
@@ -1438,7 +1472,7 @@ const Utils = {
                             }
                         }
                         return x;
-                        break;
+                    }
                     default:
                         return x;
                 }
@@ -1456,7 +1490,7 @@ const Utils = {
                 switch(partList[1]) {
                     // 낱자거낙 기타면 정직하게 글자 추가
                     case '낱':
-                    case '기':
+                    case '기': {
                         key = partList.length===3? partList[2]: partList[0];
                         val = partList[0];
                         if (resObj[key]) {
@@ -1467,13 +1501,17 @@ const Utils = {
                         }
                         j+=key.length;
                         break;
+                    }
+
                     // 초성일 때는 그냥 키값이랑 추가
-                    case '초':
+                    case '초': {
                         key = partList.length ===3? partList[2]: partList[0];
                         valList = [partList[0]]; // 우선 리스트로 처리
                         break;
+                    }
+
                     // 중성일 때는 다음이 종성이 아닐 때는 추가. 종성일 때는 넘어가자
-                    case '중':
+                    case '중': {
                         key = partList.length ===3 ? key+partList[2]: key+partList[0];
                         valList.push(partList[0]);
                         // 종성이 바로 뒤에 안 올 때는 오브젝트 처리
@@ -1487,8 +1525,10 @@ const Utils = {
                             j +=key.length;
                         }
                         break;
+                    }
+
                     // 종성일 때는 바로 조립
-                    case '종':
+                    case '종': {
                         key = partList.length ===3 ? key+partList[2]: key+partList[0];
                         valList.push(partList[0]);
                         if (resObj[key]) {
@@ -1499,6 +1539,7 @@ const Utils = {
                         }
                         j +=key.length;
                         break;
+                    }
                 }
             }
             return resObj;
@@ -1527,7 +1568,184 @@ const Utils = {
             }
         }
         return res;
-    }
+    },
+
+
+    // 유사 낱자 검사. 낱자에 가! 형태로 표현되었을 때 갸 같은 글자도 포함되게 함
+    // char : 유사한지 비교할 낱자
+    // comp : 낱자. comp!에 char가 포함되는 경우 true, 아닌 경우 false를 반환한다.
+    // following : !뒤에 오는 낱자. 없으면 ""
+    isKindChar: (char, comp, following="") => {
+        // 초성중성종성 분리 데이터 이용하기
+        // 0720 수정 - disassemble 작업단위를 part단위로 수정 및 simObject 간소
+        let charDisassemble = Utils.choJungJong(char, 'part');
+        let charCho= charDisassemble.cho[0];
+        let charJung = charDisassemble.jung[0];
+        let charJong = charDisassemble.jong[0]?charDisassemble.jong[0]:"";
+        let compDisassemble = Utils.choJungJong(comp, 'part');
+        let compCho= compDisassemble.cho[0];
+        let compJung = compDisassemble.jung[0];
+        let compJong = compDisassemble.jong[0]?compDisassemble.jong[0]:"";
+        let followDisassemble = !(/^[가-힣]$/.test(following))?{cho:[], jung:[], jong:[]}:Utils.choJungJong(following, 'part');// 다음 자모 분해
+        let followCho= followDisassemble.cho[0]?followDisassemble.cho[0]:'';
+        let followJung = followDisassemble.jung[0]?followDisassemble.jung[0]:'';
+        let resi = false; // 초성 유사음
+        let resm = false; // 중성 유사음
+        let rese = false; // 종성 유사음
+
+        // 치음-> 다, 자,짜, 차 등
+        const toothConsonant = Utils.toothConsonant;
+        // i모음 -> 야, 여, 의, 이 등
+        const iVowel = Utils.iVowel;
+
+        // 유사초성. 가 -> 까, 카
+        const simInit = Utils.simInit;
+
+        // i모음에서 유사초성
+        const iSimInit = Utils.iSimInit;
+
+        // 유사중성.  고 -> 거, 교
+        const simMiddle = Utils.simMiddle;
+
+        // 초성이 치음일 때 유사중성 for ㄷ,ㄸ,ㅅ,ㅆ,ㅈ,ㅊ,ㅉ,ㅌ 이 경우는 y복모음 구별불가인 특수 케이스
+        const toothSimMiddle =  Utils.toothSimMiddle;
+        // 유사종성
+        const simEnd = Utils.simEnd;
+
+        // 뒷글자에 의한 자음동화. 뒷글자가
+        // const jointConsonant = Utils.jointConsonant;
+
+        //뒷글자에 의한 ㅣ 모음동화 잡아내기
+        const jointVowel = Utils.jointVowel;
+
+        // 우선 유사초성여부 찾아내기. i모음일 때부터
+        if (iVowel.indexOf(compJung)>-1 && charJung === compJung && iSimInit[compCho].indexOf(charCho)>-1 ) {
+            resi = true;
+        }
+        // i모음이 아닐 때는 simInit으로 비교
+        else if (simInit[compCho].indexOf(charCho)>-1) {
+            resi = true;
+        }
+
+        // 유사중음 찾아내기. 치음의 경우
+        if (resi && toothConsonant.indexOf(compCho)!== -1 && toothSimMiddle[compJung].indexOf(charJung)>-1) {
+            resm = true;
+        }
+        // 치음 아닌 경우
+        else if (resi && simMiddle[compJung].indexOf(charJung)>-1) {
+            resm = true;
+        }
+        // 아니면 뒤의 음절 이용해서 동화 반영
+        else if (resi && ['ㅣ', 'ㅢ'].indexOf(followJung)>-1 && Object.keys(jointVowel).indexOf(compJung)>-1 && jointVowel[compJung].indexOf(charJung)>-1) {
+            resm = true;
+        }
+
+        // 유사종음 찾아내기.
+        let charJongPlus = '';
+        // 우선 char 글자 받침이 comp와 동일하거나 유사받침으로 포함될 때는 무조건 OK
+
+        if (resi && resm && simEnd[compJong].indexOf(charJong)>-1) {
+            rese = true;
+        }
+        // 아니면 다음 캐릭터의 초성을 받침으로 가져와보자
+        else if (resi && resm && followCho!== "") {
+            // 다음 초성을 가져와서 받침으로 조합하기
+            charJongPlus = Hangul.assemble(Hangul.disassemble(comp).concat([followCho]));
+            if(charJongPlus.length === 1) {
+                let newJong = Utils.choJungJong(charJongPlus, 'part').jong[0];
+                if (simEnd[newJong].indexOf(charJong)>-1) {
+                    rese = true;
+                }
+            }
+        }
+        // 마지막 확인. Utils.joinedSyllable을 이용해서 같은 결과 유도하는지 확인해보자
+        if (resi && resm && !rese && /[가-힣]/.test(following)) {
+            let resJS = Utils.joinedSyllable(char, following, true, true);
+            let compJS= Utils.joinedSyllable(comp, following, true, true);
+            let compJS2 = [''];
+            if (charJongPlus!=="" && charJongPlus.length ===1) compJS2 = Utils.joinedSyllable(charJongPlus, following, true, true);
+            if (resJS[0] === compJS[0] || resJS[0] === compJS2[0]) rese = true;
+        }
+
+        return resi && resm && rese;
+    },
+
+    // wordToArray 매크로 중 +기호와 관련된 대상에 대한 포함 여부
+    // 간(char) -> 가+(comp)에 속해 있으므로 true.
+    isInChar: (char, comp) => {
+        let charPart= Utils.disassemble(char, 'sound'); //그룹에 포함될 사운드. 음소 단위로 분해
+        let compPart = Utils.disassemble(comp, 'sound'); // +가 있는 비교 사운드. 음소 단위로 분해
+        // 예외처리 : 기+에 괴, 쌍모음은 들어가지 않게 처리할 것
+        if (compPart[1]==='ㅣ' && charPart[1]==='ㅗ' && charPart[2] === 'ㅣ') {
+            return false;
+        }
+        // 기+에 갸 등 이중모음 안 들어가게 처리
+        else if (compPart[1] === 'ㅣ' && !/[ㅏ-ㅣ]/.test(compPart[2]) && /[ㅏ-ㅡ]/.test(charPart[2])) {
+            return false;
+        }
+        // 나머지 - charPart가 compPart의 모든 자모를 포함하면 true
+        else {
+            return Utils.objectInclude(compPart, charPart, true);
+        }
+
+    },
+
+    // 단어 word가 comp 표현 안에 있는지 확인하는 함수
+    // 예시 : (봡보 => 바!보! True)
+    wordIncludeType: (word, comp) => {
+        let wordDisassemble = Array.isArray(word)? Utils.wordToArray(word.join("")) : Utils.wordToArray(word);
+        let compDisassemble = Array.isArray(comp)? Utils.wordToArray(comp.join("")) : Utils.wordToArray(comp);
+
+        let res = true; // 참일 때 확인.
+        if (wordDisassemble.length !== compDisassemble.length ) return false;
+        else {
+            for (let ind in compDisassemble) {
+                let wordChar = wordDisassemble[ind][0] // word의 낱자
+                let compChar = compDisassemble[ind][0] // comp의 낱자
+                let wordType = wordDisassemble[ind][1] // wordType
+                let compType = compDisassemble[ind][1] // compType
+                let nextChar = ""
+                if (ind < compDisassemble.length-1) nextChar = compDisassemble[Number(ind)+1].slice(0)[0]
+
+                if (wordType && wordType !== compType) return false;
+                else if (wordType === compType) res = res && (wordChar === compChar)
+                else if (!wordType && compType ==="!") {
+                    res = res && (this.isKindChar(wordChar, compChar, nextChar))
+                }
+                else if (!wordType && compType === "+") {
+                    res = res && (this.isInChar(wordChar, compChar))
+                }
+                if (!res) return false;
+            }
+            return true;
+        }
+
+    },
+
+    //어떤 단어가 다른 단어에 포함되는지 체크하기
+    wordInclude: (inc, exc) => {
+        // wordToArray 형태로 inc, exc 변환하기. 이 때 단어 붙여서 변환하기
+        if (typeof inc === "string") inc = Utils.wordToArray(inc);
+        else if (Array.isArray(inc)) inc = Utils.wordToArray(inc.join(""));
+
+        if (typeof exc === "string") exc = Utils.wordToArray(exc);
+        else if (Array.isArray(exc)) exc = Utils.wordToArray(exc.join(""));
+
+        for(let i=0; i<exc.length - inc.length; i++) {
+            // wordIncludeType 함수를 사용해서 비교해보자.
+            if (this.wordIncludeType(inc, exc.slice(i, i+inc.length))) return true;
+        }
+
+        return false;
+    },
+
+    // 한글 조합 함수. 각 원소들을 Hangul.assemble(Hangul.disassemble())로 조합하는데 사용합니다. isIgnoreComma 옵션은 파서 문자 ,를 무시할지 물어봅니다.
+    assembleHangul: (elem, isIgnoreComma = true) => {
+        return Utils.listMap(elem, x=>(
+            isIgnoreComma ? Hangul.assemble(Hangul.disassemble(x)).replace(".,", "，").replace(",","").replace("，",",")
+                : Hangul.assemble(Hangul.disassemble(x))
+        ));
+    },
 
 }
 

@@ -15,7 +15,7 @@ console.log('참임:::', Utils.objectEqual(testList1, ['가', ['내리', '다', 
 // 두 번째 실험 - objectIn -
 console.log('참임:::', Utils.objectIn(['내리', '다', '수'], testList1)) // 참
 // 세 번째 실험 - productList
-let testList2 = Utils.productList([['가불', '가방', '사이좋게', '적용'], ['기술', '기능'], ['', ' 사용하기', ' 중단하기']])
+let testList2 = Utils.productList(['가불', '가방', '사이좋게', '적용'], ['기술', '기능'], ['', ' 사용하기', ' 중단하기'])
 console.log('testList2 원소 확인하기')
 for (let elem of testList2) {
     console.log(elem);
