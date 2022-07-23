@@ -908,7 +908,7 @@ const Utils = {
             : res;
     },
 
-    // 영어변환 한글로 하기. 최대한 일대일 대응으로만 잡아보자.
+    // 로마자로 표시된 표현을 한글 발음으로 바꾸는 함수
     // 예시 : koggiri => 코끼리, gangae => 간개
     // showMap 조건은 map을 사용하기 => koggiri => {ko: {value:코, index:[0]}, ggi: {value:끼, index: [2]}, ri: {value:리, index:[5]}}
     //
@@ -1528,7 +1528,7 @@ const Utils = {
     },
 
 
-    //ㅄ받침, ㄻ받침, ㄺ받침 과잉으로 사용하는 메시지 검출.
+    // ㄳ,ㄺ,ㄻ,ㅄ 과잉 사용 검출하는 함수
     tooMuchDoubleEnd: (msg, findAll= false) => {
         const newMsg = msg.split(""); // 우선 모든 코드에서 찾아보자.
         const endPos = newMsg.map(x=> x.charCodeAt()%28); // 받침 코드 확인
@@ -1585,6 +1585,7 @@ const Utils = {
     // char : 유사한지 비교할 낱자
     // comp : 낱자. comp!에 char가 포함되는 경우 true, 아닌 경우 false를 반환한다.
     // following : !뒤에 오는 낱자. 없으면 ""
+    // 20220723 수정 - true 조건을 세분화해서 뒤의 자음 바꿀 수 있게 처리.
     isKindChar: (char, comp, following="") => {
         // 초성중성종성 분리 데이터 이용하기
         // 0720 수정 - disassemble 작업단위를 part단위로 수정 및 simObject 간소
@@ -1652,16 +1653,15 @@ const Utils = {
 
         // 유사종음 찾아내기.
         let charJongPlus = '';
-        // 우선 char 글자 받침이 comp와 동일하거나 유사받침으로 포함될 때는 무조건 OK
-
+        // 우선 char 글자 받침이 comp와 동일하거나 유사받침으로 포함될 때는 확인
         if (resi && resm && simEnd[compJong].indexOf(charJong)>-1) {
             rese = true;
         }
         // 아니면 다음 캐릭터의 초성을 받침으로 가져와보자
         else if (resi && resm && followCho!== "") {
-            // 다음 초성을 가져와서 받침으로 조합하기
+            // 다음 초성을 가져와서 받침으로 조합하기 - followCho -> CharJong
             charJongPlus = Hangul.assemble(Hangul.disassemble(comp).concat([followCho]));
-            if(charJongPlus.length === 1) {
+            if (charJongPlus.length === 1) {
                 let newJong = Utils.choJungJong(charJongPlus, 'part').jong[0];
                 if (simEnd[newJong].indexOf(charJong)>-1) {
                     rese = true;
@@ -1674,7 +1674,9 @@ const Utils = {
             let compJS= Utils.joinedSyllable(comp, following, true, true);
             let compJS2 = [''];
             if (charJongPlus!=="" && charJongPlus.length ===1) compJS2 = Utils.joinedSyllable(charJongPlus, following, true, true);
-            if (resJS[0] === compJS[0] || resJS[0] === compJS2[0]) rese = true;
+            // 조건 강화 - 두 번째 음절과 join했을 때 완전히 동일하게 발음되면 !표시 사실로 처리.
+            if (Utils.objectEqual(resJS, compJS)) rese = true;
+            else if (Utils.objectEqual(resJS, compJS2)) rese = true;
         }
 
         return resi && resm && rese;
@@ -1700,7 +1702,7 @@ const Utils = {
 
     },
 
-    // 단어 word가 comp 표현 안에 있는지 확인하는 함수
+    // 매크로 포함한 word 패턴이 comp 패턴에 포함하는지 확인하는 함수
     // 예시 : (봡보 => 바!보! True)
     wordIncludeType: (word, comp) => {
         let wordDisassemble = Array.isArray(word)? Utils.wordToArray(word.join("")) : Utils.wordToArray(word);

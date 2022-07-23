@@ -49,6 +49,63 @@ class Tetrapod {
         this.dropDoubleCheck = false; // dropDouble로 축약화시킨 메시지도 검사하기 여부. 체크시 dd, dd+simplify된 메시지도 같이 검사.
     }
 
+    // 일부 Utils 함수는 독립적으로도 사용할 수 있어서 static 클래스 처리
+    // 문장 위치 바꾸기
+    static replaceAll = Utils.replaceAll;
+
+    // 문장에서 단어 위치 찾아주는 함수
+    static getPositionAll = Utils.getPositionAll;
+
+    // 단어를 낱자 리스트로 분리하는 함수
+    static wordToArray = Utils.wordToArray;
+
+    // 맵 정렬 함수
+    static sortMap = Utils.sortMap;
+
+    // 단어 리스트 정렬 함수
+    static parseFromList = Utils.parseFromList;
+
+    // 단어를 초중종성으로 분리하기. cond 값이 part면 단순초중성, key면 키보드 기준, sound면
+    static disassemble = Utils.disassemble;
+
+    // 한글 낱자 초중종 분리
+    static choJungJong = Utils.choJungJong;
+
+    // 메시지 심플하게 맵으로 바꾸기
+    static msgToMap = Utils.msgToMap;
+
+    // 한영변환 자판 혼합시에 한글 낱자로 모두 변환한 뒤에 조합
+    static qwertyToDubeol = Utils.qwertyToDubeol;
+
+    // 자음, 모음과 유사한 글자를 한글자모로 모두 변환한 뒤에 조합
+    static antispoof = Utils.antispoof;
+
+    // 로마자로 표시된 음을 한글로 치환한 후에 조합
+    static engToKo = Utils.engToKo;
+
+    // 이우 -> 유 등 합칠 수 있는 한글 음가를 단축해서 합치는 함수
+    static dropDouble = Utils.dropDouble;
+
+    // ㄳ, ㄺ,ㄻ,ㅄ 받침 과잉 사용하는 것 검출하는 함수
+    static tooMuchDoubleEnd = Utils.tooMuchDoubleEnd;
+
+    // 유사 낱자 검사
+    static isKindChar = Utils.isKindChar;
+
+    // 낱자 포함되는지 검사하는 함수
+    static isInChar = Utils.isInChar;
+
+    // 매크로 패턴 word가 다른 매크로 패턴 comp에 포함되는지 확인하는 함수
+    static wordIncludeType = Utils.wordIncludeType;
+
+    //
+    static wordInclude = Utils.wordInclude;
+
+    // 한글 자모로 분해된 문자열을 찾아서 한글을 조합하는 함수
+    static assembleHangul = Utils.assembleHangul;
+
+
+
 
     // 비속어 데이터, 정상단어 데이터 불러오기. 데이터 개별 수정은 복잡하므로 이 함수로만 수정할 예정.
     load(inputWordsObject /* 오브젝트 형식으로 호출 */, disableAutoParse = true) {
@@ -647,7 +704,7 @@ class Tetrapod {
             newMessage = message;
         }
 
-        // 정상단어의 포지션을 찾습니다.
+        // 찾은 정상단어의 포지션을 찾습니다.
         // 형식 : [[1,2,3], [4,5,6],...]
         let normalWordPositions = this.findNormalWordPositions(newMessage, false)
 
@@ -772,7 +829,7 @@ class Tetrapod {
                 // 순서가 바뀌었는지도 체크해보자.
                 let isShuffled = false
 
-                // 정상단어와 체크. wordPosition이 정상단어 리스트 안에 들어가면 패스
+                // 정상단어와 체크. 비속어 wordPosition이 정상단어의 위치값에 완벽히 들어가면 넘어간다.
                 for (var normalList of normalWordPositions) {
                     if (Utils.objectInclude(tempBadWordPositions, normalList, false)) {
                         isNeedToPass = true; break;
@@ -1046,8 +1103,6 @@ class Tetrapod {
         for (let exceptWord of this.exceptWords) {
             exceptNormalPositions[exceptWord] = Utils.getPositionAll(message, exceptWord, true, true)
         }
-        // 숫자 정렬하기
-        // exceptNormalPosition.sort((a,b)=>(a-b))
 
         let wordPositionMap = {}
 
@@ -1061,8 +1116,8 @@ class Tetrapod {
                 let normalWordPos = Array.from(Array(normalWord.length).keys()).map(z => z+Number(initPos)); // 정상단어의 위치
                 for (let exceptWord in exceptNormalPositions) {
                     let range = exceptNormalPositions[exceptWord]; //정상단어 예외처리 범위 리스트
-                    if (!Utils.isDisjoint(normalWordPos, range)) {
-                        isIn = false; break; // 정상단어 예외단어 스펙트럼과 겹쳐지면 정상단어로 취급하지 않는다.
+                    if (Utils.objectInclude(normalWordPos, range)) {
+                        isIn = false; break; // 찾은 정상단어가 특정 정상단어 예외단어의 인덱스 안에 들어가버리면 정상단어로 취급하지 않는다.
                     }
                 }
                 if (isIn) {newNormalWordList.push(normalWordPos)}

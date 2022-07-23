@@ -104,7 +104,7 @@ obj.loadFile()
 
 
 console.log('정상단어 위치', obj.findNormalWordPositions('흰색 옷은 아름답다', false))
-console.log('정상단어 위치', obj.nativeFind('컴퓨터 교육은 프로그래머의 시발점이다', true, false))
+console.log('정상단어 위치', obj.nativeFind('컴퓨터 교육은 프로그래머의 씨발점이다', true, false))
 console.log('---------------------------------')
 console.log('오작동 테스트', Utils.isKindChar('점', '젖'))
 console.log('오작동 테스트', Utils.isKindChar('점', '젖', '이'))
