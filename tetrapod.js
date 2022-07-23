@@ -1459,6 +1459,6 @@ class Tetrapod {
         console.log('additionalType() end')
         return list
     }
-}
+};
 
 module.exports = Tetrapod
