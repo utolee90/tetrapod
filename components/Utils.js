@@ -499,8 +499,6 @@ const Utils = {
     // 한글 낱자를 초성중성종성으로 분리하기. cond 옵션 추가
     choJungJong: (char, cond='key') => {
 
-        const consonant = Utils.charInitials;
-        const vowel = Utils.charMedials;
         const charDisassemble = Utils.disassemble(char, cond); // 오브젝트가 disassemble 함수에 최적화되어 있어서 일단 수정 보류
         let res = {cho:[], jung:[], jong:[]}
         // 오류 방지를 위해 한글 낱자일 때에만 함수 수행.
