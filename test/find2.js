@@ -8,7 +8,6 @@ import * as HO from "../components/HangulObjects";
 
 // 테스트 시도
 // 우선 기본적으로 Utils의 함수들부터 실험해봅시다.
-console.log(Hangul.assemble(['ㅜ', 'ㅣ']))
 let testList1 = ['가', ['내리', '다', '수'], [1, 4]]
 console.log('거짓임:::', Utils.objectEqual(testList1, ['가', ['내리', '다', '수'], ['1', '4']])) // 거짓
 console.log('참임:::', Utils.objectEqual(testList1, ['가', ['내리', '다', '수'], [1, 4]])) // 참
@@ -91,19 +90,35 @@ console.log(Utils.parseMap(testPronounce))
 console.log('RESERVING')
 console.log(Utils.reserveMap(Utils.parseMap(testPronounce)))
 
+// dropDouble test
+// console.log('의 처리가 필요한가?')
+// console.log(Utils.dropDouble('듸어서', false, false))
+// console.log(Utils.dropDouble('듸어서', false, true))
+// console.log(Utils.dropDouble('저여', false, false))
+// console.log(Utils.dropDouble('져여', false, false))
+// console.log(Utils.dropDouble('저여', false, true))
+// console.log(Utils.dropDouble('져여', false, true))
+
 let obj = new Tetrapod();
 obj.loadFile()
 
-console.log('의 처리가 필요한가?')
-console.log(Utils.dropDouble('듸어서', false, false))
-console.log(Utils.dropDouble('듸어서', false, true))
-console.log(Utils.dropDouble('저여', false, false))
-console.log(Utils.dropDouble('져여', false, false))
-console.log(Utils.dropDouble('저여', false, true))
-console.log(Utils.dropDouble('져여', false, true))
-// console.log(obj.findNormalWordPositions('흰색 옷은 아름답다', false))
-let newTime = new Date().getTime()
-console.log('시발 정발 나쁘게 구네 ::: TEST:::\n', JSON.stringify(obj.nativeFind("시발 정말 나쁘게 구네")))
+
+console.log('정상단어 위치', obj.findNormalWordPositions('흰색 옷은 아름답다', false))
+console.log('정상단어 위치', obj.nativeFind('컴퓨터 교육은 프로그래머의 시발점이다', true, false))
+console.log('---------------------------------')
+console.log('오작동 테스트', Utils.isKindChar('점', '젖'))
+console.log('오작동 테스트', Utils.isKindChar('점', '젖', '이'))
+let simJut_I = []
+for (let i =44032; i<55204; i++) {
+    let char = String.fromCharCode(i);
+    if (Utils.isKindChar(char, '젖', '이')) simJut_I.push(char)
+}
+console.log('결과')
+for (let i=0; i<Math.ceil(simJut_I.length/10); i++) {
+    console.log(simJut_I.slice(i*10, (i+1)*10).join(', '))
+}
+// let newTime = new Date().getTime()
+// console.log('시발 정발 나쁘게 구네 ::: TEST:::\n', JSON.stringify(obj.nativeFind("시발 정말 나쁘게 구네")))
 // console.log("걸린시간:::", new Date().getTime() - newTime)
 // console.log(obj.find("시발 정말 나쁘게 구네", true))
 // console.log('nativeFind obj 테스트')
@@ -113,7 +128,7 @@ console.log('시발 정발 나쁘게 구네 ::: TEST:::\n', JSON.stringify(obj.n
 // console.log(obj.nativeFind(Utils.msgToMap("너 앍줎 없다."), true, true, true))
 // console.log(obj.find("좆밥이네 아줎 싫어 새꺄", true))
 // console.log("걸린시간:::", new Date().getTime() - newTime)
-//
+
 // // 필터 켜기 실험
 // console.log('필터 켜기 전에 단어 확인', obj.parsedBadWords.length, Object.keys(obj.badWordsMap).length, obj.badWords[0].length)
 // obj.adjustFilter([],[],['qwerty'],false);
@@ -150,25 +165,25 @@ console.log('시발 정발 나쁘게 구네 ::: TEST:::\n', JSON.stringify(obj.n
 // let inByeol = [];
 // for (let i =44032; i<55204; i++) {
 //     let char = String.fromCharCode(i);
-//     if (obj.isKindChar(char, '지')) {
+//     if (Utils.isKindChar(char, '지')) {
 //         simJi.push(char);
 //     }
-//     if (obj.isKindChar(char, '지', '랄')) {
+//     if (Utils.isKindChar(char, '지', '랄')) {
 //         simJi_Ral.push(char);
 //     }
-//     if (obj.isKindChar(char, '잠')){
+//     if (Utils.isKindChar(char, '잠')){
 //         simJam.push(char);
 //     }
-//     if (obj.isKindChar(char, '별')) {
+//     if (Utils.isKindChar(char, '별')) {
 //         simByeol.push(char);
 //     }
-//     if (obj.isInChar(char, '지')) {
+//     if (Utils.isInChar(char, '지')) {
 //         inJi.push(char)
 //     }
-//     if (obj.isInChar(char, '잠')) {
+//     if (Utils.isInChar(char, '잠')) {
 //         inJam.push(char)
 //     }
-//     if (obj.isInChar(char, '별')) {
+//     if (Utils.isInChar(char, '별')) {
 //         inByeol.push(char)
 //     }
 // }
@@ -193,9 +208,12 @@ console.log('시발 정발 나쁘게 구네 ::: TEST:::\n', JSON.stringify(obj.n
 
 // fs.writeFile('./test.txt', JSON.stringify(Object.keys(obj.badWordsMap)), 'utf-8', (err)=> {console.log(err);})
 // console.log(obj.engBadWordsCheck([['지!','랄!']], 'ziral', 'pronounce', false))
-obj.adjustFilter([],[],['qwerty', 'antispoof'], true);
-newTime = new Date().getTime()
-console.log(obj.find('Tlqkf 샏까 정말 ㅉH0하다!', false, 20))
-console.log(new Date().getTime()-newTime); // 걸리는 시간 체크해보자.
-console.log(obj.fix('Tlqkf 샏까 정말 ㅉH0하다!'))
-console.log(new Date().getTime()-newTime); // 걸리는 시간 체크해보자.
+// obj.adjustFilter([],[],['qwerty', 'antispoof'], true);
+// newTime = new Date().getTime()
+// console.log(obj.find('Tlqkf 샏까 정말 ㅉH0하다!', false, 20))
+// console.log(new Date().getTime()-newTime); // 걸리는 시간 체크해보자.
+// console.log(obj.fix('Tlqkf 샏까 정말 ㅉH0하다!'))
+// console.log(new Date().getTime()-newTime); // 걸리는 시간 체크해보자.
+
+// console.log('TEST')
+// console.log('return', Utils.getPositionAll('과랑뷔에 옷 젖는 줄 가랑비', '가!랑!비!', true, true))

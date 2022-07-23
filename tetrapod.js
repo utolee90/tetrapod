@@ -1053,12 +1053,12 @@ class Tetrapod {
 
         // 정상단어 포지션 찾기
         for (let normalWord of this.normalWords) {
-            let normalWordList = Utils.getPositionAll(message, normalWord, false); // 정상단어 초기 위치 찾기
+            let normalWordInitPos = Utils.getPositionAll(message, normalWord, false); // 정상단어 초기 위치 찾기
             let newNormalWordList = [];
-            for (let x in normalWordList) {
+            for (let x in normalWordInitPos) {
                 let isIn = true;
-                let initPos = Number(normalWordList[x]); //정상단어의 첫 시작 위치
-                let normalWordPos = Array.from(Array(normalWordList.length).keys()).map(z => z+Number(initPos)); // 정상단어의 위치
+                let initPos = Number(normalWordInitPos[x]); //정상단어의 첫 시작 위치
+                let normalWordPos = Array.from(Array(normalWord.length).keys()).map(z => z+Number(initPos)); // 정상단어의 위치
                 for (let exceptWord in exceptNormalPositions) {
                     let range = exceptNormalPositions[exceptWord]; //정상단어 예외처리 범위 리스트
                     if (!Utils.isDisjoint(normalWordPos, range)) {
@@ -1075,11 +1075,8 @@ class Tetrapod {
         // showMap일 때에는 {단어:[[위치1], [위치2],....], ...} 형식으로 출력
         if (showMap) return wordPositionMap;
         else {
-            let  resList = []
-            for (let lis of Object.values(wordPositionMap) ) {
-                resList = Utils.listUnion(resList, Utils.listUnion(lis))
-            }
-            return resList.sort((a,b)=> (a-b))
+            let wordPositionMapList = Object.values(wordPositionMap);
+            return Utils.listUnion(...wordPositionMapList);
         }
 
     }
