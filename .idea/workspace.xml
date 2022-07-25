@@ -2,7 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="104ff4eb-fd97-4171-9f6f-14d519183829" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/components/Utils.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Utils.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resource/simplify/bad-words.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resource/simplify/macros.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resource/simplify/normal-words.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/find3.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/HangulObjects.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/HangulObjects.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resource/dictionary/bad-words.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary/bad-words.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resource/dictionary2/macros.json" beforeDir="false" afterPath="$PROJECT_DIR$/resource/dictionary2/macros.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/find2.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/find2.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,18 +62,18 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="javascript.nodejs.core.library.configured.version" value="14.18.3" />
     <property name="javascript.nodejs.core.library.typings.version" value="14.18.3" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../tetrapod-front" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/resource/simplify" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\PhpStorm 2021.3.2\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\lyh90\PhpstormProjects\tetrapod\resource\simplify" />
       <recent name="C:\Users\lyh90\PhpstormProjects\tetrapod\resource\dictionary2" />
       <recent name="C:\Users\Klleon_Yohan\kamelo_team\tetrapod\bias\source\kr-fword\음절" />
       <recent name="C:\Users\Klleon_Yohan\kamelo_team\tetrapod\bias\source\kr-fword\음운" />
       <recent name="C:\Users\Klleon_Yohan\kamelo_team\tetrapod\bias\source\kr-fword\어절" />
-      <recent name="C:\Users\Klleon_Yohan\kamelo_team\tetrapod\resource\klleon" />
     </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -148,6 +158,7 @@
       <workItem from="1658277771514" duration="42928000" />
       <workItem from="1658467431413" duration="311000" />
       <workItem from="1658471414455" duration="16166000" />
+      <workItem from="1658710359473" duration="21210000" />
     </task>
     <task id="LOCAL-00001" summary="modify source">
       <created>1618747573738</created>
@@ -172,7 +183,6 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="modify source" />

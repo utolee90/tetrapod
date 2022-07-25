@@ -13,7 +13,8 @@
     "test": "node --no-warnings --no-deprecation ./node_modules/@babel/node/bin/babel-node.js ./test/find.js",
     "bias": "node --no-warnings --no-deprecation ./node_modules/@babel/node/bin/babel-node.js ./bias/build.js",
     "input": "node --no-warnings --no-deprecation ./node_modules/@babel/node/bin/babel-node.js ./bias/input.js",
-    "experiment": "node --no-warnings ./node_modules/@babel/node/bin/babel-node.js ./test/find2.js"
+    "experiment": "node --no-warnings ./node_modules/@babel/node/bin/babel-node.js ./test/find2.js",
+    "experiment2": "node --no-warnings ./node_modules/@babel/node/bin/babel-node.js ./test/find3.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.18.9",
