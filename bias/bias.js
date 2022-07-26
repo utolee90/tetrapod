@@ -406,7 +406,7 @@ export default class Bias {
                 // 사전을 작은 글자 순서대로 정렬합니다.
                 code = code.sort((a, b)=>{
                     return a.length - b.length || // sort by length, if equal then
-                        a.localeCompare(b);    // sort by dictionary order
+                        a.localeCompare(b);    // sort by dictionary3 order
                 })
 
                 let uniquedCode = []

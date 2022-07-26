@@ -31,7 +31,7 @@ console.log(Utils.qwertyToDubeol('dudwkdhk tjRdls aptlwlfmf 한글로 바꿔봅�
 
 
 
-// // console.log("1", require("../resource/dictionary/bad-words.json").badwords)
+// // console.log("1", require("../resource/dictionary3/bad-words.json").badwords)
 // // console.log(Tetrapod.getDefaultData().badWords)
 // console.log("\n\n======================")
 // // console.log(Tetrapod.isExistBadWord('지랄'))

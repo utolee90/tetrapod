@@ -30,4 +30,4 @@ for (let i=44032; i<55204; i++) {
     if(tested) {console.log('one', new Date().getTime() - testTime);}
 }
 let resString = isKindByeongsin.join("\n")
-fs.writeFile('./byeongsin.txt', resString, 'utf-8', (err)=> {console.log(err);})
+fs.writeFile('./test/byeongsin.txt', resString, 'utf-8', (err)=> {console.log(err);})

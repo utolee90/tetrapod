@@ -1210,7 +1210,7 @@ const Utils = {
     // dropDouble함수에서 사용하기 - 기아 -> ['갸'] (리스트 형태로 출력), 밥오 -> true ['바','보'] // false ['바', 'ㅂ오']
     // 반드시 두 낱자가 한글임을 보장해야 사용가능하다.
     // reduced - 음절 사라지지 않게 하느냐 확인. reduced=false는 dropDouble에서 원래음 찾을 때 필요하다.
-    // simplify - 음절 단순화 -> 된소리 예사소리로 바꾸고 복잡한 받침 간단하게
+    // dictionary - 음절 단순화 -> 된소리 예사소리로 바꾸고 복잡한 받침 간단하게
     joinedSyllable:(char, nextChar, reduced=true, simplify=false) => {
         // ㅣ+모음 -> 반모음으로 조정하기
         const yVowel = {"ㅏ":"ㅑ", "ㅐ":'ㅒ', 'ㅑ':'ㅑ', 'ㅒ':'ㅒ', 'ㅓ':'ㅕ', 'ㅔ':'ㅖ', 'ㅕ':'ㅕ',
@@ -1418,7 +1418,7 @@ const Utils = {
                 else if (simplify && Object.keys(simplifyMid).indexOf(res[idx][1])>-1) {
                     res[idx][1] = simplifyMid[res[idx][1]]
                 }
-                // 이중받침 단조화는 simplify 컨디션 없이도 처리하자.
+                // 이중받침 단조화는 dictionary 컨디션 없이도 처리하자.
                 if (res[idx].length ===3 && Object.keys(simplifyEnd).indexOf(res[idx][2])>-1) {
                     res[idx][2] = simplifyEnd[res[idx][2]];
                 }
@@ -1437,7 +1437,7 @@ const Utils = {
 
     // ㅇ, ㅡ 제거, 된소리/거센소리 예사음화 후 비속어 찾기. isMap을 사용하면 제거한 모음, 자음 대응 맵 찾기.
     // 예시 : 브압오 -> showMap 조건이 없으면 '바보', 있으면 {브아: {value:바, index: [0]}, ㅂ오:{value:보, index:[1]}}
-    // simplify 옵션을 true로 지정하면 거센소리 된소리를 예사소리화하기, 복모음, 이중모음 단모음화하는 작업도 추가.
+    // dictionary 옵션을 true로 지정하면 거센소리 된소리를 예사소리화하기, 복모음, 이중모음 단모음화하는 작업도 추가.
     // 메시지는 반드시 한글자모로만 조합.
     dropDouble: (msg, showMap=false, simplify = false) => {
 

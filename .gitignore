@@ -61,7 +61,7 @@ typings/
 # next.js build output
 .next
 
-# 클레온 자체 dictionary 정보
+# 클레온 자체 dictionary3 정보
 resource/klleon
 
 # build 내용

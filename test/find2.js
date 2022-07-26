@@ -68,13 +68,13 @@ import * as HO from "../components/HangulObjects";
 // console.log(Utils.dropDouble("시이바알놈아!!", true, false));
 // console.log('originalPosition 테스트')
 // console.log(Utils.originalPosition(Utils.qwertyToDubeol('dnflskfk akstp wjdakf rnlcksgek', true), [2,3,4,6,7,8]));
-// // dropDouble + simplify
+// // dropDouble + dictionary
 // console.log('DROPDOUBLE + Simplify 테스트')
 // let ddMap = Utils.dropDouble('아아아주 아아아주 복잡호아안 메에시이이이쥩', true, false)
 // let ddsMap = Utils.dropDouble('아아아주 아아아주 복잡호아안 메에시이이이쥩', true, true)
 // console.log(ddMap)
 // console.log(Utils.parseMap(ddMap, true)) // dropDouble은 reassemble 조건 반드시 켜서 사용.
-// console.log('simplify')
+// console.log('dictionary')
 // console.log(ddsMap)
 // console.log(Utils.parseMap(ddsMap, true)) // dropDouble은 reassemble 조건 반드시 켜서 사용.
 // console.log('')
@@ -100,11 +100,8 @@ import * as HO from "../components/HangulObjects";
 // // console.log(Utils.dropDouble('져여', false, true))
 
 let obj = new Tetrapod();
-// obj.loadFile();
-obj.loadFile('./resource/simplify/bad-words.json',
-    './resource/simplify/normal-words.json',
-    './resource/simplify/macros.json',
-    true)
+obj.loadFile();
+
 
 
 // console.log('정상단어 위치', obj.findNormalWordPositions('흰색 옷은 아름답다', false))
